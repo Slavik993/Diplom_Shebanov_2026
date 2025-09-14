@@ -1,0 +1,255 @@
+<svg width="800" height="1200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+    </marker>
+  </defs>
+  
+  <!-- Styles -->
+  <style>
+    .event { fill: #e6f3ff; stroke: #0066cc; stroke-width: 2; }
+    .function { fill: #fff2e6; stroke: #cc6600; stroke-width: 2; }
+    .operator { fill: #f0f0f0; stroke: #666; stroke-width: 2; }
+    .text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; dominant-baseline: middle; }
+    .small-text { font-family: Arial, sans-serif; font-size: 10px; text-anchor: middle; dominant-baseline: middle; }
+    .role { fill: #e6ffe6; stroke: #006600; stroke-width: 1; }
+    .data { fill: #ffe6e6; stroke: #cc0000; stroke-width: 1; }
+    .arrow { stroke: black; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+  </style>
+
+  <!-- Заголовок -->
+  <text x="400" y="20" class="text" style="font-size: 16px; font-weight: bold;">Процесс динамической генерации игрового мира в реальном времени</text>
+  
+  <!-- Начальное событие -->
+  <polygon points="400,50 440,70 400,90 360,70" class="event"/>
+  <text x="400" y="70" class="small-text">Начало процесса</text>
+  
+  <!-- Роль: Разработчик -->
+  <rect x="50" y="60" width="80" height="20" class="role" rx="10"/>
+  <text x="90" y="70" class="small-text">Разработчик</text>
+  
+  <!-- Данные: Ручной ввод -->
+  <ellipse cx="90" cy="100" rx="40" ry="15" class="data"/>
+  <text x="90" y="100" class="small-text">Ручной ввод</text>
+  
+  <!-- F1: Определить характеристики NPC -->
+  <rect x="320" y="120" width="160" height="40" class="function" rx="5"/>
+  <text x="400" y="140" class="text">F1: Определить характеристики NPC</text>
+  
+  <!-- ГОСТ -->
+  <rect x="500" y="120" width="100" height="40" class="role" rx="5"/>
+  <text x="550" y="140" class="small-text">ГОСТ Р 50.1.028-2001</text>
+  
+  <!-- Событие: Характеристики введены -->
+  <polygon points="400,180 440,200 400,220 360,200" class="event"/>
+  <text x="400" y="200" class="small-text">Характеристики NPC введены</text>
+  
+  <!-- JSON характеристик -->
+  <ellipse cx="250" cy="200" rx="60" ry="15" class="data"/>
+  <text x="250" y="200" class="small-text">JSON характеристик</text>
+  
+  <!-- AND оператор -->
+  <circle cx="400" cy="250" r="20" class="operator"/>
+  <text x="400" y="250" class="text" style="font-weight: bold;">∧</text>
+  
+  <!-- F2: Генерировать модель и портрет -->
+  <rect x="200" y="300" width="160" height="40" class="function" rx="5"/>
+  <text x="280" y="315" class="small-text">F2: Генерировать модель</text>
+  <text x="280" y="325" class="small-text">и портрет</text>
+  
+  <!-- F3: Генерировать тексты и квесты -->
+  <rect x="440" y="300" width="160" height="40" class="function" rx="5"/>
+  <text x="520" y="315" class="small-text">F3: Генерировать тексты</text>
+  <text x="520" y="325" class="small-text">и квесты</text>
+  
+  <!-- Роли и инструменты F2 -->
+  <rect x="50" y="290" width="120" height="30" class="role" rx="5"/>
+  <text x="110" y="300" class="small-text">Meshy/Tripo3D</text>
+  <text x="110" y="310" class="small-text">Muse Sprite</text>
+  
+  <!-- Роли и инструменты F3 -->
+  <rect x="630" y="290" width="120" height="30" class="role" rx="5"/>
+  <text x="690" y="300" class="small-text">AI Toolbox/LLMUnity</text>
+  <text x="690" y="310" class="small-text">Dialogue System</text>
+  
+  <!-- D1: Датасеты -->
+  <ellipse cx="100" cy="350" rx="50" ry="15" class="data"/>
+  <text x="100" y="350" class="small-text">D1: Датасеты</text>
+  
+  <!-- Промпты -->
+  <ellipse cx="700" cy="350" rx="30" ry="15" class="data"/>
+  <text x="700" y="350" class="small-text">Промпты</text>
+  
+  <!-- XOR операторы -->
+  <circle cx="280" cy="380" r="20" class="operator"/>
+  <text x="280" y="380" class="text" style="font-weight: bold;">⊕</text>
+  
+  <circle cx="520" cy="380" r="20" class="operator"/>
+  <text x="520" y="380" class="text" style="font-weight: bold;">⊕</text>
+  
+  <!-- События завершения F2 и F3 -->
+  <polygon points="280,420 320,440 280,460 240,440" class="event"/>
+  <text x="280" y="435" class="small-text">Модель и портрет</text>
+  <text x="280" y="445" class="small-text">сгенерированы</text>
+  
+  <polygon points="520,420 560,440 520,460 480,440" class="event"/>
+  <text x="520" y="435" class="small-text">Тексты и квесты</text>
+  <text x="520" y="445" class="small-text">сгенерированы</text>
+  
+  <!-- Выходные данные F2 и F3 -->
+  <ellipse cx="150" cy="440" rx="60" ry="15" class="data"/>
+  <text x="150" y="440" class="small-text">3D-модель (FBX), Портрет (PNG)</text>
+  
+  <ellipse cx="650" cy="440" rx="60" ry="15" class="data"/>
+  <text x="650" y="440" class="small-text">Текст диалога (JSON), Квест (Lua)</text>
+  
+  <!-- D2 и D3 хранилища -->
+  <rect x="120" y="480" width="60" height="30" class="data" rx="5"/>
+  <text x="150" y="495" class="small-text">D2: Артефакты NPC</text>
+  
+  <rect x="620" y="480" width="60" height="30" class="data" rx="5"/>
+  <text x="650" y="495" class="small-text">D3: Квесты и диалоги</text>
+  
+  <!-- AND для F4 -->
+  <circle cx="400" cy="520" r="20" class="operator"/>
+  <text x="400" y="520" class="text" style="font-weight: bold;">∧</text>
+  
+  <!-- Роль: Игрок -->
+  <rect x="50" y="550" width="60" height="20" class="role" rx="10"/>
+  <text x="80" y="560" class="small-text">Игрок</text>
+  
+  <!-- Логи игрока -->
+  <ellipse cx="150" cy="560" rx="40" ry="15" class="data"/>
+  <text x="150" y="560" class="small-text">Логи игрока</text>
+  
+  <!-- F4: Генерировать поведение NPC -->
+  <rect x="320" y="580" width="160" height="40" class="function" rx="5"/>
+  <text x="400" y="595" class="small-text">F4: Генерировать</text>
+  <text x="400" y="605" class="small-text">поведение NPC</text>
+  
+  <!-- Инструменты F4 -->
+  <rect x="520" y="580" width="100" height="40" class="role" rx="5"/>
+  <text x="570" y="595" class="small-text">ML-Agents</text>
+  <text x="570" y="605" class="small-text">C#</text>
+  
+  <!-- Событие: Поведение NPC обучено -->
+  <polygon points="400,650 440,670 400,690 360,670" class="event"/>
+  <text x="400" y="665" class="small-text">Поведение NPC</text>
+  <text x="400" y="675" class="small-text">обучено</text>
+  
+  <!-- Модель поведения -->
+  <ellipse cx="280" cy="670" rx="50" ry="15" class="data"/>
+  <text x="280" y="670" class="small-text">Модель поведения (ONNX)</text>
+  
+  <!-- F5: Создать локацию -->
+  <rect x="320" y="720" width="160" height="40" class="function" rx="5"/>
+  <text x="400" y="740" class="text">F5: Создать локацию</text>
+  
+  <!-- Инструменты F5 -->
+  <rect x="520" y="720" width="120" height="40" class="role" rx="5"/>
+  <text x="580" y="735" class="small-text">Gaia Pro VS</text>
+  <text x="580" y="745" class="small-text">MapMagic 2</text>
+  
+  <!-- Контекстные данные -->
+  <ellipse cx="180" cy="740" rx="50" ry="15" class="data"/>
+  <text x="180" y="740" class="small-text">Контекстные данные (биом)</text>
+  
+  <!-- XOR F5 -->
+  <circle cx="400" cy="780" r="20" class="operator"/>
+  <text x="400" y="780" class="text" style="font-weight: bold;">⊕</text>
+  
+  <!-- Событие: Локация создана -->
+  <polygon points="400,820 440,840 400,860 360,840" class="event"/>
+  <text x="400" y="840" class="text">Локация создана</text>
+  
+  <!-- Unity Scene -->
+  <ellipse cx="250" cy="840" rx="60" ry="15" class="data"/>
+  <text x="250" y="840" class="small-text">Локация (Unity Scene)</text>
+  
+  <!-- F6: Тестировать прототип -->
+  <rect x="320" y="900" width="160" height="40" class="function" rx="5"/>
+  <text x="400" y="920" class="text">F6: Тестировать прототип</text>
+  
+  <!-- Unity Play Mode -->
+  <rect x="520" y="900" width="100" height="40" class="role" rx="5"/>
+  <text x="570" y="920" class="small-text">Unity Play Mode</text>
+  
+  <!-- Финальное событие -->
+  <polygon points="400,970 440,990 400,1010 360,990" class="event"/>
+  <text x="400" y="985" class="small-text">Прототип</text>
+  <text x="400" y="995" class="small-text">протестирован</text>
+  
+  <!-- Финальные данные -->
+  <ellipse cx="250" cy="990" rx="70" ry="15" class="data"/>
+  <text x="250" y="990" class="small-text">Отчет, Прототип (Unity Build)</text>
+  
+  <!-- Стрелки -->
+  <!-- Основной поток -->
+  <line x1="400" y1="90" x2="400" y2="120" class="arrow"/>
+  <line x1="400" y1="160" x2="400" y2="180" class="arrow"/>
+  <line x1="400" y1="220" x2="400" y2="230" class="arrow"/>
+  
+  <!-- От AND к F2 и F3 -->
+  <line x1="380" y1="250" x2="280" y2="300" class="arrow"/>
+  <line x1="420" y1="250" x2="520" y2="300" class="arrow"/>
+  
+  <!-- От F2 и F3 к XOR -->
+  <line x1="280" y1="340" x2="280" y2="360" class="arrow"/>
+  <line x1="520" y1="340" x2="520" y2="360" class="arrow"/>
+  
+  <!-- От XOR к событиям -->
+  <line x1="280" y1="400" x2="280" y2="420" class="arrow"/>
+  <line x1="520" y1="400" x2="520" y2="420" class="arrow"/>
+  
+  <!-- К AND для F4 -->
+  <line x1="320" y1="440" x2="380" y2="520" class="arrow"/>
+  <line x1="480" y1="440" x2="420" y2="520" class="arrow"/>
+  
+  <!-- От AND к F4 -->
+  <line x1="400" y1="540" x2="400" y2="580" class="arrow"/>
+  
+  <!-- От F4 к событию -->
+  <line x1="400" y1="620" x2="400" y2="650" class="arrow"/>
+  
+  <!-- К F5 -->
+  <line x1="400" y1="690" x2="400" y2="720" class="arrow"/>
+  
+  <!-- От F5 к XOR -->
+  <line x1="400" y1="760" x2="400" y2="780" class="arrow"/>
+  
+  <!-- От XOR к событию -->
+  <line x1="400" y1="800" x2="400" y2="820" class="arrow"/>
+  
+  <!-- К F6 -->
+  <line x1="400" y1="860" x2="400" y2="900" class="arrow"/>
+  
+  <!-- От F6 к финальному событию -->
+  <line x1="400" y1="940" x2="400" y2="970" class="arrow"/>
+  
+  <!-- Связи ролей и данных -->
+  <line x1="130" y1="70" x2="360" y2="140" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="130" y1="100" x2="320" y2="140" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="170" y1="305" x2="200" y2="320" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="630" y1="305" x2="600" y2="320" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="150" y1="350" x2="200" y2="320" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="650" y1="350" x2="600" y2="320" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="110" y1="560" x2="320" y2="600" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="190" y1="560" x2="320" y2="600" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="520" y1="600" x2="570" y2="600" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="230" y1="740" x2="320" y2="740" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="520" y1="740" x2="580" y2="740" class="arrow" stroke-dasharray="5,5"/>
+  <line x1="520" y1="920" x2="570" y2="920" class="arrow" stroke-dasharray="5,5"/>
+  
+  <!-- Связи с хранилищами данных -->
+  <line x1="210" y1="440" x2="150" y2="480" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="590" y1="440" x2="650" y2="480" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="150" y1="510" x2="380" y2="540" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="650" y1="510" x2="420" y2="540" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="210" y1="670" x2="150" y2="510" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="190" y1="840" x2="150" y2="510" class="arrow" stroke-dasharray="3,3"/>
+  
+  <!-- JSON характеристик к F2 и F3 -->
+  <line x1="310" y1="200" x2="360" y2="200" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="360" y1="200" x2="380" y2="250" class="arrow" stroke-dasharray="3,3"/>
+  <line x1="360" y1="200" x2="420" y2="250" class="arrow" stroke-dasharray="3,3"/>
+</svg>
