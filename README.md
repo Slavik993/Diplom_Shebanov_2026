@@ -8,7 +8,7 @@ DFD(Йордана-Де-Марко)
 <img width="1077" height="618" alt="DFD(Йордана-Де-Марко)" src="https://github.com/user-attachments/assets/4dbb6e37-461d-4277-b379-a9bc2e7a58ab" />
 
 DFD(Гейна-Сарсона)
-<img width="1077" height="618" alt="DFD(Йордана-Де-Марко)" src="https://github.com/user-attachments/assets/a4deee94-0d57-4f9e-9157-efc4f5150a16" />
+<img width="1005" height="718" alt="DFD(Гейна-Сарсона)" src="https://github.com/user-attachments/assets/62d49e17-d89c-410b-8bf4-3a98d9653c2e" />
 
 EPC
 <img width="545" height="676" alt="EPC" src="https://github.com/user-attachments/assets/c505759c-c0f0-4000-9a45-6f5870eef10c" />
