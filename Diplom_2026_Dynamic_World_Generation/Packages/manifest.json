@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "com.inkle.ink-unity-integration": "file:C:/Users/Machcreator/Downloads/ink-unity-integration-master/ink-unity-integration-master/Packages/Ink",
+    "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.5",
     "com.unity.collab-proxy": "2.9.3",
     "com.unity.ide.rider": "3.0.31",
