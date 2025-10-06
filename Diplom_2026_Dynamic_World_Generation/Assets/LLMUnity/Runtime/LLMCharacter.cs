@@ -262,15 +262,56 @@ namespace LLMUnity
 
         protected virtual async Task<bool> InitNKeep()
         {
-            if (setNKeepToPrompt && nKeep == -1)
+            try
             {
-                if (!CheckTemplate()) return false;
-                string systemPrompt = template.ComputePrompt(new List<ChatMessage>(){chat[0]}, playerName, "", false);
-                List<int> tokens = await Tokenize(systemPrompt);
-                if (tokens == null) return false;
-                SetNKeep(tokens);
+                if (setNKeepToPrompt && nKeep == -1)
+                {
+                    if (!CheckTemplate())
+                    {
+                        Debug.LogWarning("[LLMCharacter.InitNKeep] Template check failed.");
+                        return false;
+                    }
+
+                    // 🔹 Подстраховка — создаём сообщение, если список chat пуст
+                    if (chat == null || chat.Count == 0)
+                    {
+                        Debug.LogWarning("[LLMCharacter.InitNKeep] Chat list was empty, creating default system message.");
+                        chat = new List<ChatMessage>
+                        {
+                            new ChatMessage { role = "system", content = prompt ?? "" }
+                        };
+                    }
+
+                    string systemPrompt = template.ComputePrompt(
+                        new List<ChatMessage>() { chat[0] },
+                        playerName,
+                        "",
+                        false
+                    );
+
+                    List<int> tokens = await Tokenize(systemPrompt);
+                    if (tokens == null || tokens.Count == 0)
+                    {
+                        Debug.LogWarning("[LLMCharacter.InitNKeep] Tokenize() returned empty list or null.");
+                        return false;
+                    }
+
+                    SetNKeep(tokens);
+                }
+
+                return true;
             }
-            return true;
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Debug.LogError("[LLMCharacter.InitNKeep] Caught ArgumentOutOfRangeException: " + ex.Message);
+                nKeep = 0; // безопасное значение, чтобы не упал движок
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("[LLMCharacter.InitNKeep] Unexpected exception: " + ex.Message);
+                return false;
+            }
         }
 
         protected virtual void InitGrammar()
