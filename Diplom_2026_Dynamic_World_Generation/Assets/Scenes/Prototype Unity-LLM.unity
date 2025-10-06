@@ -489,6 +489,10 @@ PrefabInstance:
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 2571339635486700180, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
+      propertyPath: repeatPenalty
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2571339635486700180, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
       propertyPath: advancedOptions
       value: 1
       objectReference: {fileID: 0}

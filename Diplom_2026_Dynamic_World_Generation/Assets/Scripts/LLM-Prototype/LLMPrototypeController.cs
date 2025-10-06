@@ -6,16 +6,27 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System;
 using System.Reflection;
+using System.Collections.Generic;
 
+/// <summary>
+/// Контроллер взаимодействия с LLM NPC + контекстная память
+/// </summary>
 public class LLMPrototypeController : MonoBehaviour
 {
+    private List<string> chatHistory = new List<string>(); // 🧠 История диалога
+    private string historyFilePath;                        // путь сохранения истории
+    private const int maxHistory = 10;                     // ограничение длины памяти
+
     [Header("LLM Settings")]
     public LLMCharacter llmCharacter;
-    
+
+    [Header("NPC Context")]
+    public string currentNPC = "Barman";                   // имя NPC для индивидуальной памяти
+
     [Header("File Paths")]
     public string inputJsonPath = "input.json";
     public string outputJsonPath = "output.json";
-    
+
     [Header("Test Mode")]
     public bool testOnStart = true;
     public string testInputJson = @"{
@@ -27,11 +38,18 @@ public class LLMPrototypeController : MonoBehaviour
         }
     }";
 
+    private void Awake()
+    {
+        string basePath = Application.persistentDataPath;
+        historyFilePath = Path.Combine(basePath, "chat_history.json");
+        Debug.Log($"[LLM] History path: {historyFilePath}");
+        LoadChatHistory();
+    }
+
     private async void Start()
     {
         if (testOnStart)
         {
-            // Ждём пока llmCharacter назначен и (по возможности) инициализирован
             await WaitForLLMCharacterReady(7000);
             ProcessJsonInput(testInputJson);
         }
@@ -59,30 +77,39 @@ public class LLMPrototypeController : MonoBehaviour
             return;
         }
 
-        // Формируем промпт для LLM
-        string prompt = CreatePrompt(input);
+        // 🧠 Собираем контекст из истории
+        string context = string.Join("\n", chatHistory);
+
+        // Формируем промпт
+        string prompt = CreatePrompt(input, context);
         Debug.Log($"Промпт для LLM:\n{prompt}");
 
         // Отправляем запрос к LLM
         string llmResponse = await SendToLLM(prompt);
         Debug.Log($"Ответ LLM:\n{llmResponse}");
 
-        // Парсим ответ и создаём выходной JSON
+        // Парсим ответ
         OutputData output = ParseLLMResponse(llmResponse);
         string outputJson = JsonUtility.ToJson(output, true);
-        
-        Debug.Log($"=== Выходной JSON ===\n{outputJson}");
 
-        // Сохраняем в файл
+        // 💾 Добавляем в историю
+        AddToChatHistory($"Игрок: {input.playerAction} | NPC: {output.dialogue}");
+
+        Debug.Log($"=== Выходной JSON ===\n{outputJson}");
         SaveToFile(outputJson);
+        SaveChatHistory();
     }
 
-    private string CreatePrompt(InputData input)
+    private string CreatePrompt(InputData input, string historyContext)
     {
-        return $@"Ты - система управления NPC в игре. 
+        return $@"Ты — интеллектуальная система, управляющая поведением и речью персонажей в ролевой игре.  
+Твоя задача — генерировать логичный, естественный и контекстуально уместный ответ NPC на действия игрока. 
 Проанализируй ситуацию и создай реакцию персонажа в формате JSON.
 
-ВХОДНЫЕ ДАННЫЕ:
+Контекст предыдущих взаимодействий:
+{historyContext}
+
+Текущие входные данные:
 - Действие игрока: {input.playerAction}
 - Состояние NPC: {input.npcState}
 - Местоположение: {input.context.location}
@@ -98,10 +125,10 @@ public class LLMPrototypeController : MonoBehaviour
 }}
 
 Правила:
-- Если игрок отказался (refuse), а NPC был нейтральным - NPC может разозлиться
-- В таверне конфликты обостряются
-- Диалог должен быть естественным и подходить по контексту
-- Действие должно логично следовать из ситуации
+- Если игрок отказался (refuse), а NPC был нейтральным - NPC может разозлиться.
+- В таверне конфликты обостряются.
+- Диалог должен быть естественным, связанным и контекстным.
+- Действие и эмоция должны логично соответствовать сцене.
 
 ОТВЕТ (только JSON):";
     }
@@ -119,7 +146,6 @@ public class LLMPrototypeController : MonoBehaviour
 
         try
         {
-            // Обёртка в try — чтобы поймать исключения из Init/Chat (включая ArgumentOutOfRangeException)
             await llmCharacter.Chat(
                 prompt,
                 (string chunk) => {
@@ -138,7 +164,6 @@ public class LLMPrototypeController : MonoBehaviour
             return "{\"dialogue\":\"ERROR: LLM exception\",\"action\":\"none\",\"emotion\":\"neutral\",\"animation\":\"idle\"}";
         }
 
-        // Ждём окончания с таймаутом
         int waited = 0;
         int step = 100;
         while (!completed && waited < timeoutMs)
@@ -165,21 +190,12 @@ public class LLMPrototypeController : MonoBehaviour
                 OutputData parsed = JsonUtility.FromJson<OutputData>(jsonOnly);
                 if (parsed != null)
                 {
-                    // Нормализуем пустые поля
                     parsed.dialogue = string.IsNullOrEmpty(parsed.dialogue) ? "..." : parsed.dialogue;
                     parsed.action = string.IsNullOrEmpty(parsed.action) ? "idle" : parsed.action;
                     parsed.emotion = string.IsNullOrEmpty(parsed.emotion) ? "neutral" : parsed.emotion;
                     parsed.animation = string.IsNullOrEmpty(parsed.animation) ? "idle" : parsed.animation;
                     return parsed;
                 }
-                else
-                {
-                    Debug.LogWarning("JsonUtility.FromJson вернул null.");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("Не найден JSON в ответе LLM.");
             }
         }
         catch (Exception e)
@@ -187,7 +203,6 @@ public class LLMPrototypeController : MonoBehaviour
             Debug.LogError($"Ошибка парсинга LLM ответа: {e.Message}\nПолный ответ:\n{llmResponse}");
         }
 
-        // Fallback значения
         return new OutputData
         {
             dialogue = "Хм...",
@@ -197,7 +212,6 @@ public class LLMPrototypeController : MonoBehaviour
         };
     }
 
-    // Извлекает первый корректно сбалансированный JSON-объект { ... }
     private string ExtractFirstJsonObject(string text)
     {
         if (string.IsNullOrEmpty(text)) return null;
@@ -212,10 +226,7 @@ public class LLMPrototypeController : MonoBehaviour
             else if (c == '}') depth--;
 
             if (depth == 0)
-            {
-                // i — индекс закрывающей }
                 return text.Substring(start, i - start + 1);
-            }
         }
         return null;
     }
@@ -224,7 +235,6 @@ public class LLMPrototypeController : MonoBehaviour
     {
         try
         {
-            // safer path for editor & builds
             string fullPath = Path.Combine(Application.persistentDataPath, outputJsonPath);
             File.WriteAllText(fullPath, json, Encoding.UTF8);
             Debug.Log($"Файл сохранён: {fullPath}");
@@ -235,7 +245,64 @@ public class LLMPrototypeController : MonoBehaviour
         }
     }
 
-    // Ждём, пока llmCharacter назначен / инициализирован (рефлексивная проверка)
+    // === 🧠 Управление памятью ===
+    private void AddToChatHistory(string record)
+    {
+        chatHistory.Add(record);
+        if (chatHistory.Count > maxHistory)
+            chatHistory.RemoveAt(0);
+    }
+
+    public void ResetChatMemory(string newNPC = "")
+    {
+        chatHistory.Clear();
+        if (!string.IsNullOrEmpty(newNPC))
+            currentNPC = newNPC;
+
+        SaveChatHistory();
+        Debug.Log($"[LLM] История очищена. Новый NPC: {currentNPC}");
+    }
+
+    private void SaveChatHistory()
+    {
+        try
+        {
+            var data = new ChatHistoryData { npcName = currentNPC, history = chatHistory };
+            string json = JsonUtility.ToJson(data, true);
+            File.WriteAllText(historyFilePath, json, Encoding.UTF8);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Ошибка сохранения истории: {e}");
+        }
+    }
+
+    private void LoadChatHistory()
+    {
+        if (!File.Exists(historyFilePath)) return;
+
+        try
+        {
+            string json = File.ReadAllText(historyFilePath, Encoding.UTF8);
+            ChatHistoryData data = JsonUtility.FromJson<ChatHistoryData>(json);
+
+            if (data != null && data.npcName == currentNPC)
+            {
+                chatHistory = data.history ?? new List<string>();
+                Debug.Log($"[LLM] История NPC '{currentNPC}' загружена. Кол-во записей: {chatHistory.Count}");
+            }
+            else
+            {
+                Debug.Log($"[LLM] История для NPC '{currentNPC}' не найдена, создаём новую.");
+                chatHistory = new List<string>();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Ошибка загрузки истории: {e}");
+        }
+    }
+
     private async Task WaitForLLMCharacterReady(int timeoutMs = 5000)
     {
         int waited = 0;
@@ -243,94 +310,23 @@ public class LLMPrototypeController : MonoBehaviour
 
         while (llmCharacter == null && waited < timeoutMs)
         {
-            Debug.Log("Ждём назначения llmCharacter в инспекторе...");
+            Debug.Log("Ждём назначения llmCharacter...");
             await Task.Delay(step);
             waited += step;
         }
 
         if (llmCharacter == null)
         {
-            Debug.LogError("LLMCharacter не назначен в инспекторе — процесс продолжён без LLM (ошибка возможна).");
+            Debug.LogError("LLMCharacter не назначен!");
             return;
         }
-
-        // Пытаемся найти свойства/поля готовности через рефлексию
-        Type t = llmCharacter.GetType();
-        PropertyInfo[] props = t.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        FieldInfo[] fields = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-        PropertyInfo readyProp = Array.Find(props, p => string.Equals(p.Name, "IsReady", StringComparison.OrdinalIgnoreCase)
-                                                   || string.Equals(p.Name, "IsInitialized", StringComparison.OrdinalIgnoreCase)
-                                                   || string.Equals(p.Name, "ready", StringComparison.OrdinalIgnoreCase));
-        FieldInfo readyField = Array.Find(fields, f => string.Equals(f.Name, "isReady", StringComparison.OrdinalIgnoreCase)
-                                                  || string.Equals(f.Name, "initialized", StringComparison.OrdinalIgnoreCase)
-                                                  || string.Equals(f.Name, "serverReady", StringComparison.OrdinalIgnoreCase));
-
-        if (readyProp == null && readyField == null)
-        {
-            // Попробуем проверить поле llm/server — если оно заполнено, возможно LLM готов
-            FieldInfo llmField = Array.Find(fields, f => string.Equals(f.Name, "llm", StringComparison.OrdinalIgnoreCase)
-                                                   || string.Equals(f.Name, "_llm", StringComparison.OrdinalIgnoreCase)
-                                                   || string.Equals(f.Name, "server", StringComparison.OrdinalIgnoreCase));
-            if (llmField == null)
-            {
-                Debug.Log("Не удалось определить индикатор готовности llmCharacter (рефлексия не нашла явных полей). Продолжаем без ожидания.");
-                return;
-            }
-
-            waited = 0;
-            while (waited < timeoutMs)
-            {
-                var val = llmField.GetValue(llmCharacter);
-                if (val != null) return;
-                await Task.Delay(step);
-                waited += step;
-            }
-            Debug.LogWarning("Таймаут ожидания поля llm/server заполнения.");
-            return;
-        }
-
-        // Ждём, пока найденное поле/свойство станет true
-        waited = 0;
-        while (waited < timeoutMs)
-        {
-            bool ready = false;
-            try
-            {
-                if (readyProp != null)
-                {
-                    var val = readyProp.GetValue(llmCharacter);
-                    if (val is bool b) ready = b;
-                }
-                else if (readyField != null)
-                {
-                    var val = readyField.GetValue(llmCharacter);
-                    if (val is bool b) ready = b;
-                }
-            }
-            catch { /* ignore */ }
-
-            if (ready) return;
-
-            await Task.Delay(step);
-            waited += step;
-        }
-
-        Debug.LogWarning("Таймаут ожидания готовности llmCharacter (рефлексивная проверка). Продолжаем выполнение, но возможны ошибки.");
     }
 
-    // Метод для загрузки из файла (опционально)
-    public void LoadAndProcessFile()
+    // === Вспомогательные структуры ===
+    [Serializable]
+    private class ChatHistoryData
     {
-        string fullPath = Path.Combine(Application.persistentDataPath, inputJsonPath);
-        if (File.Exists(fullPath))
-        {
-            string json = File.ReadAllText(fullPath);
-            ProcessJsonInput(json);
-        }
-        else
-        {
-            Debug.LogError($"Файл не найден: {fullPath}\n(в редакторе используйте Application.persistentDataPath)");
-        }
+        public string npcName;
+        public List<string> history;
     }
 }
