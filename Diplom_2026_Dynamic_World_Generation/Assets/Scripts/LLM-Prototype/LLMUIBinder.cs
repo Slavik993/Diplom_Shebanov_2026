@@ -1,66 +1,48 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine.UI;
 
-[ExecuteAlways]
 public class LLMUIBinder : MonoBehaviour
 {
-    public UIDynamicBuilder ui;
-    public LLMPrototypeController llmController;
+    public UIDynamicBuilder builder;
+    public LLMPrototypeController controller;
 
-    private const string PREF_PREFIX = "LLMUI_";
-
-    private void Start()
+    void Start()
     {
-        if (ui == null) ui = FindObjectOfType<UIDynamicBuilder>();
-        if (llmController == null) llmController = FindObjectOfType<LLMPrototypeController>();
+        builder = FindObjectOfType<UIDynamicBuilder>();
+        controller = FindObjectOfType<LLMPrototypeController>();
 
-        if (ui == null) return;
-
-        // Восстановление сохранённых данных
-        ui.npcNameField.text = PlayerPrefs.GetString(PREF_PREFIX + "NPCName", "Безымянный");
-        ui.npcRelationDropdown.value = PlayerPrefs.GetInt(PREF_PREFIX + "NPCRelation", 1);
-        ui.npcEmotionDropdown.value = PlayerPrefs.GetInt(PREF_PREFIX + "NPCEmotion", 0);
-        ui.npcReactionField.text = PlayerPrefs.GetString(PREF_PREFIX + "NPCReaction", "50");
-
-        // Подписка на кнопку
-        ui.npcGenerateButton.onClick.AddListener(OnGenerateDialogue);
-    }
-
-    private void OnGenerateDialogue()
-    {
-        if (llmController == null)
+        if (builder == null || controller == null)
         {
-            Debug.LogError("LLMPrototypeController не найден!");
+            Debug.LogError("❌ Не найден UIDynamicBuilder или LLMPrototypeController!");
             return;
         }
 
-        string relation = ui.npcRelationDropdown.options[ui.npcRelationDropdown.value].text;
-        string emotion = ui.npcEmotionDropdown.options[ui.npcEmotionDropdown.value].text;
-
-        string json = $@"{{
-            ""playerAction"": ""interact"",
-            ""npcState"": ""{relation}"",
-            ""context"": {{
-                ""location"": ""tavern"",
-                ""relationship"": ""{relation}""
-            }}
-        }}";
-
-        llmController.ProcessJsonInput(json);
-        ui.npcDialogueText.text = "⏳ Генерация...";
+        // Кнопка генерации диалога
+        builder.npcGenerateButton.onClick.AddListener(OnGenerateClicked);
     }
 
-    private void OnDisable()
+    void OnGenerateClicked()
     {
-        if (ui == null) return;
+        string name = builder.npcNameField.text;
+        string relation = builder.npcRelationDropdown.options[builder.npcRelationDropdown.value].text;
+        string emotion = builder.npcEmotionDropdown.options[builder.npcEmotionDropdown.value].text;
+        string reaction = builder.npcReactionField.text;
 
-        // Сохраняем данные
-        PlayerPrefs.SetString(PREF_PREFIX + "NPCName", ui.npcNameField.text);
-        PlayerPrefs.SetInt(PREF_PREFIX + "NPCRelation", ui.npcRelationDropdown.value);
-        PlayerPrefs.SetInt(PREF_PREFIX + "NPCEmotion", ui.npcEmotionDropdown.value);
-        PlayerPrefs.SetString(PREF_PREFIX + "NPCReaction", ui.npcReactionField.text);
-        PlayerPrefs.Save();
+        // Создаём JSON из данных UI
+        string inputJson = $@"{{
+    ""playerAction"": ""refuse"",
+    ""npcState"": ""{relation}"",
+    ""context"": {{
+        ""location"": ""tavern"",
+        ""relationship"": ""{relation}""
+    }},
+    ""emotion"": ""{emotion}"",
+    ""reactionLevel"": {reaction}
+}}";
+
+        string dialogue = controller.GenerateDialogueFromJSON(inputJson);
+
+        builder.npcDialogueText.text = dialogue;
     }
 }
-

@@ -148,11 +148,13 @@ public class LLMPrototypeController : MonoBehaviour
         {
             await llmCharacter.Chat(
                 prompt,
-                (string chunk) => {
+                (string chunk) =>
+                {
                     if (!string.IsNullOrEmpty(chunk))
                         response.Append(chunk);
                 },
-                () => {
+                () =>
+                {
                     completed = true;
                     Debug.Log("LLM завершил генерацию");
                 }
@@ -329,4 +331,96 @@ public class LLMPrototypeController : MonoBehaviour
         public string npcName;
         public List<string> history;
     }
+    // =======================
+    // 🔹 Обработчик JSON-запроса из UI
+    // =======================
+
+
+    // =======================
+    // 🔹 Обработчик JSON-запроса из UI (правильный)
+    // =======================
+    public string GenerateDialogueFromJSON(string jsonInput)
+    {
+        try
+        {
+            // 1️⃣ Разбираем входной JSON
+            var data = JsonUtility.FromJson<DialogueInput>(jsonInput);
+            if (data == null)
+            {
+                Debug.LogError("Не удалось распарсить входной JSON.");
+                return "Ошибка: неверный формат JSON.";
+            }
+
+            // 2️⃣ Сериализуем обратно в формат InputData (тот, что использует твой основной метод)
+            InputData input = new InputData
+            {
+                playerAction = data.playerAction,
+                npcState = data.npcState,
+                context = new InputData.Context
+                {
+                    location = data.context.location,
+                    relationship = data.context.relationship
+                }
+            };
+
+            // 3️⃣ Запускаем асинхронную обработку
+            ProcessJsonInput(JsonUtility.ToJson(input));
+
+            return "Генерация запущена...";
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Ошибка парсинга JSON или запуска генерации: {ex.Message}");
+            return "Ошибка генерации диалога.";
+        }
+    }
+
+// =======================
+// 🔹 Вспомогательные классы для JSON-входа/выхода
+// =======================
+
+[System.Serializable]
+public class DialogueInput
+{
+    public string playerAction;
+    public string npcState;
+    public DialogueContext context;
+    public string emotion;
+    public int reactionLevel;
+}
+
+[System.Serializable]
+public class DialogueContext
+{
+    public string location;
+    public string relationship;
+}
+
+// 🔹 Формат основного входного JSON (используется ProcessJsonInput)
+[System.Serializable]
+public class InputData
+{
+    public string playerAction;
+    public string npcState;
+    public Context context;
+
+    [System.Serializable]
+    public class Context
+    {
+        public string location;
+        public string relationship;
+    }
+}
+
+// 🔹 Формат ответа от LLM
+[System.Serializable]
+public class OutputData
+{
+    public string dialogue;
+    public string action;
+    public string emotion;
+    public string animation;
+}
+
+
 }

@@ -1,16 +1,23 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
+/// <summary>
+/// Создаёт UI-панели для систем: Сказитель, Контроллер NPC, Генератор икон.
+/// Работает и в PlayMode, и в Editor.
+/// </summary>
 public class UIDynamicBuilder : MonoBehaviour
 {
-    [Header("UI Panels")]
+    [Header("Панели")]
     public GameObject mainMenu;
     public GameObject storyTellerPanel;
     public GameObject npcPanel;
     public GameObject iconGeneratorPanel;
 
-    [Header("NPC UI Elements (для LLMUIBinder)")]
+    [Header("Элементы NPC-панели (для LLMUIBinder)")]
     public TMP_InputField npcNameField;
     public TMP_Dropdown npcRelationDropdown;
     public TMP_Dropdown npcEmotionDropdown;
@@ -20,123 +27,169 @@ public class UIDynamicBuilder : MonoBehaviour
 
     private Canvas canvas;
 
-    void Start()
+    void Awake()
     {
-        CreateUI();
+        BuildUI();
     }
 
-    public void CreateUI()
+    public void CreateUI() => BuildUI(); // 👈 для вызова из редактора
+
+    void BuildUI()
     {
         canvas = FindObjectOfType<Canvas>();
         if (canvas == null)
         {
-            var canvasGO = new GameObject("Canvas");
-            canvas = canvasGO.AddComponent<Canvas>();
+            var cgo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            canvas = cgo.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasGO.AddComponent<CanvasScaler>();
-            canvasGO.AddComponent<GraphicRaycaster>();
         }
 
-        // === MAIN MENU ===
-        mainMenu = CreatePanel("MainMenu", canvas.transform);
-        CreateMainMenu(mainMenu);
+        CreateMainMenu();
+        CreateNPCPanel();
+        CreateStoryTellerPanel();
+        CreateIconPanel();
 
-        // === STORYTELLER ===
-        storyTellerPanel = CreatePanel("StoryTellerPanel", canvas.transform);
-        storyTellerPanel.SetActive(false);
-        CreateStoryTellerPanel(storyTellerPanel);
-
-        // === NPC ===
-        npcPanel = CreatePanel("NPCPanel", canvas.transform);
-        npcPanel.SetActive(false);
-        CreateNPCPanel(npcPanel);
-
-        // === ICON GENERATOR ===
-        iconGeneratorPanel = CreatePanel("IconGeneratorPanel", canvas.transform);
-        iconGeneratorPanel.SetActive(false);
-        CreateIconGeneratorPanel(iconGeneratorPanel);
+        ShowOnly(mainMenu);
     }
 
-    // ======================= UI HELPERS =======================
+    // === Панели ===
 
-    GameObject CreatePanel(string name, Transform parent)
+    void CreateMainMenu()
+    {
+        mainMenu = CreatePanel("MainMenu");
+
+        CreateLabel(mainMenu.transform, "Главное меню", new Vector2(0, 180));
+
+        CreateButton(mainMenu.transform, "Сказитель историй", new Vector2(0, 100),
+            () => ShowOnly(storyTellerPanel));
+
+        CreateButton(mainMenu.transform, "Контроллер NPC", new Vector2(0, 40),
+            () => ShowOnly(npcPanel));
+
+        CreateButton(mainMenu.transform, "Генератор икон", new Vector2(0, -20),
+            () => ShowOnly(iconGeneratorPanel));
+    }
+
+    void CreateNPCPanel()
+    {
+        npcPanel = CreatePanel("NPCPanel");
+        npcPanel.SetActive(false);
+
+        CreateLabel(npcPanel.transform, "Контроллер NPC", new Vector2(0, 180));
+
+        CreateLabel(npcPanel.transform, "Имя персонажа", new Vector2(0, 120));
+        npcNameField = CreateInputField(npcPanel.transform, new Vector2(0, 90));
+
+        CreateLabel(npcPanel.transform, "Отношение к игроку", new Vector2(0, 50));
+        npcRelationDropdown = CreateDropdown(npcPanel.transform,
+            new string[] { "дружелюбный", "нейтральный", "враждебный" }, new Vector2(0, 20));
+
+        CreateLabel(npcPanel.transform, "Эмоция", new Vector2(0, -20));
+        npcEmotionDropdown = CreateDropdown(npcPanel.transform,
+            new string[] { "спокойный", "сердитый", "радостный", "испуганный" }, new Vector2(0, -50));
+
+        CreateLabel(npcPanel.transform, "Реакция (0–100)", new Vector2(0, -90));
+        npcReactionField = CreateInputField(npcPanel.transform, new Vector2(0, -120));
+
+        npcGenerateButton = CreateButton(npcPanel.transform, "Сгенерировать диалог", new Vector2(0, -170), null);
+
+        npcDialogueText = CreateLabel(npcPanel.transform, "Диалог появится здесь", new Vector2(0, -210), 18, FontStyles.Italic);
+
+        CreateButton(npcPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+    }
+
+    void CreateStoryTellerPanel()
+    {
+        storyTellerPanel = CreatePanel("StoryTellerPanel");
+        storyTellerPanel.SetActive(false);
+        CreateLabel(storyTellerPanel.transform, "Сказитель историй", new Vector2(0, 160));
+        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+    }
+
+    void CreateIconPanel()
+    {
+        iconGeneratorPanel = CreatePanel("IconGeneratorPanel");
+        iconGeneratorPanel.SetActive(false);
+        CreateLabel(iconGeneratorPanel.transform, "Генератор икон", new Vector2(0, 160));
+        CreateButton(iconGeneratorPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+    }
+
+    // === Вспомогательные ===
+
+    GameObject CreatePanel(string name)
     {
         var panel = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        panel.transform.SetParent(parent, false);
+        panel.transform.SetParent(canvas.transform, false);
         var rect = panel.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(500, 420);
+        rect.sizeDelta = new Vector2(500, 500);
         rect.anchoredPosition = Vector2.zero;
-
-        var img = panel.GetComponent<Image>();
-        img.color = new Color(0f, 0f, 0f, 0.6f);
+        panel.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
         return panel;
     }
 
-    Button CreateButton(Transform parent, string text, Vector2 pos)
+    TextMeshProUGUI CreateLabel(Transform parent, string text, Vector2 pos, int size = 20, FontStyles style = FontStyles.Bold)
     {
-        var btnGO = new GameObject(text, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-        btnGO.transform.SetParent(parent, false);
-        var rect = btnGO.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(250, 40);
+        var go = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(parent, false);
+        var txt = go.GetComponent<TextMeshProUGUI>();
+        txt.text = text;
+        txt.fontSize = size;
+        txt.alignment = TextAlignmentOptions.Center;
+        txt.fontStyle = style;
+        var rect = go.GetComponent<RectTransform>();
         rect.anchoredPosition = pos;
-        btnGO.GetComponent<Image>().color = new Color(0.2f, 0.3f, 0.5f, 1f);
-        var button = btnGO.GetComponent<Button>();
-
-        var textGO = new GameObject("Text", typeof(TextMeshProUGUI));
-        textGO.transform.SetParent(btnGO.transform, false);
-        var tmp = textGO.GetComponent<TextMeshProUGUI>();
-        tmp.text = text;
-        tmp.fontSize = 22;
-        tmp.alignment = TextAlignmentOptions.Center;
-        textGO.GetComponent<RectTransform>().sizeDelta = rect.sizeDelta;
-
-        return button;
+        rect.sizeDelta = new Vector2(400, 40);
+        return txt;
     }
 
-    TextMeshProUGUI CreateTitle(Transform parent, string text)
+    TMP_InputField CreateInputField(Transform parent, Vector2 pos)
     {
-        var titleGO = new GameObject("Title", typeof(TextMeshProUGUI));
-        titleGO.transform.SetParent(parent, false);
-        var tmp = titleGO.GetComponent<TextMeshProUGUI>();
-        tmp.text = text;
-        tmp.fontSize = 26;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.rectTransform.anchoredPosition = new Vector2(0, 160);
-        return tmp;
-    }
-
-    TMP_InputField CreateInputField(Transform parent, string placeholder, Vector2 pos)
-    {
-        var go = new GameObject(placeholder, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(TMP_InputField));
+        var go = new GameObject("InputField", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
         go.transform.SetParent(parent, false);
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 36);
         rect.anchoredPosition = pos;
-        go.GetComponent<Image>().color = new Color(1, 1, 1, 0.1f);
 
-        var input = go.GetComponent<TMP_InputField>();
+        var text = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        text.transform.SetParent(go.transform, false);
+        var tmp = text.GetComponent<TextMeshProUGUI>();
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontSize = 18;
 
-        var textGO = new GameObject("Text", typeof(TextMeshProUGUI));
-        textGO.transform.SetParent(go.transform, false);
-        var text = textGO.GetComponent<TextMeshProUGUI>();
-        text.fontSize = 20;
-        text.color = Color.white;
-        input.textComponent = text;
-
-        var placeholderGO = new GameObject("Placeholder", typeof(TextMeshProUGUI));
-        placeholderGO.transform.SetParent(go.transform, false);
-        var placeholderText = placeholderGO.GetComponent<TextMeshProUGUI>();
-        placeholderText.text = placeholder;
-        placeholderText.fontSize = 18;
-        placeholderText.color = new Color(1, 1, 1, 0.5f);
-        input.placeholder = placeholderText;
-
-        return input;
+        var field = go.GetComponent<TMP_InputField>();
+        field.textComponent = tmp;
+        return field;
     }
 
-    TMP_Dropdown CreateDropdown(Transform parent, string label, string[] options, Vector2 pos)
+    Button CreateButton(Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction onClick)
     {
-        var go = new GameObject(label, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(TMP_Dropdown));
+        var go = new GameObject("Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        go.transform.SetParent(parent, false);
+        var rect = go.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(220, 40);
+        rect.anchoredPosition = pos;
+
+        var img = go.GetComponent<Image>();
+        img.color = new Color(0.2f, 0.3f, 0.6f);
+
+        var txtObj = new GameObject("Text", typeof(TextMeshProUGUI));
+        txtObj.transform.SetParent(go.transform, false);
+        var txt = txtObj.GetComponent<TextMeshProUGUI>();
+        txt.text = label;
+        txt.alignment = TextAlignmentOptions.Center;
+        txt.fontSize = 18;
+        txt.color = Color.white;
+
+        var btn = go.GetComponent<Button>();
+        if (onClick != null)
+            btn.onClick.AddListener(onClick);
+
+        return btn;
+    }
+
+    TMP_Dropdown CreateDropdown(Transform parent, string[] options, Vector2 pos)
+    {
+        var go = new GameObject("Dropdown", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(TMP_Dropdown));
         go.transform.SetParent(parent, false);
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 36);
@@ -151,64 +204,7 @@ public class UIDynamicBuilder : MonoBehaviour
         return dropdown;
     }
 
-    // ======================= PANELS =======================
-
-    void CreateMainMenu(GameObject parent)
-    {
-        CreateTitle(parent.transform, "Главное меню");
-
-        var b1 = CreateButton(parent.transform, "Сказатель историй", new Vector2(0, 40));
-        var b2 = CreateButton(parent.transform, "Контроллер NPC", new Vector2(0, -20));
-        var b3 = CreateButton(parent.transform, "Генератор икон", new Vector2(0, -80));
-
-        b1.onClick.AddListener(ShowStoryTellerPanel);
-        b2.onClick.AddListener(ShowNPCPanel);
-        b3.onClick.AddListener(ShowIconGeneratorPanel);
-    }
-
-    void CreateStoryTellerPanel(GameObject parent)
-    {
-        CreateTitle(parent.transform, "Сказатель историй");
-        var backBtn = CreateButton(parent.transform, "Назад", new Vector2(0, -160));
-        backBtn.onClick.AddListener(ShowMainMenu);
-    }
-
-    void CreateNPCPanel(GameObject parent)
-    {
-        CreateTitle(parent.transform, "Контроллер NPC");
-
-        npcNameField = CreateInputField(parent.transform, "Имя персонажа", new Vector2(0, 80));
-        npcRelationDropdown = CreateDropdown(parent.transform, "Отношение", new[] { "Дружелюбный", "Нейтральный", "Враждебный" }, new Vector2(0, 30));
-        npcEmotionDropdown = CreateDropdown(parent.transform, "Эмоция", new[] { "Радость", "Грусть", "Злость", "Нейтрал" }, new Vector2(0, -20));
-        npcReactionField = CreateInputField(parent.transform, "Реакция (0–100)", new Vector2(0, -70));
-
-        npcGenerateButton = CreateButton(parent.transform, "Сгенерировать диалог", new Vector2(0, -120));
-        npcDialogueText = new GameObject("Диалог", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
-        npcDialogueText.transform.SetParent(parent.transform, false);
-        npcDialogueText.rectTransform.anchoredPosition = new Vector2(0, -160);
-        npcDialogueText.fontSize = 20;
-        npcDialogueText.alignment = TextAlignmentOptions.Center;
-        npcDialogueText.text = "Диалог появится здесь";
-
-        var backBtn = CreateButton(parent.transform, "Назад", new Vector2(0, -200));
-        backBtn.onClick.AddListener(ShowMainMenu);
-    }
-
-    void CreateIconGeneratorPanel(GameObject parent)
-    {
-        CreateTitle(parent.transform, "Генератор икон");
-        var backBtn = CreateButton(parent.transform, "Назад", new Vector2(0, -150));
-        backBtn.onClick.AddListener(ShowMainMenu);
-    }
-
-    // ======================= PANEL CONTROL =======================
-
-    public void ShowStoryTellerPanel() => ShowOnly(storyTellerPanel);
-    public void ShowNPCPanel() => ShowOnly(npcPanel);
-    public void ShowIconGeneratorPanel() => ShowOnly(iconGeneratorPanel);
-    public void ShowMainMenu() => ShowOnly(mainMenu);
-
-    void ShowOnly(GameObject target)
+    public void ShowOnly(GameObject target)
     {
         mainMenu?.SetActive(false);
         storyTellerPanel?.SetActive(false);
