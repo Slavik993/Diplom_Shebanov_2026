@@ -119,9 +119,10 @@ public class UIDynamicBuilder : MonoBehaviour
 
         npcGenerateButton = CreateButton(npcPanel.transform, "Сгенерировать диалог", new Vector2(0, -220), null);
 
-        npcDialogueText = CreateLabel(npcPanel.transform, "Диалог появится здесь", new Vector2(0, -260), 18, FontStyles.Italic);
+        npcDialogueText = CreateLabel(npcPanel.transform, "Диалог появится здесь", new Vector2(0, -250), 18, FontStyles.Italic);
 
         CreateButton(npcPanel.transform, "Назад", new Vector2(0, -310), () => ShowOnly(mainMenu));
+        
     }
 
     void CreateStoryTellerPanel()
@@ -136,7 +137,18 @@ public class UIDynamicBuilder : MonoBehaviour
 
         CreateLabel(storyTellerPanel.transform, "Стиль повествования", new Vector2(0, 70));
         storyStyleDropdown = CreateDropdown(storyTellerPanel.transform,
-            new string[] { "сказочный", "драматический", "приключенческий" }, new Vector2(0, 40));
+        new string[]
+        {
+            "постапокалипсис",
+            "фэнтези",
+            "реализм",
+            "приключение",
+            "киберпанк",
+            "стимпанк",
+            "сказочный",
+            "драма"
+        },
+    new Vector2(0, 40));
 
         CreateLabel(storyTellerPanel.transform, "Длина истории (слов)", new Vector2(0, 0));
         storyLengthField = CreateInputField(storyTellerPanel.transform, new Vector2(0, -30));
@@ -160,7 +172,19 @@ public class UIDynamicBuilder : MonoBehaviour
 
         CreateLabel(iconGeneratorPanel.transform, "Стиль иконки", new Vector2(0, 70));
         iconStyleDropdown = CreateDropdown(iconGeneratorPanel.transform,
-            new string[] { "2D", "3D", "пиксель-арт" }, new Vector2(0, 40));
+            new string[]
+            {
+                "2D",
+                "3D",
+                "пиксель-арт",
+                "аниме",
+                "реализм",
+                "векторный",
+                "иллюстрация",
+                "фэнтези",
+                "ретро"
+            },
+            new Vector2(0, 40));
 
         CreateLabel(iconGeneratorPanel.transform, "Размер иконки (px)", new Vector2(0, 0));
         iconSizeField = CreateInputField(iconGeneratorPanel.transform, new Vector2(0, -30));
