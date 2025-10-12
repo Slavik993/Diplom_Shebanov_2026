@@ -17,6 +17,18 @@ public class LLMPrototypeController : MonoBehaviour
     private string historyFilePath;                        // путь сохранения истории
     private const int maxHistory = 10;                     // ограничение длины памяти
 
+    public string GenerateStory(string prompt)
+    {
+        Debug.Log($"[StoryTeller] Запрос к LLM: {prompt}");
+        return $"История в ответ на запрос: {prompt}";
+    }
+
+    public bool GenerateIcon(string description, string style, string size)
+    {
+        Debug.Log($"[IconGenerator] Генерация иконки: {description}, стиль: {style}, размер: {size}");
+        return true;
+    }
+
     [Header("LLM Settings")]
     public LLMCharacter llmCharacter;
 

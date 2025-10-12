@@ -28,6 +28,22 @@ public class UIDynamicBuilder : MonoBehaviour
 
     private Canvas canvas;
 
+    [Header("Элеменыты Storyteller-панели")]
+
+    public TMP_InputField storyThemeField;
+    public TMP_Dropdown storyStyleDropdown;
+    public TMP_InputField storyLengthField;
+    public Button storyGenerateButton;
+    public TextMeshProUGUI storyOutputText;
+
+    [Header("Элементы Icon Generator-панели")]
+
+    public TMP_InputField iconDescriptionField;
+    public TMP_Dropdown iconStyleDropdown;
+    public TMP_InputField iconSizeField;
+    public Button iconGenerateButton;
+    public TextMeshProUGUI iconStatusText;
+
     void Awake()
     {
         BuildUI();
@@ -112,16 +128,48 @@ public class UIDynamicBuilder : MonoBehaviour
     {
         storyTellerPanel = CreatePanel("StoryTellerPanel");
         storyTellerPanel.SetActive(false);
-        CreateLabel(storyTellerPanel.transform, "Сказитель историй", new Vector2(0, 160));
-        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+
+        CreateLabel(storyTellerPanel.transform, "Сказитель историй", new Vector2(0, 200));
+
+        CreateLabel(storyTellerPanel.transform, "Тема истории", new Vector2(0, 140));
+        storyThemeField = CreateInputField(storyTellerPanel.transform, new Vector2(0, 110));
+
+        CreateLabel(storyTellerPanel.transform, "Стиль повествования", new Vector2(0, 70));
+        storyStyleDropdown = CreateDropdown(storyTellerPanel.transform,
+            new string[] { "сказочный", "драматический", "приключенческий" }, new Vector2(0, 40));
+
+        CreateLabel(storyTellerPanel.transform, "Длина истории (слов)", new Vector2(0, 0));
+        storyLengthField = CreateInputField(storyTellerPanel.transform, new Vector2(0, -30));
+
+        storyGenerateButton = CreateButton(storyTellerPanel.transform, "Сгенерировать историю", new Vector2(0, -80), null);
+
+        storyOutputText = CreateLabel(storyTellerPanel.transform, "Текст истории появится здесь", new Vector2(0, -140), 18, FontStyles.Italic);
+
+        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -220), () => ShowOnly(mainMenu));
     }
 
     void CreateIconPanel()
     {
         iconGeneratorPanel = CreatePanel("IconGeneratorPanel");
         iconGeneratorPanel.SetActive(false);
-        CreateLabel(iconGeneratorPanel.transform, "Генератор икон", new Vector2(0, 160));
-        CreateButton(iconGeneratorPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+
+        CreateLabel(iconGeneratorPanel.transform, "Генератор икон", new Vector2(0, 200));
+
+        CreateLabel(iconGeneratorPanel.transform, "Описание иконки", new Vector2(0, 140));
+        iconDescriptionField = CreateInputField(iconGeneratorPanel.transform, new Vector2(0, 110));
+
+        CreateLabel(iconGeneratorPanel.transform, "Стиль иконки", new Vector2(0, 70));
+        iconStyleDropdown = CreateDropdown(iconGeneratorPanel.transform,
+            new string[] { "2D", "3D", "пиксель-арт" }, new Vector2(0, 40));
+
+        CreateLabel(iconGeneratorPanel.transform, "Размер иконки (px)", new Vector2(0, 0));
+        iconSizeField = CreateInputField(iconGeneratorPanel.transform, new Vector2(0, -30));
+
+        iconGenerateButton = CreateButton(iconGeneratorPanel.transform, "Сгенерировать иконку", new Vector2(0, -80), null);
+
+        iconStatusText = CreateLabel(iconGeneratorPanel.transform, "Статус: ожидание...", new Vector2(0, -140), 18, FontStyles.Italic);
+
+        CreateButton(iconGeneratorPanel.transform, "Назад", new Vector2(0, -220), () => ShowOnly(mainMenu));
     }
 
     // === Вспомогательные ===
