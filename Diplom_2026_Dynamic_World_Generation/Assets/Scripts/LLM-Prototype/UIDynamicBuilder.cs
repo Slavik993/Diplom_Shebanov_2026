@@ -98,26 +98,6 @@ public class UIDynamicBuilder : MonoBehaviour
         CreateButton(npcPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
     }
 
-    // Новый метод
-
-    TextMeshProUGUI CreatePlaceholder(Transform parent)
-    {
-        var placeholder = new GameObject("Placeholder", typeof(TextMeshProUGUI));
-        placeholder.transform.SetParent(parent, false);
-        var tmp = placeholder.GetComponent<TextMeshProUGUI>();
-        tmp.text = "Введите значение...";
-        tmp.fontSize = 18;
-        tmp.fontStyle = FontStyles.Italic;
-        tmp.color = new Color(1, 1, 1, 0.5f);
-        tmp.alignment = TextAlignmentOptions.MidlineLeft;
-        var rect = tmp.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = new Vector2(10, 6);
-        rect.offsetMax = new Vector2(-10, -6);
-        return tmp;
-    }
-
     void CreateStoryTellerPanel()
     {
         storyTellerPanel = CreatePanel("StoryTellerPanel");
@@ -144,6 +124,7 @@ public class UIDynamicBuilder : MonoBehaviour
         rect.sizeDelta = new Vector2(500, 500);
         rect.anchoredPosition = Vector2.zero;
         panel.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        panel.GetComponent<RectTransform>().SetAsLastSibling();
         return panel;
     }
 
@@ -164,50 +145,24 @@ public class UIDynamicBuilder : MonoBehaviour
 
     TMP_InputField CreateInputField(Transform parent, Vector2 pos)
     {
-        // Корневой объект поля
         var go = new GameObject("InputField", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
         go.transform.SetParent(parent, false);
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 36);
         rect.anchoredPosition = pos;
+        
+        // Тёмный фон для поля ввода
+        go.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f);
 
-        // Цвет фона (тёмный для читаемости)
-        var bg = go.GetComponent<Image>();
-        bg.color = new Color(0.2f, 0.2f, 0.25f);
-
-        // Viewport (для корректной работы TMP_InputField)
-        var viewport = new GameObject("Viewport", typeof(RectMask2D), typeof(RectTransform));
-        viewport.transform.SetParent(go.transform, false);
-        var viewportRect = viewport.GetComponent<RectTransform>();
-        viewportRect.anchorMin = Vector2.zero;
-        viewportRect.anchorMax = Vector2.one;
-        viewportRect.sizeDelta = Vector2.zero;
-        viewportRect.anchoredPosition = Vector2.zero;
-
-        // Text Area
         var text = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
-        text.transform.SetParent(viewport.transform, false);
+        text.transform.SetParent(go.transform, false);
         var tmp = text.GetComponent<TextMeshProUGUI>();
-        tmp.text = "";
+        tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontSize = 18;
-        tmp.color = Color.white; // 👈 читаемый белый текст
-        tmp.alignment = TextAlignmentOptions.MidlineLeft;
+        tmp.color = Color.white; // Белый текст на тёмном фоне
 
-        var textRect = text.GetComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = new Vector2(10, 6);
-        textRect.offsetMax = new Vector2(-10, -6);
-
-        // Настраиваем InputField
         var field = go.GetComponent<TMP_InputField>();
-        field.textViewport = viewportRect;
         field.textComponent = tmp;
-        field.pointSize = 18;
-        field.caretColor = Color.white;
-        field.selectionColor = new Color(0.3f, 0.5f, 1f, 0.5f);
-        field.placeholder = CreatePlaceholder(viewport.transform);
-
         return field;
     }
 
@@ -245,14 +200,87 @@ public class UIDynamicBuilder : MonoBehaviour
         rect.sizeDelta = new Vector2(300, 36);
         rect.anchoredPosition = pos;
 
+        // 👇 Фон делаем синим/тёмно-серым, чтобы текст был читаем
+        var bg = go.GetComponent<Image>();
+        bg.color = new Color(0.2f, 0.25f, 0.3f); // приятный нейтральный фон
+
         var dropdown = go.GetComponent<TMP_Dropdown>();
+        dropdown.targetGraphic = bg;
+
+        // Добавляем caption (то, что отображается при закрытом списке)
+        var captionGO = new GameObject("Label", typeof(TextMeshProUGUI));
+        captionGO.transform.SetParent(go.transform, false);
+        var caption = captionGO.GetComponent<TextMeshProUGUI>();
+        caption.text = options.Length > 0 ? options[0] : "";
+        caption.fontSize = 18;
+        caption.color = Color.white; // 👈 белый текст
+        caption.alignment = TextAlignmentOptions.MidlineLeft;
+
+        var captionRect = captionGO.GetComponent<RectTransform>();
+        captionRect.anchorMin = Vector2.zero;
+        captionRect.anchorMax = Vector2.one;
+        captionRect.offsetMin = new Vector2(10, 0);
+        captionRect.offsetMax = new Vector2(-10, 0);
+
+        dropdown.captionText = caption;
+
+        // Создаём template (чтобы не было ошибок Unity)
+        var templateGO = new GameObject("Template", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+        templateGO.transform.SetParent(go.transform, false);
+        var templateRect = templateGO.GetComponent<RectTransform>();
+        templateRect.anchorMin = new Vector2(0, 0);
+        templateRect.anchorMax = new Vector2(1, 0);
+        templateRect.pivot = new Vector2(0.5f, 1);
+        templateRect.sizeDelta = new Vector2(0, 100);
+        templateGO.SetActive(false);
+
+        var contentGO = new GameObject("Content", typeof(RectTransform));
+        contentGO.transform.SetParent(templateGO.transform, false);
+        var contentRect = contentGO.GetComponent<RectTransform>();
+        contentRect.anchorMin = Vector2.zero;
+        contentRect.anchorMax = Vector2.one;
+        contentRect.offsetMin = contentRect.offsetMax = Vector2.zero;
+
+        // Item (элемент списка)
+        var itemGO = new GameObject("Item", typeof(RectTransform), typeof(Toggle), typeof(Image));
+        itemGO.transform.SetParent(contentGO.transform, false);
+        var itemRect = itemGO.GetComponent<RectTransform>();
+        itemRect.anchorMin = new Vector2(0, 0);
+        itemRect.anchorMax = new Vector2(1, 0);
+        itemRect.sizeDelta = new Vector2(0, 25);
+
+        var itemBG = itemGO.GetComponent<Image>();
+        itemBG.color = new Color(0.15f, 0.2f, 0.25f); // фон выпадающего пункта
+
+        var itemLabelGO = new GameObject("Item Label", typeof(TextMeshProUGUI));
+        itemLabelGO.transform.SetParent(itemGO.transform, false);
+        var itemLabel = itemLabelGO.GetComponent<TextMeshProUGUI>();
+        itemLabel.text = "Option";
+        itemLabel.color = Color.white;
+        itemLabel.fontSize = 18;
+        itemLabel.alignment = TextAlignmentOptions.MidlineLeft;
+        var itemLabelRect = itemLabelGO.GetComponent<RectTransform>();
+        itemLabelRect.anchorMin = Vector2.zero;
+        itemLabelRect.anchorMax = Vector2.one;
+        itemLabelRect.offsetMin = new Vector2(10, 0);
+        itemLabelRect.offsetMax = new Vector2(-10, 0);
+
+        var toggle = itemGO.GetComponent<Toggle>();
+        toggle.targetGraphic = itemBG;
+        toggle.graphic = itemBG;
+
+        // Привязки TMP_Dropdown
+        dropdown.template = templateRect;
+        dropdown.itemText = itemLabel;
         dropdown.options.Clear();
+
         foreach (var opt in options)
             dropdown.options.Add(new TMP_Dropdown.OptionData(opt));
 
         dropdown.RefreshShownValue();
         return dropdown;
     }
+
 
     public void ShowOnly(GameObject target)
     {
