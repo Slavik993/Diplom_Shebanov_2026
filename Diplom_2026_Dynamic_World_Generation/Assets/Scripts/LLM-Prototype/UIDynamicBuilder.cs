@@ -19,6 +19,7 @@ public class UIDynamicBuilder : MonoBehaviour
 
     [Header("Элементы NPC-панели (для LLMUIBinder)")]
     public TMP_InputField npcNameField;
+    public TMP_InputField npcEnvironmentField; // 🆕 Окружение
     public TMP_Dropdown npcRelationDropdown;
     public TMP_Dropdown npcEmotionDropdown;
     public TMP_InputField npcReactionField;
@@ -75,27 +76,36 @@ public class UIDynamicBuilder : MonoBehaviour
         npcPanel = CreatePanel("NPCPanel");
         npcPanel.SetActive(false);
 
-        CreateLabel(npcPanel.transform, "Контроллер NPC", new Vector2(0, 180));
+        CreateLabel(npcPanel.transform, "Контроллер NPC", new Vector2(0, 200));
 
-        CreateLabel(npcPanel.transform, "Имя персонажа", new Vector2(0, 120));
-        npcNameField = CreateInputField(npcPanel.transform, new Vector2(0, 90));
+        // Имя
+        CreateLabel(npcPanel.transform, "Имя персонажа", new Vector2(0, 140));
+        npcNameField = CreateInputField(npcPanel.transform, new Vector2(0, 110));
 
-        CreateLabel(npcPanel.transform, "Отношение к игроку", new Vector2(0, 50));
+        // 🆕 Окружение
+        CreateLabel(npcPanel.transform, "Окружение (место действия)", new Vector2(0, 70));
+        npcEnvironmentField = CreateInputField(npcPanel.transform, new Vector2(0, 40));
+        npcEnvironmentField.text = "таверна"; // дефолт
+
+        // Отношения
+        CreateLabel(npcPanel.transform, "Отношение к игроку", new Vector2(0, 0));
         npcRelationDropdown = CreateDropdown(npcPanel.transform,
-            new string[] { "дружелюбный", "нейтральный", "враждебный" }, new Vector2(0, 20));
+            new string[] { "дружелюбный", "нейтральный", "враждебный" }, new Vector2(0, -30));
 
-        CreateLabel(npcPanel.transform, "Эмоция", new Vector2(0, -20));
+        // Эмоция
+        CreateLabel(npcPanel.transform, "Эмоция", new Vector2(0, -70));
         npcEmotionDropdown = CreateDropdown(npcPanel.transform,
-            new string[] { "спокойный", "сердитый", "радостный", "испуганный" }, new Vector2(0, -50));
+            new string[] { "спокойный", "сердитый", "радостный", "испуганный" }, new Vector2(0, -100));
 
-        CreateLabel(npcPanel.transform, "Реакция (0–100)", new Vector2(0, -90));
-        npcReactionField = CreateInputField(npcPanel.transform, new Vector2(0, -120));
+        // Реакция
+        CreateLabel(npcPanel.transform, "Реакция (0–100)", new Vector2(0, -140));
+        npcReactionField = CreateInputField(npcPanel.transform, new Vector2(0, -170));
 
-        npcGenerateButton = CreateButton(npcPanel.transform, "Сгенерировать диалог", new Vector2(0, -170), null);
+        npcGenerateButton = CreateButton(npcPanel.transform, "Сгенерировать диалог", new Vector2(0, -220), null);
 
-        npcDialogueText = CreateLabel(npcPanel.transform, "Диалог появится здесь", new Vector2(0, -210), 18, FontStyles.Italic);
+        npcDialogueText = CreateLabel(npcPanel.transform, "Диалог появится здесь", new Vector2(0, -260), 18, FontStyles.Italic);
 
-        CreateButton(npcPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+        CreateButton(npcPanel.transform, "Назад", new Vector2(0, -310), () => ShowOnly(mainMenu));
     }
 
     void CreateStoryTellerPanel()
@@ -121,7 +131,7 @@ public class UIDynamicBuilder : MonoBehaviour
         var panel = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         panel.transform.SetParent(canvas.transform, false);
         var rect = panel.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(500, 500);
+        rect.sizeDelta = new Vector2(500, 550);
         rect.anchoredPosition = Vector2.zero;
         panel.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
         panel.GetComponent<RectTransform>().SetAsLastSibling();
@@ -150,8 +160,6 @@ public class UIDynamicBuilder : MonoBehaviour
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 36);
         rect.anchoredPosition = pos;
-        
-        // Тёмный фон для поля ввода
         go.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f);
 
         var text = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -159,7 +167,7 @@ public class UIDynamicBuilder : MonoBehaviour
         var tmp = text.GetComponent<TextMeshProUGUI>();
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontSize = 18;
-        tmp.color = Color.white; // Белый текст на тёмном фоне
+        tmp.color = Color.white;
 
         var field = go.GetComponent<TMP_InputField>();
         field.textComponent = tmp;
@@ -200,20 +208,18 @@ public class UIDynamicBuilder : MonoBehaviour
         rect.sizeDelta = new Vector2(300, 36);
         rect.anchoredPosition = pos;
 
-        // 👇 Фон делаем синим/тёмно-серым, чтобы текст был читаем
         var bg = go.GetComponent<Image>();
-        bg.color = new Color(0.2f, 0.25f, 0.3f); // приятный нейтральный фон
+        bg.color = new Color(0.2f, 0.25f, 0.3f);
 
         var dropdown = go.GetComponent<TMP_Dropdown>();
         dropdown.targetGraphic = bg;
 
-        // Добавляем caption (то, что отображается при закрытом списке)
         var captionGO = new GameObject("Label", typeof(TextMeshProUGUI));
         captionGO.transform.SetParent(go.transform, false);
         var caption = captionGO.GetComponent<TextMeshProUGUI>();
         caption.text = options.Length > 0 ? options[0] : "";
         caption.fontSize = 18;
-        caption.color = Color.white; // 👈 белый текст
+        caption.color = Color.white;
         caption.alignment = TextAlignmentOptions.MidlineLeft;
 
         var captionRect = captionGO.GetComponent<RectTransform>();
@@ -224,63 +230,13 @@ public class UIDynamicBuilder : MonoBehaviour
 
         dropdown.captionText = caption;
 
-        // Создаём template (чтобы не было ошибок Unity)
-        var templateGO = new GameObject("Template", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
-        templateGO.transform.SetParent(go.transform, false);
-        var templateRect = templateGO.GetComponent<RectTransform>();
-        templateRect.anchorMin = new Vector2(0, 0);
-        templateRect.anchorMax = new Vector2(1, 0);
-        templateRect.pivot = new Vector2(0.5f, 1);
-        templateRect.sizeDelta = new Vector2(0, 100);
-        templateGO.SetActive(false);
-
-        var contentGO = new GameObject("Content", typeof(RectTransform));
-        contentGO.transform.SetParent(templateGO.transform, false);
-        var contentRect = contentGO.GetComponent<RectTransform>();
-        contentRect.anchorMin = Vector2.zero;
-        contentRect.anchorMax = Vector2.one;
-        contentRect.offsetMin = contentRect.offsetMax = Vector2.zero;
-
-        // Item (элемент списка)
-        var itemGO = new GameObject("Item", typeof(RectTransform), typeof(Toggle), typeof(Image));
-        itemGO.transform.SetParent(contentGO.transform, false);
-        var itemRect = itemGO.GetComponent<RectTransform>();
-        itemRect.anchorMin = new Vector2(0, 0);
-        itemRect.anchorMax = new Vector2(1, 0);
-        itemRect.sizeDelta = new Vector2(0, 25);
-
-        var itemBG = itemGO.GetComponent<Image>();
-        itemBG.color = new Color(0.15f, 0.2f, 0.25f); // фон выпадающего пункта
-
-        var itemLabelGO = new GameObject("Item Label", typeof(TextMeshProUGUI));
-        itemLabelGO.transform.SetParent(itemGO.transform, false);
-        var itemLabel = itemLabelGO.GetComponent<TextMeshProUGUI>();
-        itemLabel.text = "Option";
-        itemLabel.color = Color.white;
-        itemLabel.fontSize = 18;
-        itemLabel.alignment = TextAlignmentOptions.MidlineLeft;
-        var itemLabelRect = itemLabelGO.GetComponent<RectTransform>();
-        itemLabelRect.anchorMin = Vector2.zero;
-        itemLabelRect.anchorMax = Vector2.one;
-        itemLabelRect.offsetMin = new Vector2(10, 0);
-        itemLabelRect.offsetMax = new Vector2(-10, 0);
-
-        var toggle = itemGO.GetComponent<Toggle>();
-        toggle.targetGraphic = itemBG;
-        toggle.graphic = itemBG;
-
-        // Привязки TMP_Dropdown
-        dropdown.template = templateRect;
-        dropdown.itemText = itemLabel;
         dropdown.options.Clear();
-
         foreach (var opt in options)
             dropdown.options.Add(new TMP_Dropdown.OptionData(opt));
-
         dropdown.RefreshShownValue();
+
         return dropdown;
     }
-
 
     public void ShowOnly(GameObject target)
     {

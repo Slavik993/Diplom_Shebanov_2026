@@ -18,13 +18,13 @@ public class LLMUIBinder : MonoBehaviour
             return;
         }
 
-        // Кнопка генерации диалога
         builder.npcGenerateButton.onClick.AddListener(OnGenerateClicked);
     }
 
     void OnGenerateClicked()
     {
         string name = builder.npcNameField.text;
+        string environment = builder.npcEnvironmentField.text; // 🆕
         string relation = builder.npcRelationDropdown.options[builder.npcRelationDropdown.value].text;
         string emotion = builder.npcEmotionDropdown.options[builder.npcEmotionDropdown.value].text;
         string reaction = builder.npcReactionField.text;
@@ -34,15 +34,16 @@ public class LLMUIBinder : MonoBehaviour
     ""playerAction"": ""refuse"",
     ""npcState"": ""{relation}"",
     ""context"": {{
-        ""location"": ""tavern"",
+        ""location"": ""{environment}"",
         ""relationship"": ""{relation}""
     }},
     ""emotion"": ""{emotion}"",
     ""reactionLevel"": {reaction}
 }}";
 
-        string dialogue = controller.GenerateDialogueFromJSON(inputJson);
+        Debug.Log($"[LLMUIBinder] Отправляем JSON в контроллер:\n{inputJson}");
 
+        string dialogue = controller.GenerateDialogueFromJSON(inputJson);
         builder.npcDialogueText.text = dialogue;
     }
 }
