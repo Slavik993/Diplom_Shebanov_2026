@@ -98,6 +98,26 @@ public class UIDynamicBuilder : MonoBehaviour
         CreateButton(npcPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
     }
 
+    // Новый метод
+
+    TextMeshProUGUI CreatePlaceholder(Transform parent)
+    {
+        var placeholder = new GameObject("Placeholder", typeof(TextMeshProUGUI));
+        placeholder.transform.SetParent(parent, false);
+        var tmp = placeholder.GetComponent<TextMeshProUGUI>();
+        tmp.text = "Введите значение...";
+        tmp.fontSize = 18;
+        tmp.fontStyle = FontStyles.Italic;
+        tmp.color = new Color(1, 1, 1, 0.5f);
+        tmp.alignment = TextAlignmentOptions.MidlineLeft;
+        var rect = tmp.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = new Vector2(10, 6);
+        rect.offsetMax = new Vector2(-10, -6);
+        return tmp;
+    }
+
     void CreateStoryTellerPanel()
     {
         storyTellerPanel = CreatePanel("StoryTellerPanel");
@@ -144,20 +164,50 @@ public class UIDynamicBuilder : MonoBehaviour
 
     TMP_InputField CreateInputField(Transform parent, Vector2 pos)
     {
+        // Корневой объект поля
         var go = new GameObject("InputField", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
         go.transform.SetParent(parent, false);
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 36);
         rect.anchoredPosition = pos;
 
-        var text = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
-        text.transform.SetParent(go.transform, false);
-        var tmp = text.GetComponent<TextMeshProUGUI>();
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.fontSize = 18;
+        // Цвет фона (тёмный для читаемости)
+        var bg = go.GetComponent<Image>();
+        bg.color = new Color(0.2f, 0.2f, 0.25f);
 
+        // Viewport (для корректной работы TMP_InputField)
+        var viewport = new GameObject("Viewport", typeof(RectMask2D), typeof(RectTransform));
+        viewport.transform.SetParent(go.transform, false);
+        var viewportRect = viewport.GetComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.sizeDelta = Vector2.zero;
+        viewportRect.anchoredPosition = Vector2.zero;
+
+        // Text Area
+        var text = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        text.transform.SetParent(viewport.transform, false);
+        var tmp = text.GetComponent<TextMeshProUGUI>();
+        tmp.text = "";
+        tmp.fontSize = 18;
+        tmp.color = Color.white; // 👈 читаемый белый текст
+        tmp.alignment = TextAlignmentOptions.MidlineLeft;
+
+        var textRect = text.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(10, 6);
+        textRect.offsetMax = new Vector2(-10, -6);
+
+        // Настраиваем InputField
         var field = go.GetComponent<TMP_InputField>();
+        field.textViewport = viewportRect;
         field.textComponent = tmp;
+        field.pointSize = 18;
+        field.caretColor = Color.white;
+        field.selectionColor = new Color(0.3f, 0.5f, 1f, 0.5f);
+        field.placeholder = CreatePlaceholder(viewport.transform);
+
         return field;
     }
 
