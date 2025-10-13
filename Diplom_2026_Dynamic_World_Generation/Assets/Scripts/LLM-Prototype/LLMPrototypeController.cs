@@ -17,10 +17,17 @@ public class LLMPrototypeController : MonoBehaviour
     private string historyFilePath;                        // путь сохранения истории
     private const int maxHistory = 10;                     // ограничение длины памяти
 
-    public string GenerateStory(string prompt)
+    public async Task<string> GenerateStory(string theme, string style, int length)
     {
-        Debug.Log($"[StoryTeller] Запрос к LLM: {prompt}");
-        return $"История в ответ на запрос: {prompt}";
+        string prompt = $@"Ты — искусственный рассказчик.  
+    Напиши короткую историю в жанре {style} на тему '{theme}'.  
+    Объём — примерно {length} слов.  
+    Пиши красиво, эмоционально и последовательно.";
+
+        Debug.Log($"[StoryTeller] Отправка промпта в LLM:\n{prompt}");
+
+        string story = await SendToLLM(prompt);
+        return story;
     }
 
     public bool GenerateIcon(string description, string style, string size)

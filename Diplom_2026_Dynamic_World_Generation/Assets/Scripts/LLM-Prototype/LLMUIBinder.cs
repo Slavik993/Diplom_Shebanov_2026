@@ -11,6 +11,7 @@ public class LLMUIBinder : MonoBehaviour
     {
         builder = FindObjectOfType<UIDynamicBuilder>();
         controller = FindObjectOfType<LLMPrototypeController>();
+        
 
         if (builder == null || controller == null)
         {
@@ -19,20 +20,23 @@ public class LLMUIBinder : MonoBehaviour
         }
 
         builder.npcGenerateButton.onClick.AddListener(OnGenerateClicked);
+        builder.storyGenerateButton.onClick.AddListener(OnStoryGenerateClicked);
+
     }
 
-    public void OnStoryGenerateClicked()
+    public async void OnStoryGenerateClicked()
 {
     string theme = builder.storyThemeField.text;
     string style = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
-    string length = builder.storyLengthField.text;
+    int length = int.TryParse(builder.storyLengthField.text, out int len) ? len : 150;
 
-    string prompt = $"Создай {style} историю на тему '{theme}', примерно {length} слов.";
-    builder.storyOutputText.text = "Генерация истории...";
+    builder.storyOutputText.text = "⏳ Генерация истории...";
 
-    // Вызов генерации через LLM
-    string story = controller.GenerateStory(prompt);
-    builder.storyOutputText.text = story;
+    string story = await controller.GenerateStory(theme, style, length);
+
+    builder.storyOutputText.text = string.IsNullOrWhiteSpace(story)
+        ? "❌ Ошибка: история не сгенерирована."
+        : story;
 }
 
     public void OnIconGenerateClicked()
