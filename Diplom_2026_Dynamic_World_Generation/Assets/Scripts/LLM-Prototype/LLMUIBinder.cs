@@ -1,17 +1,24 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
+using TMPro;
+using System;
 
 public class LLMUIBinder : MonoBehaviour
 {
+    [Header("Основные связи")]
     public UIDynamicBuilder builder;
     public LLMPrototypeController controller;
 
+    // === События ===
+    public Action<string> onGenerateDialogue; // NPC
+    public Action<string> onGenerateStory;    // Сказитель историй
+    public Action<string> onGenerateIcon;     // Генератор икон
+
     void Start()
     {
-        builder = FindObjectOfType<UIDynamicBuilder>();
-        controller = FindObjectOfType<LLMPrototypeController>();
-        
+        // === Привязки ===
+        if (builder == null) builder = FindObjectOfType<UIDynamicBuilder>();
+        if (controller == null) controller = FindObjectOfType<LLMPrototypeController>();
 
         if (builder == null || controller == null)
         {
@@ -19,61 +26,105 @@ public class LLMUIBinder : MonoBehaviour
             return;
         }
 
-        builder.npcGenerateButton.onClick.AddListener(OnGenerateClicked);
-        builder.storyGenerateButton.onClick.AddListener(OnStoryGenerateClicked);
-
+        BindUI();
     }
 
-    public async void OnStoryGenerateClicked()
-{
-    string theme = builder.storyThemeField.text;
-    string style = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
-    int length = int.TryParse(builder.storyLengthField.text, out int len) ? len : 150;
+    public void BindUI()
+    {
+        // --- NPC Панель ---
+        if (builder.npcGenerateButton != null)
+            builder.npcGenerateButton.onClick.AddListener(OnGenerateDialogueClicked);
 
-    builder.storyOutputText.text = "⏳ Генерация истории...";
+        // --- Сказитель историй ---
+        if (builder.storyGenerateButton != null)
+            builder.storyGenerateButton.onClick.AddListener(OnGenerateStoryClicked);
 
-    string story = await controller.GenerateStory(theme, style, length);
+        // --- Генератор икон ---
+        if (builder.iconGenerateButton != null)
+            builder.iconGenerateButton.onClick.AddListener(OnGenerateIconClicked);
+    }
 
-    builder.storyOutputText.text = string.IsNullOrWhiteSpace(story)
-        ? "❌ Ошибка: история не сгенерирована."
-        : story;
-}
-
-    public void OnIconGenerateClicked()
-{
-    string desc = builder.iconDescriptionField.text;
-    string style = builder.iconStyleDropdown.options[builder.iconStyleDropdown.value].text;
-    string size = builder.iconSizeField.text;
-
-    builder.iconStatusText.text = "⏳ Генерация иконки...";
-
-    bool success = controller.GenerateIcon(desc, style, size);
-    builder.iconStatusText.text = success ? "✅ Иконка создана!" : "❌ Ошибка при генерации";
-}
-
-    void OnGenerateClicked()
+    // ==========================================================
+    // 🧩 --- Контроллер NPC ---
+    // ==========================================================
+    void OnGenerateDialogueClicked()
     {
         string name = builder.npcNameField.text;
-        string environment = builder.npcEnvironmentField.text; // 🆕
         string relation = builder.npcRelationDropdown.options[builder.npcRelationDropdown.value].text;
         string emotion = builder.npcEmotionDropdown.options[builder.npcEmotionDropdown.value].text;
         string reaction = builder.npcReactionField.text;
 
-        // Создаём JSON из данных UI
         string inputJson = $@"{{
-    ""playerAction"": ""refuse"",
+    ""playerAction"": ""interact"",
     ""npcState"": ""{relation}"",
     ""context"": {{
-        ""location"": ""{environment}"",
+        ""location"": ""tavern"",
         ""relationship"": ""{relation}""
     }},
     ""emotion"": ""{emotion}"",
     ""reactionLevel"": {reaction}
 }}";
 
-        Debug.Log($"[LLMUIBinder] Отправляем JSON в контроллер:\n{inputJson}");
+        Debug.Log($"📤 [UI] JSON для NPC:\n{inputJson}");
+        onGenerateDialogue?.Invoke(inputJson);
+        controller.ProcessJsonInput(inputJson);
+    }
 
-        string dialogue = controller.GenerateDialogueFromJSON(inputJson);
-        builder.npcDialogueText.text = dialogue;
+    // ==========================================================
+    // 📖 --- Сказитель историй ---
+    // ==========================================================
+    void OnGenerateStoryClicked()
+    {
+        string theme = builder.storyThemeField.text;
+        string style = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
+        string length = builder.storyLengthField.text;
+
+        string inputJson = $@"{{
+    ""storyTheme"": ""{theme}"",
+    ""storyStyle"": ""{style}"",
+    ""length"": ""{length}""
+}}";
+
+        Debug.Log($"📤 [UI] JSON для Сказителя историй:\n{inputJson}");
+        onGenerateStory?.Invoke(inputJson);
+
+        // Отправляем в LLM
+        controller.ProcessJsonInput(inputJson);
+    }
+
+    // ==========================================================
+    // 🎨 --- Генератор икон ---
+    // ==========================================================
+    void OnGenerateIconClicked()
+    {
+        string description = builder.iconDescriptionField.text;
+        string style = builder.iconStyleDropdown.options[builder.iconStyleDropdown.value].text;
+        string size = builder.iconSizeField.text;
+
+        string inputJson = $@"{{
+    ""iconDescription"": ""{description}"",
+    ""iconStyle"": ""{style}"",
+    ""iconSize"": ""{size}""
+}}";
+
+        Debug.Log($"📤 [UI] JSON для генератора икон:\n{inputJson}");
+        onGenerateIcon?.Invoke(inputJson);
+
+        controller.ProcessJsonInput(inputJson);
+    }
+
+    // ==========================================================
+    // 🔹 Универсальный метод вывода результата на UI
+    // ==========================================================
+    public void DisplayResult(string text)
+    {
+        if (builder.npcDialogueText != null && builder.npcPanel.activeSelf)
+            builder.npcDialogueText.text = text;
+
+        if (builder.storyOutputText != null && builder.storyTellerPanel.activeSelf)
+            builder.storyOutputText.text = text;
+
+        if (builder.iconStatusText != null && builder.iconGeneratorPanel.activeSelf)
+            builder.iconStatusText.text = text;
     }
 }

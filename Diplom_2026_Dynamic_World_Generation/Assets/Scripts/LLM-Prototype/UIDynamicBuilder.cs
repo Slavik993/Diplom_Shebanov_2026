@@ -11,6 +11,7 @@ using UnityEditor;
 /// </summary>
 public class UIDynamicBuilder : MonoBehaviour
 {
+    
     [Header("Панели")]
     public GameObject mainMenu;
     public GameObject storyTellerPanel;
