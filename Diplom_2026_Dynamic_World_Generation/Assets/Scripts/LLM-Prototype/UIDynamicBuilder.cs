@@ -274,6 +274,7 @@ public class UIDynamicBuilder : MonoBehaviour
 
     TMP_Dropdown CreateDropdown(Transform parent, string[] options, Vector2 pos)
     {
+        // === Создаём объект Dropdown ===
         var go = new GameObject("Dropdown", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(TMP_Dropdown));
         go.transform.SetParent(parent, false);
         var rect = go.GetComponent<RectTransform>();
@@ -281,11 +282,12 @@ public class UIDynamicBuilder : MonoBehaviour
         rect.anchoredPosition = pos;
 
         var bg = go.GetComponent<Image>();
-        bg.color = new Color(0.2f, 0.25f, 0.3f);
+        bg.color = new Color(0.18f, 0.22f, 0.28f);
 
         var dropdown = go.GetComponent<TMP_Dropdown>();
         dropdown.targetGraphic = bg;
 
+        // === Caption Label ===
         var captionGO = new GameObject("Label", typeof(TextMeshProUGUI));
         captionGO.transform.SetParent(go.transform, false);
         var caption = captionGO.GetComponent<TextMeshProUGUI>();
@@ -293,19 +295,110 @@ public class UIDynamicBuilder : MonoBehaviour
         caption.fontSize = 18;
         caption.color = Color.white;
         caption.alignment = TextAlignmentOptions.MidlineLeft;
-
         var captionRect = captionGO.GetComponent<RectTransform>();
         captionRect.anchorMin = Vector2.zero;
         captionRect.anchorMax = Vector2.one;
         captionRect.offsetMin = new Vector2(10, 0);
-        captionRect.offsetMax = new Vector2(-10, 0);
-
+        captionRect.offsetMax = new Vector2(-25, 0);
         dropdown.captionText = caption;
 
+        // === Template ===
+        var templateGO = new GameObject("Template", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+        templateGO.transform.SetParent(go.transform, false);
+        var templateRect = templateGO.GetComponent<RectTransform>();
+        templateRect.anchorMin = new Vector2(0, 0);
+        templateRect.anchorMax = new Vector2(1, 0);
+        templateRect.pivot = new Vector2(0.5f, 1);
+        templateRect.sizeDelta = new Vector2(0, 150);
+        templateGO.SetActive(false);
+
+        var templateImage = templateGO.GetComponent<Image>();
+        templateImage.color = new Color(0.1f, 0.12f, 0.15f, 1f);
+
+        // === Viewport ===
+        var viewportGO = new GameObject("Viewport", typeof(RectMask2D), typeof(RectTransform));
+        viewportGO.transform.SetParent(templateGO.transform, false);
+        var viewportRect = viewportGO.GetComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.offsetMin = viewportRect.offsetMax = Vector2.zero;
+
+        // === Content ===
+        var contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        contentGO.transform.SetParent(viewportGO.transform, false);
+        var contentRect = contentGO.GetComponent<RectTransform>();
+        contentRect.anchorMin = Vector2.zero;
+        contentRect.anchorMax = Vector2.one;
+        contentRect.offsetMin = contentRect.offsetMax = Vector2.zero;
+
+        var layout = contentGO.GetComponent<VerticalLayoutGroup>();
+        layout.childForceExpandHeight = false;
+        layout.childForceExpandWidth = true;
+        layout.childControlHeight = true;
+        layout.spacing = 8f;
+
+        var fitter = contentGO.GetComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        // === Item prefab (Toggle) ===
+        var itemGO = new GameObject("Item", typeof(RectTransform), typeof(Toggle), typeof(Image), typeof(LayoutElement));
+        itemGO.transform.SetParent(contentGO.transform, false);
+        var itemRect = itemGO.GetComponent<RectTransform>();
+        itemRect.sizeDelta = new Vector2(0, 32);
+
+        var layoutElement = itemGO.GetComponent<LayoutElement>();
+        layoutElement.minHeight = 32;
+        layoutElement.preferredHeight = 32;
+
+        var itemBG = itemGO.GetComponent<Image>();
+        itemBG.color = new Color(0.25f, 0.3f, 0.35f);
+
+        var itemToggle = itemGO.GetComponent<Toggle>();
+        itemToggle.transition = Selectable.Transition.ColorTint;
+        itemToggle.interactable = true;
+        itemToggle.targetGraphic = itemBG;
+
+        // === Checkmark ===
+        var checkmarkGO = new GameObject("Checkmark", typeof(Image));
+        checkmarkGO.transform.SetParent(itemGO.transform, false);
+        var checkmark = checkmarkGO.GetComponent<Image>();
+        checkmark.color = new Color(1, 1, 1, 0.6f);
+        var checkmarkRect = checkmarkGO.GetComponent<RectTransform>();
+        checkmarkRect.anchorMin = new Vector2(0, 0.5f);
+        checkmarkRect.anchorMax = new Vector2(0, 0.5f);
+        checkmarkRect.anchoredPosition = new Vector2(10, 0);
+        checkmarkRect.sizeDelta = new Vector2(15, 15);
+        itemToggle.graphic = checkmark;
+
+        // === Label для пункта ===
+        var itemLabelGO = new GameObject("Item Label", typeof(TextMeshProUGUI));
+        itemLabelGO.transform.SetParent(itemGO.transform, false);
+        var itemLabel = itemLabelGO.GetComponent<TextMeshProUGUI>();
+        itemLabel.text = "Option";
+        itemLabel.fontSize = 18;
+        itemLabel.color = Color.white;
+        itemLabel.alignment = TextAlignmentOptions.MidlineLeft;
+
+        var itemLabelRect = itemLabelGO.GetComponent<RectTransform>();
+        itemLabelRect.anchorMin = new Vector2(0, 0);
+        itemLabelRect.anchorMax = new Vector2(1, 1);
+        itemLabelRect.offsetMin = new Vector2(35, 0);
+        itemLabelRect.offsetMax = new Vector2(-10, 0);
+
+        // === ScrollRect и Dropdown binding ===
+        var scrollRect = templateGO.GetComponent<ScrollRect>();
+        scrollRect.viewport = viewportRect;
+        scrollRect.content = contentRect;
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+
+        dropdown.template = templateRect;
+        dropdown.itemText = itemLabel;
+        dropdown.itemImage = itemBG;
         dropdown.options.Clear();
+
         foreach (var opt in options)
             dropdown.options.Add(new TMP_Dropdown.OptionData(opt));
-        dropdown.RefreshShownValue();
 
         return dropdown;
     }
