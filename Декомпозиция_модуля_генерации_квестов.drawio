@@ -1,0 +1,211 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.1.1 Chrome/132.0.6834.210 Electron/34.3.3 Safari/537.36" version="26.1.1">
+  <diagram name="Страница — 1" id="CSHM0GiSaO_m2vUBR9je">
+    <mxGraphModel dx="3082" dy="2837" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" vertex="1" parent="1">
+          <mxGeometry x="-810" y="50" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-2" target="WmfhteYGrpeKPiOe_4aB-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-2" value="Модуль генерации квестов, хранящий модели, предыдущие события" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" vertex="1" parent="1">
+          <mxGeometry x="-800" y="50" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-3" target="WmfhteYGrpeKPiOe_4aB-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-3" value="Обработка моделью LLM-Unity, для последущей генерации&lt;div&gt;(ONNX RUNTIME)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-800" y="210" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-4" value="J1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-680" y="220" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-6" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-1120" y="95" as="sourcePoint" />
+            <mxPoint x="-810" y="95" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-7" value="Информация о произошедших событиях" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-1112" y="64" width="250" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-8" value="Json шаблоны с жанром и сложностью квеста" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-1115" y="100" width="280" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-9" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-1120" y="130" as="sourcePoint" />
+            <mxPoint x="-810" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-12" value="OUTPUT JSON&lt;div&gt;{&quot;Принеси мне предмет: &quot;Quest item&quot; &quot;}&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-1050" y="210" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-14" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-1120" y="60" as="sourcePoint" />
+            <mxPoint x="-810" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-15" value="Промт" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-1005" y="34" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-17" target="WmfhteYGrpeKPiOe_4aB-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-17" value="Запуск созданного квеста в сцене Unity&lt;br&gt;(Тестирование)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-1060" y="390" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-18" value="J2" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-940" y="400" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.576;entryY=0.028;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-12" target="WmfhteYGrpeKPiOe_4aB-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-20" value="Logged файлы об событиях и ошибках" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-805" y="390" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-22" target="WmfhteYGrpeKPiOe_4aB-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-22" value="Пользователь (разработчик)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-380" y="50" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-23" target="WmfhteYGrpeKPiOe_4aB-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-23" target="WmfhteYGrpeKPiOe_4aB-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-23" target="WmfhteYGrpeKPiOe_4aB-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-23" value="СДГВМ" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-573.5" y="50" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-27" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" vertex="1" parent="1">
+          <mxGeometry x="-593.5" y="-90" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-28" target="WmfhteYGrpeKPiOe_4aB-50">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-28" value="Модуль управления поведением NPC, хранящий модели, предыдущие события" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" vertex="1" parent="1">
+          <mxGeometry x="-583.5" y="-90" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-31" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-903.5" y="-70" as="sourcePoint" />
+            <mxPoint x="-593.5" y="-70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-32" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-903.5" y="-40" as="sourcePoint" />
+            <mxPoint x="-593.5" y="-40" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-33" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-903.5" y="-10" as="sourcePoint" />
+            <mxPoint x="-593.5" y="-10" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-34" value="Json шаблоны для регулуляризации поведения NPC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-920" y="-100" width="320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-36" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" vertex="1" parent="1">
+          <mxGeometry x="-360" y="210" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-37" target="WmfhteYGrpeKPiOe_4aB-53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-37" value="Модуль генерации визуалов, хранящий модели, и заглушки для закрытия ошибок в генерации" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" vertex="1" parent="1">
+          <mxGeometry x="-350" y="210" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-41" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-550" y="233" as="sourcePoint" />
+            <mxPoint x="-360" y="233.41" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-42" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-550" y="262.41" as="sourcePoint" />
+            <mxPoint x="-360" y="262.82" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-43" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-550" y="290" as="sourcePoint" />
+            <mxPoint x="-360" y="290.40999999999997" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-44" value="Промт" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-473" y="200" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-45" value="Контекст истории" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-503" y="230" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-46" value="Шаблон для (квеста, аватарки, иконки предмета)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rotation=-90;" vertex="1" parent="1">
+          <mxGeometry x="-730" y="400" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-47" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-550" y="520" as="sourcePoint" />
+            <mxPoint x="-550" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-48" value="Контекст предыдущих событий" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-860" y="-70" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-49" value="Шаблонные логи о действиях игрока" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-875" y="-40" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-64" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-50" target="WmfhteYGrpeKPiOe_4aB-51">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-50" value="Обработка моделью LLM-Unity, для последущей генерации&lt;div&gt;(ONNX RUNTIME)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-588.5" y="-250" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-51" target="WmfhteYGrpeKPiOe_4aB-65">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-51" value="OUTPUT JSON&lt;div&gt;{&quot; dialogue&quot;: &quot;Ты пожалеешь!&quot;, &quot;action&quot;: &quot;attack&quot;, &quot;emotion&quot;: &quot;angry&quot;, &quot;animation&quot;: &quot;threat_pose&quot; }&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-593.5" y="-410" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-52" value="Sprite 2D&lt;div&gt;Интегрируется при помощи Pipelines в Raw Image на сцене&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-478" y="530" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-53" target="WmfhteYGrpeKPiOe_4aB-52">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-53" value="Обработка моделью Stable Diffusion, для последущей генерации&lt;div&gt;(Unity Sprite Generator)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-473" y="370" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-56" target="WmfhteYGrpeKPiOe_4aB-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-56" value="Проверка спрайта на сцене Unity&lt;br&gt;(Тестирование)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-230" y="540" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.004;entryY=0.433;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="WmfhteYGrpeKPiOe_4aB-52" target="WmfhteYGrpeKPiOe_4aB-56">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-59" value="Готовый ассет для визуализации" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-230" y="710" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-61" value="Y2" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-110" y="550" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-62" value="Y1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-350" y="370" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WmfhteYGrpeKPiOe_4aB-65" value="Обученная модель поведения NPC&lt;br&gt;&lt;div&gt;Интегрируется при помощи LLM-Unity&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-845" y="-410" width="200" height="110" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -90,6 +90,26 @@ public class LLMUIBinder : MonoBehaviour
 
         // Отправляем в LLM
         controller.ProcessJsonInput(inputJson);
+
+        // --- Storyteller (генерация истории) ---
+        builder.storyGenerateButton.onClick.AddListener(() =>
+        {
+            var storyTheme = builder.storyThemeField.text;
+            var storyStyle = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
+            var storyLength = builder.storyLengthField.text;
+
+            string jsonInput = $@"
+            {{
+                ""mode"": ""story_generation"",
+                ""theme"": ""{storyTheme}"",
+                ""style"": ""{storyStyle}"",
+                ""length"": ""{storyLength}""
+            }}";
+
+            Debug.Log($"[StoryTeller] Отправляю запрос в LLM: {jsonInput}");
+            controller.ProcessJsonInput(jsonInput);
+        });
+
     }
 
     // ==========================================================

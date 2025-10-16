@@ -36,6 +36,7 @@ public class UIDynamicBuilder : MonoBehaviour
     public TMP_InputField storyLengthField;
     public Button storyGenerateButton;
     public TextMeshProUGUI storyOutputText;
+    public TMP_Dropdown questTypeDropdown;
 
     [Header("Элементы Icon Generator-панели")]
 
@@ -133,32 +134,49 @@ public class UIDynamicBuilder : MonoBehaviour
 
         CreateLabel(storyTellerPanel.transform, "Сказитель историй", new Vector2(0, 200));
 
+        // --- Тема ---
         CreateLabel(storyTellerPanel.transform, "Тема истории", new Vector2(0, 140));
         storyThemeField = CreateInputField(storyTellerPanel.transform, new Vector2(0, 110));
 
+        // --- Стиль повествования ---
         CreateLabel(storyTellerPanel.transform, "Стиль повествования", new Vector2(0, 70));
         storyStyleDropdown = CreateDropdown(storyTellerPanel.transform,
-        new string[]
-        {
-            "постапокалипсис",
-            "фэнтези",
-            "реализм",
-            "приключение",
-            "киберпанк",
-            "стимпанк",
-            "сказочный",
-            "драма"
-        },
-    new Vector2(0, 40));
+            new string[]
+            {
+                "постапокалипсис",
+                "фэнтези",
+                "реализм",
+                "приключение",
+                "киберпанк",
+                "стимпанк",
+                "сказочный",
+                "драма"
+            },
+            new Vector2(0, 40));
 
-        CreateLabel(storyTellerPanel.transform, "Длина истории (слов)", new Vector2(0, 0));
-        storyLengthField = CreateInputField(storyTellerPanel.transform, new Vector2(0, -30));
+        // --- Тип квеста ---
+        CreateLabel(storyTellerPanel.transform, "Тип квеста", new Vector2(0, 0));
+        questTypeDropdown = CreateDropdown(storyTellerPanel.transform,
+            new string[]
+            {
+                "Диалоговый", "Поисковый", "Исторический", "Образовательный",
+                "Загадочный", "Исследовательский", "Научный", "Повествовательный",
+                "Социальный", "Ролевой"
+            },
+            new Vector2(0, -30));
 
-        storyGenerateButton = CreateButton(storyTellerPanel.transform, "Сгенерировать историю", new Vector2(0, -80), null);
+        // --- Длина ---
+        CreateLabel(storyTellerPanel.transform, "Длина истории (слов)", new Vector2(0, -70));
+        storyLengthField = CreateInputField(storyTellerPanel.transform, new Vector2(0, -100));
 
-        storyOutputText = CreateLabel(storyTellerPanel.transform, "Текст истории появится здесь", new Vector2(0, -140), 18, FontStyles.Italic);
+        // --- Кнопка ---
+        storyGenerateButton = CreateButton(storyTellerPanel.transform, "Сгенерировать историю", new Vector2(0, -150), null);
 
-        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -220), () => ShowOnly(mainMenu));
+        // --- Вывод ---
+        storyOutputText = CreateLabel(storyTellerPanel.transform, "Текст истории появится здесь", new Vector2(0, -210), 18, FontStyles.Italic);
+
+        // --- Назад ---
+        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
     }
 
     void CreateIconPanel()
