@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -5,43 +6,50 @@ using LLMUnity;
 
 public class LLMPrototypeController : MonoBehaviour
 {
-    [Header("UI Binder")]
-    public LLMUIBinder uiBinder;
+    public LLMUIBinder uiBinder;   // Связь с UI
+    private LLMUnity.LLM llm;      // 🔹 ссылка на LLM сервис
 
+    [Header("UI Binder")]
+    
     [Header("LLM Connector")]
-    public LLMCharacter llmCharacter;
+    public GameObject llmManagerObject; // Перетащите сюда LLMManager
+    private LLMCharacter llmCharacter;
 
     [Header("Debug Options")]
     public bool useTestJson = false;
 
-    private async void Start()
+    void Start()
     {
-        // Привязываем UI и подписываемся на кнопку
-        if (uiBinder != null)
+        Debug.Log("=== LLMPrototypeController Start ===");
+    
+        // Найти все LLMCharacter в сцене
+        LLMCharacter[] allCharacters = FindObjectsOfType<LLMCharacter>();
+        Debug.Log($"Найдено LLMCharacter в сцене: {allCharacters.Length}");
+        
+        foreach (var character in allCharacters)
         {
-            uiBinder.BindUI();
-            uiBinder.onGenerateDialogue += OnGenerateDialogueFromUI;
+            Debug.Log($"  - {character.gameObject.name}");
         }
-
-        // --- Автогенерация только если тестовый режим включён ---
-        if (useTestJson)
+        // Получаем компонент из GameObject
+        if (llmManagerObject != null)
         {
-            Debug.Log("🧩 Используется тестовый JSON для генерации диалога.");
-            string testJson = @"{
-                ""playerAction"": ""refuse"",
-                ""npcState"": ""neutral"",
-                ""context"": {
-                    ""location"": ""tavern"",
-                    ""relationship"": ""stranger""
-                }
-            }";
-            await SendToLLM(testJson);
+            llmCharacter = llmManagerObject.GetComponent<LLMCharacter>();
+            
+            if (llmCharacter == null)
+            {
+                Debug.LogError("❌ На объекте LLMManager нет компонента LLMCharacter!");
+            }
+            else
+            {
+                Debug.Log("✅ LLMCharacter успешно получен из LLMManager.");
+            }
         }
         else
         {
-            Debug.Log("💡 Система готова. Ожидание пользовательского ввода...");
+            Debug.LogError("❌ LLMManager GameObject не назначен!");
         }
     }
+
 
     private async void OnGenerateDialogueFromUI(string jsonFromUI)
     {
@@ -103,9 +111,31 @@ public class LLMPrototypeController : MonoBehaviour
     }
     public string testInputJson = "{}"; // временная заглушка для тестового JSON
 
-    public void ProcessJsonInput(string json)
+    public async void ProcessJsonInput(string json)
     {
         Debug.Log($"[LLMPrototypeController] ProcessJsonInput вызван с json: {json}");
-        // Здесь позже можно подставить вызов GenerateDialogueFromJSON(json);
+
+        if (llmCharacter == null)
+        {
+            Debug.LogError("❌ LLMCharacter не назначен!");
+            return;
+        }
+
+        try
+        {
+            // 🔹 Отправляем JSON в модель
+            string resultText = await llmCharacter.Chat(json);
+            if (string.IsNullOrWhiteSpace(resultText))
+                resultText = "⚠ Модель не вернула ответ.";
+
+            Debug.Log($"🧠 Ответ от LLM:\n{resultText}");
+
+            // 🔹 Передаём текст на экран
+            uiBinder?.DisplayResult(resultText);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"💥 Ошибка при обращении к LLM: {ex.Message}");
+        }
     }
 }
