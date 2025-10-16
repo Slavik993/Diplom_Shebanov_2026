@@ -20,16 +20,7 @@ public class LLMPrototypeController : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("=== LLMPrototypeController Start ===");
-    
-        // Найти все LLMCharacter в сцене
-        LLMCharacter[] allCharacters = FindObjectsOfType<LLMCharacter>();
-        Debug.Log($"Найдено LLMCharacter в сцене: {allCharacters.Length}");
         
-        foreach (var character in allCharacters)
-        {
-            Debug.Log($"  - {character.gameObject.name}");
-        }
         // Получаем компонент из GameObject
         if (llmManagerObject != null)
         {

@@ -2352,6 +2352,10 @@ PrefabInstance:
       propertyPath: llmCharacter
       value: 
       objectReference: {fileID: 918572951}
+    - target: {fileID: 8567792242574250362, guid: 9591479b1970f8f4d959c042723077f7, type: 3}
+      propertyPath: llmManagerObject
+      value: 
+      objectReference: {fileID: 1565104300}
     - target: {fileID: 8635598676181815516, guid: 9591479b1970f8f4d959c042723077f7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -5740,7 +5744,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2571339635486700180, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
   m_PrefabInstance: {fileID: 918572950}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1565104300}
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f6c87a428fd5d0be9bbc686bdc8c3c2, type: 3}
@@ -10116,6 +10120,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1545728818}
   m_CullTransparentMesh: 1
+--- !u!1 &1565104300 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4497066473884043845, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
+  m_PrefabInstance: {fileID: 918572950}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1572962322
 GameObject:
   m_ObjectHideFlags: 0
