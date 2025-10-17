@@ -18,28 +18,42 @@ public class LLMPrototypeController : MonoBehaviour
     [Header("Debug Options")]
     public bool useTestJson = false;
 
-    void Start()
+    private async void Start()
     {
-        
-        // Получаем компонент из GameObject
-        if (llmManagerObject != null)
+        Debug.Log("🚀 [LLMPrototypeController] Старт контроллера...");
+
+        if (llmManagerObject == null)
         {
-            llmCharacter = llmManagerObject.GetComponent<LLMCharacter>();
-            
-            if (llmCharacter == null)
-            {
-                Debug.LogError("❌ На объекте LLMManager нет компонента LLMCharacter!");
-            }
-            else
-            {
-                Debug.Log("✅ LLMCharacter успешно получен из LLMManager.");
-            }
+            Debug.LogError("❌ llmManagerObject не назначен в инспекторе!");
+            return;
+        }
+
+        Debug.Log($"🔍 Проверяю объект LLMManager: {llmManagerObject.name}");
+
+        //llmCharacter = llmManagerObject.GetComponent<LLMCharacter>();
+        llmCharacter = llmManagerObject.GetComponentInChildren<LLMCharacter>();
+        if (llmCharacter != null)
+        {
+            Debug.Log($"✅ LLMCharacter найден: {llmCharacter.name}");
         }
         else
         {
-            Debug.LogError("❌ LLMManager GameObject не назначен!");
+            Debug.LogError("❌ На объекте LLMManager НЕТ компонента LLMCharacter!");
+        }
+
+        // Немного подождём, чтобы LLMServer успел подняться
+        await Task.Delay(2000);
+
+        if (llmCharacter != null && llmCharacter.llm != null)
+        {
+            Debug.Log("🧠 LLMCharacter связан с LLMServer — всё готово!");
+        }
+        else
+        {
+            Debug.LogWarning("⚠ LLMCharacter найден, но ссылка на LLMServer ещё не установлена!");
         }
     }
+
 
 
     private async void OnGenerateDialogueFromUI(string jsonFromUI)
