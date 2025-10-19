@@ -5756,7 +5756,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4497066473884043845, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1565104302}
   m_SourcePrefab: {fileID: 100100000, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
 --- !u!114 &918572951 stripped
 MonoBehaviour:
@@ -10144,6 +10147,61 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4497066473884043845, guid: d55d24f71e663cb4286aa75e9fed9638, type: 3}
   m_PrefabInstance: {fileID: 918572950}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1565104302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565104300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 695f708369316004c9e5d75db8c6b42d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  advancedOptions: 0
+  remote: 0
+  _llm: {fileID: 496861931}
+  APIKey: 
+  host: localhost
+  port: 13333
+  numRetries: 10
+  save: 
+  saveCache: 0
+  debugPrompt: 0
+  numPredict: -1
+  slot: -1
+  grammar: 
+  grammarJSON: 
+  cachePrompt: 1
+  seed: 0
+  temperature: 0.2
+  topK: 40
+  topP: 0.9
+  minP: 0.05
+  repeatPenalty: 1.1
+  presencePenalty: 0
+  frequencyPenalty: 0
+  typicalP: 1
+  repeatLastN: 64
+  penalizeNl: 1
+  penaltyPrompt: 
+  mirostat: 0
+  mirostatTau: 5
+  mirostatEta: 0.1
+  nProbs: 0
+  ignoreEos: 0
+  nKeep: -1
+  stop: []
+  stream: 1
+  playerName: user
+  AIName: assistant
+  prompt: A chat between a curious human and an artificial intelligence assistant.
+    The assistant gives helpful, detailed, and polite answers to the human's questions.
+  setNKeepToPrompt: 1
+  chat: []
+  grammarString: 
+  grammarJSONString: 
 --- !u!1 &1572962322
 GameObject:
   m_ObjectHideFlags: 0
