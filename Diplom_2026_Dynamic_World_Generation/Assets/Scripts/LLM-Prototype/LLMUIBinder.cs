@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using System.IO;
 
 public class LLMUIBinder : MonoBehaviour
 {
@@ -16,7 +17,6 @@ public class LLMUIBinder : MonoBehaviour
 
     void Start()
     {
-        // === Привязки ===
         if (builder == null) builder = FindObjectOfType<UIDynamicBuilder>();
         if (controller == null) controller = FindObjectOfType<LLMPrototypeController>();
 
@@ -31,34 +31,45 @@ public class LLMUIBinder : MonoBehaviour
 
     public void BindUI()
     {
-        // --- NPC Панель ---
+        // --- NPC ---
         if (builder.npcGenerateButton != null)
             builder.npcGenerateButton.onClick.AddListener(OnGenerateDialogueClicked);
 
-        // --- Сказитель историй ---
+        if (builder.npcSaveButton != null)
+            builder.npcSaveButton.onClick.AddListener(SaveNPCDialogue);
+
+        // --- StoryTeller ---
         if (builder.storyGenerateButton != null)
             builder.storyGenerateButton.onClick.AddListener(OnGenerateStoryClicked);
 
-        // --- Генератор икон ---
+        if (builder.storySaveButton != null)
+            builder.storySaveButton.onClick.AddListener(SaveStory);
+
+        // --- Icon Generator ---
         if (builder.iconGenerateButton != null)
             builder.iconGenerateButton.onClick.AddListener(OnGenerateIconClicked);
+
+        if (builder.iconSaveButton != null)
+            builder.iconSaveButton.onClick.AddListener(SaveIcon);
     }
 
     // ==========================================================
-    // 🧩 --- Контроллер NPC ---
+    // 🧩 --- NPC ---
     // ==========================================================
     void OnGenerateDialogueClicked()
     {
         string name = builder.npcNameField.text;
+        string environment = builder.npcEnvironmentField.text;
         string relation = builder.npcRelationDropdown.options[builder.npcRelationDropdown.value].text;
         string emotion = builder.npcEmotionDropdown.options[builder.npcEmotionDropdown.value].text;
         string reaction = builder.npcReactionField.text;
 
         string inputJson = $@"{{
     ""playerAction"": ""interact"",
+    ""npcName"": ""{name}"",
     ""npcState"": ""{relation}"",
     ""context"": {{
-        ""location"": ""tavern"",
+        ""location"": ""{environment}"",
         ""relationship"": ""{relation}""
     }},
     ""emotion"": ""{emotion}"",
@@ -70,50 +81,68 @@ public class LLMUIBinder : MonoBehaviour
         controller.ProcessJsonInput(inputJson);
     }
 
+    void SaveNPCDialogue()
+    {
+        string text = builder.npcDialogueText.text;
+        if (string.IsNullOrEmpty(text))
+        {
+            Debug.LogWarning("⚠️ Нет диалога для сохранения!");
+            return;
+        }
+
+        string folder = Path.Combine(Application.dataPath, "Exports/NPCDialogues");
+        Directory.CreateDirectory(folder);
+
+        string filename = Path.Combine(folder, $"dialogue_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+        File.WriteAllText(filename, text);
+
+        Debug.Log($"💾 Диалог сохранён: {filename}");
+        builder.npcDialogueText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
+    }
+
     // ==========================================================
-    // 📖 --- Сказитель историй ---
+    // 📖 --- StoryTeller ---
     // ==========================================================
     void OnGenerateStoryClicked()
     {
         string theme = builder.storyThemeField.text;
         string style = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
         string length = builder.storyLengthField.text;
+        string questType = builder.questTypeDropdown.options[builder.questTypeDropdown.value].text;
 
         string inputJson = $@"{{
     ""storyTheme"": ""{theme}"",
     ""storyStyle"": ""{style}"",
+    ""questType"": ""{questType}"",
     ""length"": ""{length}""
 }}";
 
         Debug.Log($"📤 [UI] JSON для Сказителя историй:\n{inputJson}");
         onGenerateStory?.Invoke(inputJson);
-
-        // Отправляем в LLM
         controller.ProcessJsonInput(inputJson);
+    }
 
-        // --- Storyteller (генерация истории) ---
-        builder.storyGenerateButton.onClick.AddListener(() =>
+    void SaveStory()
+    {
+        string text = builder.storyOutputText.text;
+        if (string.IsNullOrEmpty(text))
         {
-            var storyTheme = builder.storyThemeField.text;
-            var storyStyle = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
-            var storyLength = builder.storyLengthField.text;
+            Debug.LogWarning("⚠️ Нет истории для сохранения!");
+            return;
+        }
 
-            string jsonInput = $@"
-            {{
-                ""mode"": ""story_generation"",
-                ""theme"": ""{storyTheme}"",
-                ""style"": ""{storyStyle}"",
-                ""length"": ""{storyLength}""
-            }}";
+        string folder = Path.Combine(Application.dataPath, "Exports/Stories");
+        Directory.CreateDirectory(folder);
 
-            Debug.Log($"[StoryTeller] Отправляю запрос в LLM: {jsonInput}");
-            controller.ProcessJsonInput(jsonInput);
-        });
+        string filename = Path.Combine(folder, $"story_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+        File.WriteAllText(filename, text);
 
+        Debug.Log($"💾 История сохранена: {filename}");
+        builder.storyOutputText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
     }
 
     // ==========================================================
-    // 🎨 --- Генератор икон ---
+    // 🎨 --- Icon Generator ---
     // ==========================================================
     void OnGenerateIconClicked()
     {
@@ -133,8 +162,27 @@ public class LLMUIBinder : MonoBehaviour
         controller.ProcessJsonInput(inputJson);
     }
 
+    void SaveIcon()
+    {
+        string text = builder.iconStatusText.text;
+        if (string.IsNullOrEmpty(text))
+        {
+            Debug.LogWarning("⚠️ Нет результата для сохранения!");
+            return;
+        }
+
+        string folder = Path.Combine(Application.dataPath, "Exports/Icons");
+        Directory.CreateDirectory(folder);
+
+        string filename = Path.Combine(folder, $"icon_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+        File.WriteAllText(filename, text);
+
+        Debug.Log($"💾 Информация об иконке сохранена: {filename}");
+        builder.iconStatusText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
+    }
+
     // ==========================================================
-    // 🔹 Универсальный метод вывода результата на UI
+    // 🔹 Вывод результата
     // ==========================================================
     public void DisplayResult(string text)
     {

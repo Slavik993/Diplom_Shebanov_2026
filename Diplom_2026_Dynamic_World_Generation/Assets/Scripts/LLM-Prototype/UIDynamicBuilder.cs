@@ -8,50 +8,48 @@ using UnityEditor;
 /// <summary>
 /// Создаёт UI-панели для систем: Сказитель, Контроллер NPC, Генератор икон.
 /// Работает и в PlayMode, и в Editor.
+/// Теперь добавлены кнопки 💾 для сохранения результатов генерации.
 /// </summary>
 public class UIDynamicBuilder : MonoBehaviour
 {
-    
     [Header("Панели")]
     public GameObject mainMenu;
     public GameObject storyTellerPanel;
     public GameObject npcPanel;
     public GameObject iconGeneratorPanel;
 
-    [Header("Элементы NPC-панели (для LLMUIBinder)")]
+    [Header("Элементы NPC-панели")]
     public TMP_InputField npcNameField;
-    public TMP_InputField npcEnvironmentField; // 🆕 Окружение
+    public TMP_InputField npcEnvironmentField;
     public TMP_Dropdown npcRelationDropdown;
     public TMP_Dropdown npcEmotionDropdown;
     public TMP_InputField npcReactionField;
     public Button npcGenerateButton;
+    public Button npcSaveButton; // 💾 новая кнопка
     public TextMeshProUGUI npcDialogueText;
 
-    private Canvas canvas;
-
-    [Header("Элеменыты Storyteller-панели")]
-
+    [Header("Элементы Storyteller-панели")]
     public TMP_InputField storyThemeField;
     public TMP_Dropdown storyStyleDropdown;
     public TMP_InputField storyLengthField;
-    public Button storyGenerateButton;
-    public TextMeshProUGUI storyOutputText;
     public TMP_Dropdown questTypeDropdown;
+    public Button storyGenerateButton;
+    public Button storySaveButton; // 💾 новая кнопка
+    public TextMeshProUGUI storyOutputText;
 
     [Header("Элементы Icon Generator-панели")]
-
     public TMP_InputField iconDescriptionField;
     public TMP_Dropdown iconStyleDropdown;
     public TMP_InputField iconSizeField;
     public Button iconGenerateButton;
+    public Button iconSaveButton; // 💾 новая кнопка
     public TextMeshProUGUI iconStatusText;
 
-    void Awake()
-    {
-        BuildUI();
-    }
+    private Canvas canvas;
 
-    public void CreateUI() => BuildUI(); // 👈 для вызова из редактора
+    void Awake() => BuildUI();
+
+    public void CreateUI() => BuildUI();
 
     void BuildUI()
     {
@@ -71,119 +69,98 @@ public class UIDynamicBuilder : MonoBehaviour
         ShowOnly(mainMenu);
     }
 
-    // === Панели ===
+    // === ПАНЕЛИ ===
 
     void CreateMainMenu()
     {
         mainMenu = CreatePanel("MainMenu");
-
         CreateLabel(mainMenu.transform, "Главное меню", new Vector2(0, 180));
 
-        CreateButton(mainMenu.transform, "Сказитель историй", new Vector2(0, 100),
-            () => ShowOnly(storyTellerPanel));
-
-        CreateButton(mainMenu.transform, "Контроллер NPC", new Vector2(0, 40),
-            () => ShowOnly(npcPanel));
-
-        CreateButton(mainMenu.transform, "Генератор икон", new Vector2(0, -20),
-            () => ShowOnly(iconGeneratorPanel));
+        CreateButton(mainMenu.transform, "Сказитель историй", new Vector2(0, 100), () => ShowOnly(storyTellerPanel));
+        CreateButton(mainMenu.transform, "Контроллер NPC", new Vector2(0, 40), () => ShowOnly(npcPanel));
+        CreateButton(mainMenu.transform, "Генератор икон", new Vector2(0, -20), () => ShowOnly(iconGeneratorPanel));
     }
 
     void CreateNPCPanel()
     {
         npcPanel = CreatePanel("NPCPanel");
         npcPanel.SetActive(false);
-
         CreateLabel(npcPanel.transform, "Контроллер NPC", new Vector2(0, 200));
 
-        // Имя
         CreateLabel(npcPanel.transform, "Имя персонажа", new Vector2(0, 140));
         npcNameField = CreateInputField(npcPanel.transform, new Vector2(0, 110));
 
-        // 🆕 Окружение
         CreateLabel(npcPanel.transform, "Окружение (место действия)", new Vector2(0, 70));
         npcEnvironmentField = CreateInputField(npcPanel.transform, new Vector2(0, 40));
-        npcEnvironmentField.text = "таверна"; // дефолт
+        npcEnvironmentField.text = "таверна";
 
-        // Отношения
         CreateLabel(npcPanel.transform, "Отношение к игроку", new Vector2(0, 0));
         npcRelationDropdown = CreateDropdown(npcPanel.transform,
-            new string[] { "дружелюбный", "нейтральный", "враждебный" }, new Vector2(0, -30));
+            new[] { "дружелюбный", "нейтральный", "враждебный" }, new Vector2(0, -30));
 
-        // Эмоция
         CreateLabel(npcPanel.transform, "Эмоция", new Vector2(0, -70));
         npcEmotionDropdown = CreateDropdown(npcPanel.transform,
-            new string[] { "спокойный", "сердитый", "радостный", "испуганный" }, new Vector2(0, -100));
+            new[] { "спокойный", "сердитый", "радостный", "испуганный" }, new Vector2(0, -100));
 
-        // Реакция
         CreateLabel(npcPanel.transform, "Реакция (0–100)", new Vector2(0, -140));
         npcReactionField = CreateInputField(npcPanel.transform, new Vector2(0, -170));
 
-        npcGenerateButton = CreateButton(npcPanel.transform, "Сгенерировать диалог", new Vector2(0, -220), null);
+        npcGenerateButton = CreateButton(npcPanel.transform, "Сгенерировать диалог", new Vector2(0, -220), () =>
+        {
+            npcDialogueText.text = $"NPC {npcNameField.text} отвечает: Пример сгенерированного текста...";
+        });
 
         npcDialogueText = CreateLabel(npcPanel.transform, "Диалог появится здесь", new Vector2(0, -250), 18, FontStyles.Italic);
 
-        CreateButton(npcPanel.transform, "Назад", new Vector2(0, -310), () => ShowOnly(mainMenu));
-        
+        npcSaveButton = CreateButton(npcPanel.transform, "💾 Сохранить диалог", new Vector2(0, -280), () =>
+        {
+            GeneratedContentSaver.SaveDialogue(npcDialogueText.text);
+        });
+
+        CreateButton(npcPanel.transform, "Назад", new Vector2(0, -330), () => ShowOnly(mainMenu));
     }
 
     void CreateStoryTellerPanel()
     {
         storyTellerPanel = CreatePanel("StoryTellerPanel");
         storyTellerPanel.SetActive(false);
-
         CreateLabel(storyTellerPanel.transform, "Сказитель историй", new Vector2(0, 200));
 
-        // --- Тема ---
         CreateLabel(storyTellerPanel.transform, "Тема истории", new Vector2(0, 140));
         storyThemeField = CreateInputField(storyTellerPanel.transform, new Vector2(0, 110));
 
-        // --- Стиль повествования ---
         CreateLabel(storyTellerPanel.transform, "Стиль повествования", new Vector2(0, 70));
         storyStyleDropdown = CreateDropdown(storyTellerPanel.transform,
-            new string[]
-            {
-                "постапокалипсис",
-                "фэнтези",
-                "реализм",
-                "приключение",
-                "киберпанк",
-                "стимпанк",
-                "сказочный",
-                "драма"
-            },
+            new[] { "постапокалипсис", "фэнтези", "реализм", "приключение", "киберпанк", "стимпанк", "сказочный", "драма" },
             new Vector2(0, 40));
 
-        // --- Тип квеста ---
         CreateLabel(storyTellerPanel.transform, "Тип квеста", new Vector2(0, 0));
         questTypeDropdown = CreateDropdown(storyTellerPanel.transform,
-            new string[]
-            {
-                "Диалоговый", "Поисковый", "Исторический", "Образовательный",
-                "Загадочный", "Исследовательский", "Научный", "Повествовательный",
-                "Социальный", "Ролевой"
-            },
+            new[] { "Диалоговый", "Поисковый", "Исторический", "Образовательный", "Загадочный", "Исследовательский", "Научный", "Повествовательный", "Социальный", "Ролевой" },
             new Vector2(0, -30));
 
-        // --- Длина ---
         CreateLabel(storyTellerPanel.transform, "Длина истории (слов)", new Vector2(0, -70));
         storyLengthField = CreateInputField(storyTellerPanel.transform, new Vector2(0, -100));
 
-        // --- Кнопка ---
-        storyGenerateButton = CreateButton(storyTellerPanel.transform, "Сгенерировать историю", new Vector2(0, -150), null);
+        storyGenerateButton = CreateButton(storyTellerPanel.transform, "Сгенерировать историю", new Vector2(0, -150), () =>
+        {
+            storyOutputText.text = $"История в жанре {storyStyleDropdown.captionText.text}: ...пример текста...";
+        });
 
-        // --- Вывод ---
         storyOutputText = CreateLabel(storyTellerPanel.transform, "Текст истории появится здесь", new Vector2(0, -210), 18, FontStyles.Italic);
 
-        // --- Назад ---
-        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -260), () => ShowOnly(mainMenu));
+        storySaveButton = CreateButton(storyTellerPanel.transform, "💾 Сохранить историю", new Vector2(0, -250), () =>
+        {
+            GeneratedContentSaver.SaveQuest(storyOutputText.text);
+        });
+
+        CreateButton(storyTellerPanel.transform, "Назад", new Vector2(0, -300), () => ShowOnly(mainMenu));
     }
 
     void CreateIconPanel()
     {
         iconGeneratorPanel = CreatePanel("IconGeneratorPanel");
         iconGeneratorPanel.SetActive(false);
-
         CreateLabel(iconGeneratorPanel.transform, "Генератор икон", new Vector2(0, 200));
 
         CreateLabel(iconGeneratorPanel.transform, "Описание иконки", new Vector2(0, 140));
@@ -191,28 +168,27 @@ public class UIDynamicBuilder : MonoBehaviour
 
         CreateLabel(iconGeneratorPanel.transform, "Стиль иконки", new Vector2(0, 70));
         iconStyleDropdown = CreateDropdown(iconGeneratorPanel.transform,
-            new string[]
-            {
-                "2D",
-                "3D",
-                "пиксель-арт",
-                "аниме",
-                "реализм",
-                "векторный",
-                "иллюстрация",
-                "фэнтези",
-                "ретро"
-            },
+            new[] { "2D", "3D", "пиксель-арт", "аниме", "реализм", "векторный", "иллюстрация", "фэнтези", "ретро" },
             new Vector2(0, 40));
 
         CreateLabel(iconGeneratorPanel.transform, "Размер иконки (px)", new Vector2(0, 0));
         iconSizeField = CreateInputField(iconGeneratorPanel.transform, new Vector2(0, -30));
 
-        iconGenerateButton = CreateButton(iconGeneratorPanel.transform, "Сгенерировать иконку", new Vector2(0, -80), null);
+        iconGenerateButton = CreateButton(iconGeneratorPanel.transform, "Сгенерировать иконку", new Vector2(0, -80), () =>
+        {
+            iconStatusText.text = "🖼 Сгенерирована тестовая иконка (заглушка).";
+        });
 
-        iconStatusText = CreateLabel(iconGeneratorPanel.transform, "Статус: ожидание...", new Vector2(0, -140), 18, FontStyles.Italic);
+        iconStatusText = CreateLabel(iconGeneratorPanel.transform, "Статус: ожидание...", new Vector2(0, -130), 18, FontStyles.Italic);
 
-        CreateButton(iconGeneratorPanel.transform, "Назад", new Vector2(0, -220), () => ShowOnly(mainMenu));
+        iconSaveButton = CreateButton(iconGeneratorPanel.transform, "💾 Сохранить иконку", new Vector2(0, -170), () =>
+        {
+            // ⚠️ если у тебя есть Texture2D после ComfyUI — передай его сюда
+            Texture2D dummy = new Texture2D(64, 64);
+            GeneratedContentSaver.SaveVisual(dummy);
+        });
+
+        CreateButton(iconGeneratorPanel.transform, "Назад", new Vector2(0, -230), () => ShowOnly(mainMenu));
     }
 
     // === Вспомогательные ===
@@ -272,9 +248,7 @@ public class UIDynamicBuilder : MonoBehaviour
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(220, 40);
         rect.anchoredPosition = pos;
-
-        var img = go.GetComponent<Image>();
-        img.color = new Color(0.2f, 0.3f, 0.6f);
+        go.GetComponent<Image>().color = new Color(0.2f, 0.3f, 0.6f);
 
         var txtObj = new GameObject("Text", typeof(TextMeshProUGUI));
         txtObj.transform.SetParent(go.transform, false);
@@ -287,7 +261,6 @@ public class UIDynamicBuilder : MonoBehaviour
         var btn = go.GetComponent<Button>();
         if (onClick != null)
             btn.onClick.AddListener(onClick);
-
         return btn;
     }
 

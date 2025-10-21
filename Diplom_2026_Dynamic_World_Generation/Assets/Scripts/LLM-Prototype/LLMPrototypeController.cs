@@ -143,4 +143,43 @@ public class LLMPrototypeController : MonoBehaviour
             Debug.LogError($"💥 Ошибка при обращении к LLM: {ex.Message}");
         }
     }
+
+    // =====================================================
+    // 🎨 Автогенерация иконки по тексту квеста
+    // =====================================================
+    private async void TryAutoGenerateIcon(string storyText)
+    {
+        Debug.Log("🎨 Автогенерация иконки для квеста...");
+
+        // Пример: извлекаем тему квеста как основу для визуала
+        string visualPrompt = $"fantasy icon, {ExtractMainSubject(storyText)}";
+
+        // Отправляем описание в ComfyUI
+        Texture2D iconTexture = await ComfyUILocalConnector.GenerateIcon(visualPrompt);
+
+        if (iconTexture != null)
+        {
+            GeneratedContentSaver.SaveVisual(iconTexture);
+            Debug.Log("✅ Иконка успешно создана и сохранена!");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ Не удалось сгенерировать иконку!");
+        }
+    }
+
+    // Простой анализатор для вытаскивания ключевого объекта из текста
+    private string ExtractMainSubject(string storyText)
+    {
+        if (string.IsNullOrEmpty(storyText))
+            return "fantasy object";
+
+        // Примитивно: берем первое существительное / ключевое слово
+        if (storyText.Contains("дракон")) return "dragon";
+        if (storyText.Contains("меч")) return "sword";
+        if (storyText.Contains("маг")) return "wizard";
+        if (storyText.Contains("лес")) return "forest artifact";
+
+        return "fantasy artifact";
+    }
 }
