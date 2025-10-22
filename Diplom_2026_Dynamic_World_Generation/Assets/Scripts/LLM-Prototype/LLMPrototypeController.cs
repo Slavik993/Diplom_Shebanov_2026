@@ -120,6 +120,33 @@ public class LLMPrototypeController : MonoBehaviour
     {
         Debug.Log($"[LLMPrototypeController] ProcessJsonInput вызван с json: {json}");
 
+        var binder = FindObjectOfType<LLMUIBinder>();
+        if (binder != null)
+            binder.ShowLoading("🧠 Нейросеть генерирует ответ...");
+
+        // Здесь твоя реальная генерация (через API, ComfyUI и т.п.)
+        for (int i = 0; i <= 100; i += 10)
+        {
+            Debug.Log($"⏳ Прогресс генерации: {i}%");
+            await System.Threading.Tasks.Task.Delay(500);
+        }
+
+        string fakeResult = "✅ Генерация завершена успешно!";
+        if (binder != null)
+        {
+            binder.HideLoading();
+            binder.DisplayResult(fakeResult);
+        }
+        Debug.Log($"[LLMPrototypeController] ProcessJsonInput вызван с json: {json}");
+        Debug.Log($"🧠 [LLMController] Получен JSON:\n{json}");
+
+        // Заглушка ответа
+        string fakeResponse = $"🤖 Ответ LLM: обработан запрос\n{json}";
+        
+        // Показываем результат в UI
+        
+        if (binder != null)
+            binder.DisplayResult(fakeResponse);
         if (llmCharacter == null)
         {
             Debug.LogError("❌ LLMCharacter не назначен!");
@@ -182,4 +209,6 @@ public class LLMPrototypeController : MonoBehaviour
 
         return "fantasy artifact";
     }
+
+
 }

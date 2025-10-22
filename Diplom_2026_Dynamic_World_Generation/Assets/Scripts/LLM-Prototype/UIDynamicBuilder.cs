@@ -18,6 +18,11 @@ public class UIDynamicBuilder : MonoBehaviour
     public GameObject npcPanel;
     public GameObject iconGeneratorPanel;
 
+    [Header("UI загрузки")]
+    public GameObject loadingPanel;
+    public TextMeshProUGUI loadingText;
+    public Image loadingSpinner;
+
     [Header("Элементы NPC-панели")]
     public TMP_InputField npcNameField;
     public TMP_InputField npcEnvironmentField;

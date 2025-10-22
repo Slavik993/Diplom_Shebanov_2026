@@ -29,6 +29,25 @@ public class LLMUIBinder : MonoBehaviour
         BindUI();
     }
 
+    
+
+    public void ShowLoading(string message = "Генерация...")
+    {
+        if (builder.loadingPanel != null)
+        {
+            builder.loadingPanel.SetActive(true);
+            if (builder.loadingText != null)
+                builder.loadingText.text = message;
+        }
+    }
+
+    public void HideLoading()
+    {
+        if (builder.loadingPanel != null)
+            builder.loadingPanel.SetActive(false);
+    }
+
+
     public void BindUI()
     {
         // --- NPC ---
@@ -58,6 +77,8 @@ public class LLMUIBinder : MonoBehaviour
     // ==========================================================
     void OnGenerateDialogueClicked()
     {
+        Debug.Log("🧩 [UI] Кнопка 'Сгенерировать диалог' нажата");
+
         string name = builder.npcNameField.text;
         string environment = builder.npcEnvironmentField.text;
         string relation = builder.npcRelationDropdown.options[builder.npcRelationDropdown.value].text;
@@ -65,18 +86,19 @@ public class LLMUIBinder : MonoBehaviour
         string reaction = builder.npcReactionField.text;
 
         string inputJson = $@"{{
-    ""playerAction"": ""interact"",
-    ""npcName"": ""{name}"",
-    ""npcState"": ""{relation}"",
-    ""context"": {{
-        ""location"": ""{environment}"",
-        ""relationship"": ""{relation}""
-    }},
-    ""emotion"": ""{emotion}"",
-    ""reactionLevel"": {reaction}
-}}";
+            ""playerAction"": ""interact"",
+            ""npcName"": ""{name}"",
+            ""npcState"": ""{relation}"",
+            ""context"": {{
+                ""location"": ""{environment}"",
+                ""relationship"": ""{relation}""
+            }},
+            ""emotion"": ""{emotion}"",
+            ""reactionLevel"": {reaction}
+        }}";
 
-        Debug.Log($"📤 [UI] JSON для NPC:\n{inputJson}");
+        Debug.Log($"📤 [UI] JSON отправлен в LLMPrototypeController:\n{inputJson}");
+
         onGenerateDialogue?.Invoke(inputJson);
         controller.ProcessJsonInput(inputJson);
     }
@@ -115,10 +137,14 @@ public class LLMUIBinder : MonoBehaviour
     ""storyStyle"": ""{style}"",
     ""questType"": ""{questType}"",
     ""length"": ""{length}""
-}}";
+        }}";
 
         Debug.Log($"📤 [UI] JSON для Сказителя историй:\n{inputJson}");
         onGenerateStory?.Invoke(inputJson);
+        controller.ProcessJsonInput(inputJson);
+
+        ShowLoading($"📚 Генерация истории ({theme})...");
+
         controller.ProcessJsonInput(inputJson);
     }
 
@@ -146,19 +172,21 @@ public class LLMUIBinder : MonoBehaviour
     // ==========================================================
     void OnGenerateIconClicked()
     {
+        Debug.Log("🎨 [UI] Кнопка 'Сгенерировать иконку' нажата");
+
         string description = builder.iconDescriptionField.text;
         string style = builder.iconStyleDropdown.options[builder.iconStyleDropdown.value].text;
         string size = builder.iconSizeField.text;
 
         string inputJson = $@"{{
-    ""iconDescription"": ""{description}"",
-    ""iconStyle"": ""{style}"",
-    ""iconSize"": ""{size}""
-}}";
+            ""iconDescription"": ""{description}"",
+            ""iconStyle"": ""{style}"",
+            ""iconSize"": ""{size}""
+        }}";
 
-        Debug.Log($"📤 [UI] JSON для генератора икон:\n{inputJson}");
+        Debug.Log($"📤 [UI] JSON отправлен в LLMPrototypeController:\n{inputJson}");
+
         onGenerateIcon?.Invoke(inputJson);
-
         controller.ProcessJsonInput(inputJson);
     }
 
