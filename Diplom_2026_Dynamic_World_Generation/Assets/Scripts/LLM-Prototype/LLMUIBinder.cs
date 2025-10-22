@@ -29,8 +29,6 @@ public class LLMUIBinder : MonoBehaviour
         BindUI();
     }
 
-    
-
     public void ShowLoading(string message = "Генерация...")
     {
         if (builder.loadingPanel != null)
@@ -137,7 +135,7 @@ public class LLMUIBinder : MonoBehaviour
     ""storyStyle"": ""{style}"",
     ""questType"": ""{questType}"",
     ""length"": ""{length}""
-        }}";
+    }}";
 
         Debug.Log($"📤 [UI] JSON для Сказителя историй:\n{inputJson}");
         onGenerateStory?.Invoke(inputJson);
