@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Страница — 1" id="FVOtbzwShO8xb_7S_Tpv">
-    <mxGraphModel dx="2911" dy="2489" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2564" dy="2269" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -94,16 +94,16 @@
         <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-45" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;Адаптивный квест&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="745" y="455" width="180" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-46" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;Генерированная модель NPC&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+        <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-46" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;Диалоговое дерево&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="705" y="519" width="260" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-47" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;Обученная речевая модель&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+        <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-47" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;Иконки, спрайты, модели&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="700" y="570" width="290" height="50" as="geometry" />
         </mxCell>
         <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-50" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;MapMagic2&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="-11" y="700" width="80" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-52" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;Unity ML-Agents&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
+        <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-52" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;ComfyUI&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="40" y="696" width="152" height="30" as="geometry" />
         </mxCell>
         <mxCell id="OWpaZHNzUhLOPfv6ZXrJ-54" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;INK&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
