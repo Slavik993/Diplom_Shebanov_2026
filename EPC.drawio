@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Страница — 1" id="WOTC2RFd6Ww7UqOvjQHq">
-    <mxGraphModel dx="2911" dy="1320" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1869" dy="660" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -82,7 +82,7 @@
         <mxCell id="tVUnhFtpnOFTxOjMob7F-22" value="F3: Определить характеристики" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4C3;" parent="1" vertex="1">
           <mxGeometry x="470" y="330" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="tVUnhFtpnOFTxOjMob7F-25" value="Meshy/Tripo3D&lt;br&gt;Muse Sprite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#97D077;" parent="1" vertex="1">
+        <mxCell id="tVUnhFtpnOFTxOjMob7F-25" value="sd-turbo, sd3-medium" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#97D077;" parent="1" vertex="1">
           <mxGeometry x="40" y="330" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="tVUnhFtpnOFTxOjMob7F-26" value="D1: Датасеты" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EA6B66;" parent="1" vertex="1">
@@ -100,7 +100,7 @@
             <mxPoint x="220" y="340" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="tVUnhFtpnOFTxOjMob7F-29" value="AI Toolbox/LLMUnity&lt;br&gt;Dialoge System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#97D077;" parent="1" vertex="1">
+        <mxCell id="tVUnhFtpnOFTxOjMob7F-29" value="AI Toolbox/LLMUnity&lt;br&gt;Mistral-7B-Instruct" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#97D077;" parent="1" vertex="1">
           <mxGeometry x="697" y="320" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="tVUnhFtpnOFTxOjMob7F-30" value="Промты" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EA6B66;" parent="1" vertex="1">
@@ -166,7 +166,7 @@
             <mxPoint x="686" y="691" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="tVUnhFtpnOFTxOjMob7F-49" value="3D-модель (FBX), портрет (PNG)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EA6B66;" parent="1" vertex="1">
+        <mxCell id="tVUnhFtpnOFTxOjMob7F-49" value="иконки, спрайты,&amp;nbsp;&lt;div&gt;аватарки (PNG)&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EA6B66;" parent="1" vertex="1">
           <mxGeometry x="40" y="473.75" width="160" height="47.5" as="geometry" />
         </mxCell>
         <mxCell id="tVUnhFtpnOFTxOjMob7F-50" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;exitX=0.028;exitY=0.751;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" edge="1">

@@ -116,7 +116,7 @@ public class LLMPrototypeController : MonoBehaviour
     }
     public string testInputJson = "{}"; // временная заглушка для тестового JSON
 
-    public async void ProcessJsonInput(string json)
+    public async Task ProcessJsonInput(string json)
     {
         Debug.Log($"[LLMPrototypeController] ProcessJsonInput вызван с json: {json}");
 
