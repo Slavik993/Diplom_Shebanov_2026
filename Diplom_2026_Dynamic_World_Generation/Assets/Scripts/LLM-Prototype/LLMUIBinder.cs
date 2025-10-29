@@ -7,67 +7,124 @@ using System.IO;
 public class LLMUIBinder : MonoBehaviour
 {
     [Header("Основные связи")]
-    public UIDynamicBuilder builder;
     public LLMPrototypeController controller;
 
+    public LLMQuestGenerator questGenerator;
+
+    [Header("Quest Generator Панель")]
+    public GameObject questPanel;
+    public TMP_InputField inputField;
+    public TMP_Dropdown typeDropdown;
+    public TMP_Dropdown difficultyDropdown;
+    public Button generateButton;
+    public TMP_Text outputText;
+
+
+    [Header("NPC Панель")]
+    public GameObject npcPanel;
+    public TMP_InputField npcNameField;
+    public TMP_InputField npcEnvironmentField;
+    public TMP_Dropdown npcRelationDropdown;
+    public TMP_Dropdown npcEmotionDropdown;
+    public TMP_InputField npcReactionField;
+    public Button npcGenerateButton;
+    public Button npcSaveButton;
+    public TMP_Text npcDialogueText;
+
+    [Header("StoryTeller Панель")]
+    public GameObject storyTellerPanel;
+    public TMP_InputField storyThemeField;
+    public TMP_Dropdown storyStyleDropdown;
+    public TMP_Dropdown questTypeDropdown;
+    public TMP_InputField storyLengthField;
+    public Button storyGenerateButton;
+    public Button storySaveButton;
+    public TMP_Text storyOutputText;
+
+    [Header("Icon Generator Панель")]
+    public GameObject iconGeneratorPanel;
+    public TMP_InputField iconDescriptionField;
+    public TMP_Dropdown iconStyleDropdown;
+    public TMP_InputField iconSizeField;
+    public Button iconGenerateButton;
+    public Button iconSaveButton;
+    public TMP_Text iconStatusText;
+
+    [Header("Загрузка")]
+    public GameObject loadingPanel;
+    public TMP_Text loadingText;
+
     // === События ===
-    public Action<string> onGenerateDialogue; // NPC
-    public Action<string> onGenerateStory;    // Сказитель историй
-    public Action<string> onGenerateIcon;     // Генератор икон
+    public Action<string> onGenerateDialogue; 
+    public Action<string> onGenerateStory;    
+    public Action<string> onGenerateIcon;
 
     void Start()
     {
-        if (builder == null) builder = FindObjectOfType<UIDynamicBuilder>();
-        if (controller == null) controller = FindObjectOfType<LLMPrototypeController>();
+        if (controller == null)
+            controller = FindObjectOfType<LLMPrototypeController>();
 
-        if (builder == null || controller == null)
+        if (controller == null)
         {
-            Debug.LogError("❌ Не найден UIDynamicBuilder или LLMPrototypeController!");
+            Debug.LogError("❌ Не найден LLMPrototypeController!");
             return;
         }
 
         BindUI();
+        generateButton.onClick.AddListener(OnGenerateClicked);
     }
 
+    async void OnGenerateClicked()
+    {
+        string input = inputField.text;
+        string questType = typeDropdown.options[typeDropdown.value].text;
+        string difficulty = difficultyDropdown.options[difficultyDropdown.value].text;
+        string prompt = $"{questType} ({difficulty}): {input}";
+
+        outputText.text = "Генерация...";
+        string result = await questGenerator.GenerateQuest(prompt);
+        outputText.text = result;
+        Debug.Log("🔘 Кнопка генерации нажата");
+    }
+    
     public void ShowLoading(string message = "Генерация...")
     {
-        if (builder.loadingPanel != null)
+        if (loadingPanel != null)
         {
-            builder.loadingPanel.SetActive(true);
-            if (builder.loadingText != null)
-                builder.loadingText.text = message;
+            loadingPanel.SetActive(true);
+            if (loadingText != null)
+                loadingText.text = message;
         }
     }
 
     public void HideLoading()
     {
-        if (builder.loadingPanel != null)
-            builder.loadingPanel.SetActive(false);
+        if (loadingPanel != null)
+            loadingPanel.SetActive(false);
     }
-
 
     public void BindUI()
     {
         // --- NPC ---
-        if (builder.npcGenerateButton != null)
-            builder.npcGenerateButton.onClick.AddListener(OnGenerateDialogueClicked);
+        if (npcGenerateButton != null)
+            npcGenerateButton.onClick.AddListener(OnGenerateDialogueClicked);
 
-        if (builder.npcSaveButton != null)
-            builder.npcSaveButton.onClick.AddListener(SaveNPCDialogue);
+        if (npcSaveButton != null)
+            npcSaveButton.onClick.AddListener(SaveNPCDialogue);
 
         // --- StoryTeller ---
-        if (builder.storyGenerateButton != null)
-            builder.storyGenerateButton.onClick.AddListener(OnGenerateStoryClicked);
+        if (storyGenerateButton != null)
+            storyGenerateButton.onClick.AddListener(OnGenerateStoryClicked);
 
-        if (builder.storySaveButton != null)
-            builder.storySaveButton.onClick.AddListener(SaveStory);
+        if (storySaveButton != null)
+            storySaveButton.onClick.AddListener(SaveStory);
 
         // --- Icon Generator ---
-        if (builder.iconGenerateButton != null)
-            builder.iconGenerateButton.onClick.AddListener(OnGenerateIconClicked);
+        if (iconGenerateButton != null)
+            iconGenerateButton.onClick.AddListener(OnGenerateIconClicked);
 
-        if (builder.iconSaveButton != null)
-            builder.iconSaveButton.onClick.AddListener(SaveIcon);
+        if (iconSaveButton != null)
+            iconSaveButton.onClick.AddListener(SaveIcon);
     }
 
     // ==========================================================
@@ -77,11 +134,11 @@ public class LLMUIBinder : MonoBehaviour
     {
         Debug.Log("🧩 [UI] Кнопка 'Сгенерировать диалог' нажата");
 
-        string name = builder.npcNameField.text;
-        string environment = builder.npcEnvironmentField.text;
-        string relation = builder.npcRelationDropdown.options[builder.npcRelationDropdown.value].text;
-        string emotion = builder.npcEmotionDropdown.options[builder.npcEmotionDropdown.value].text;
-        string reaction = builder.npcReactionField.text;
+        string name = npcNameField.text;
+        string environment = npcEnvironmentField.text;
+        string relation = npcRelationDropdown.options[npcRelationDropdown.value].text;
+        string emotion = npcEmotionDropdown.options[npcEmotionDropdown.value].text;
+        string reaction = npcReactionField.text;
 
         string inputJson = $@"{{
             ""playerAction"": ""interact"",
@@ -103,7 +160,7 @@ public class LLMUIBinder : MonoBehaviour
 
     void SaveNPCDialogue()
     {
-        string text = builder.npcDialogueText.text;
+        string text = npcDialogueText.text;
         if (string.IsNullOrEmpty(text))
         {
             Debug.LogWarning("⚠️ Нет диалога для сохранения!");
@@ -117,7 +174,7 @@ public class LLMUIBinder : MonoBehaviour
         File.WriteAllText(filename, text);
 
         Debug.Log($"💾 Диалог сохранён: {filename}");
-        builder.npcDialogueText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
+        npcDialogueText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
     }
 
     // ==========================================================
@@ -125,10 +182,12 @@ public class LLMUIBinder : MonoBehaviour
     // ==========================================================
     void OnGenerateStoryClicked()
     {
-        string theme = builder.storyThemeField.text;
-        string style = builder.storyStyleDropdown.options[builder.storyStyleDropdown.value].text;
-        string length = builder.storyLengthField.text;
-        string questType = builder.questTypeDropdown.options[builder.questTypeDropdown.value].text;
+        Debug.Log("📚 [UI] Кнопка 'Сгенерировать историю' нажата");
+
+        string theme = storyThemeField.text;
+        string style = storyStyleDropdown.options[storyStyleDropdown.value].text;
+        string length = storyLengthField.text;
+        string questType = questTypeDropdown.options[questTypeDropdown.value].text;
 
         string inputJson = $@"{{
     ""storyTheme"": ""{theme}"",
@@ -138,17 +197,15 @@ public class LLMUIBinder : MonoBehaviour
     }}";
 
         Debug.Log($"📤 [UI] JSON для Сказителя историй:\n{inputJson}");
+
         onGenerateStory?.Invoke(inputJson);
         controller.ProcessJsonInput(inputJson);
-
         ShowLoading($"📚 Генерация истории ({theme})...");
-
-        controller.ProcessJsonInput(inputJson);
     }
 
     void SaveStory()
     {
-        string text = builder.storyOutputText.text;
+        string text = storyOutputText.text;
         if (string.IsNullOrEmpty(text))
         {
             Debug.LogWarning("⚠️ Нет истории для сохранения!");
@@ -162,7 +219,7 @@ public class LLMUIBinder : MonoBehaviour
         File.WriteAllText(filename, text);
 
         Debug.Log($"💾 История сохранена: {filename}");
-        builder.storyOutputText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
+        storyOutputText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
     }
 
     // ==========================================================
@@ -172,9 +229,9 @@ public class LLMUIBinder : MonoBehaviour
     {
         Debug.Log("🎨 [UI] Кнопка 'Сгенерировать иконку' нажата");
 
-        string description = builder.iconDescriptionField.text;
-        string style = builder.iconStyleDropdown.options[builder.iconStyleDropdown.value].text;
-        string size = builder.iconSizeField.text;
+        string description = iconDescriptionField.text;
+        string style = iconStyleDropdown.options[iconStyleDropdown.value].text;
+        string size = iconSizeField.text;
 
         string inputJson = $@"{{
             ""iconDescription"": ""{description}"",
@@ -190,7 +247,7 @@ public class LLMUIBinder : MonoBehaviour
 
     void SaveIcon()
     {
-        string text = builder.iconStatusText.text;
+        string text = iconStatusText.text;
         if (string.IsNullOrEmpty(text))
         {
             Debug.LogWarning("⚠️ Нет результата для сохранения!");
@@ -204,7 +261,7 @@ public class LLMUIBinder : MonoBehaviour
         File.WriteAllText(filename, text);
 
         Debug.Log($"💾 Информация об иконке сохранена: {filename}");
-        builder.iconStatusText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
+        iconStatusText.text = $"✅ Сохранено: {Path.GetFileName(filename)}";
     }
 
     // ==========================================================
@@ -212,13 +269,13 @@ public class LLMUIBinder : MonoBehaviour
     // ==========================================================
     public void DisplayResult(string text)
     {
-        if (builder.npcDialogueText != null && builder.npcPanel.activeSelf)
-            builder.npcDialogueText.text = text;
+        if (npcDialogueText != null && npcPanel.activeSelf)
+            npcDialogueText.text = text;
 
-        if (builder.storyOutputText != null && builder.storyTellerPanel.activeSelf)
-            builder.storyOutputText.text = text;
+        if (storyOutputText != null && storyTellerPanel.activeSelf)
+            storyOutputText.text = text;
 
-        if (builder.iconStatusText != null && builder.iconGeneratorPanel.activeSelf)
-            builder.iconStatusText.text = text;
+        if (iconStatusText != null && iconGeneratorPanel.activeSelf)
+            iconStatusText.text = text;
     }
 }

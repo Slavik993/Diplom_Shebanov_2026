@@ -210,5 +210,38 @@ public class LLMPrototypeController : MonoBehaviour
         return "fantasy artifact";
     }
 
+    
+
+    public async Task<string> GenerateResponse(string prompt)
+    {
+        if (llmCharacter == null)
+        {
+            Debug.LogError("❌ LLMCharacter не назначен в LLMPrototypeController!");
+            return "Ошибка: LLMCharacter не найден.";
+        }
+
+        Debug.Log($"📨 Отправляю запрос в модель: {prompt}");
+
+        try
+        {
+            // ✅ правильный метод общения с LLM — Chat()
+            string response = await llmCharacter.Chat(prompt);
+
+            if (string.IsNullOrEmpty(response))
+            {
+                Debug.LogWarning("⚠️ Модель вернула пустой ответ.");
+                return "⚠️ Модель не ответила.";
+            }
+
+            Debug.Log($"📜 Ответ от модели: {response}");
+            return response;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"💥 Ошибка при обращении к LLM: {ex.Message}");
+            return $"Ошибка при генерации: {ex.Message}";
+        }
+    }
+
 
 }
