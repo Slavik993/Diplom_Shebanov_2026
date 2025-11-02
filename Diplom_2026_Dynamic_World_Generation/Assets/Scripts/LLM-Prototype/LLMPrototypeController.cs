@@ -141,7 +141,7 @@ public class LLMPrototypeController : MonoBehaviour
         Debug.Log($"🧠 [LLMController] Получен JSON:\n{json}");
 
         // Заглушка ответа
-        string fakeResponse = $"🤖 Ответ LLM: обработан запрос\n{json}";
+        string fakeResponse = $"Ответ LLM: обработан запрос\n{json}";
         
         // Показываем результат в UI
         
