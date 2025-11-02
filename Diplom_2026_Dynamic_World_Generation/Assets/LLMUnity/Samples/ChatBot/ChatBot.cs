@@ -30,6 +30,18 @@ namespace LLMUnitySamples
 
         void Start()
         {
+
+            // Добавьте эти строки в самое начало метода Start
+            if (llmCharacter == null)
+            {
+                llmCharacter = FindObjectOfType<LLMCharacter>();
+                if (llmCharacter == null)
+                {
+                    Debug.LogError("LLMCharacter не найден в сцене! Убедитесь, что объект LLMCharacter существует.");
+                    return;
+                }
+            }
+
             if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             playerUI = new BubbleUI
             {
@@ -175,6 +187,13 @@ namespace LLMUnitySamples
         bool onValidateWarning = true;
         void OnValidate()
         {
+            // Добавьте эту проверку
+            if (llmCharacter == null)
+            {
+                Debug.LogWarning("LLMCharacter не назначен! Перетащите объект LLMCharacter в поле Llm Character.");
+                return;
+            }
+            
             if (onValidateWarning && !llmCharacter.remote && llmCharacter.llm != null && llmCharacter.llm.model == "")
             {
                 Debug.LogWarning($"Please select a model in the {llmCharacter.llm.gameObject.name} GameObject!");
