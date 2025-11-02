@@ -14,8 +14,8 @@ public class LLMQuestGenerator : MonoBehaviour
         // Имитация запроса — можно заменить на реальный вызов OpenAI / LLM
         await Task.Delay(2000);
 
-        string result = $"🧙‍♂️ Сгенерированный квест:\n{prompt}\n— Завершено успешно!";
-        Debug.Log("✅ Квест сгенерирован!");
+        string result = $"Сгенерированный квест:\n{prompt}\n— Завершено успешно!";
+        Debug.Log("Квест сгенерирован!");
         return result;
     }
 }
