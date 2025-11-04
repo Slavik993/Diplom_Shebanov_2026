@@ -55,6 +55,18 @@ public class LLMPrototypeController : MonoBehaviour
     }
 
 
+    public async Task<string> GenerateTextAsync(string prompt)
+    {
+        if (llmCharacter == null)
+        {
+            Debug.LogError("❌ llmCharacter не назначен!");
+            return "Ошибка: модель не найдена.";
+        }
+
+        string response = await llmCharacter.Chat(prompt);
+        Debug.Log($"🧠 Ответ модели: {response}");
+        return response;
+    }
 
     private async void OnGenerateDialogueFromUI(string jsonFromUI)
     {

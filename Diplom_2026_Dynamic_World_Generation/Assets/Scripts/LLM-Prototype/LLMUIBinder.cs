@@ -11,6 +11,8 @@ public class LLMUIBinder : MonoBehaviour
 
     public LLMQuestGenerator questGenerator;
 
+    public ComfyUIManager comfyUIManager;
+
     [Header("Quest Generator Панель")]
     public GameObject questPanel;
     public TMP_InputField inputField;
@@ -51,6 +53,10 @@ public class LLMUIBinder : MonoBehaviour
     public Button iconGenerateButton;
     public Button iconSaveButton;
     public TMP_Text iconStatusText;
+
+    public RawImage iconDisplayImage;
+
+    
 
     [Header("Загрузка")]
     public GameObject loadingPanel;

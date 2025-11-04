@@ -148,6 +148,15 @@ namespace LLMUnity
         /// - the chat template is constructed
         /// - the number of tokens to keep are based on the system prompt (if setNKeepToPrompt=true)
         /// </summary>
+
+        
+        public async Task<string> GenerateResponse(string prompt)
+        {
+            // Здесь ты можешь использовать тот метод, который реально вызывает LLM
+            Debug.Log($"🧠 LLM получил запрос: {prompt}");
+            await Task.Delay(500); // эмуляция запроса
+            return $"Ответ NPC: {prompt}";
+        }
         public override void Awake()
         {
             if (!enabled) return;
