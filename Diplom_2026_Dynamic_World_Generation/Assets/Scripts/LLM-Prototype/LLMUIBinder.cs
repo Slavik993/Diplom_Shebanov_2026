@@ -21,10 +21,12 @@ public class LLMUIBinder : MonoBehaviour
 
 
     [Header("NPC Панель")]
-    public GameObject npcPanel;
+    public GameObject NPCDialoguePanel;
     public TMP_InputField npcNameField;
     public TMP_InputField npcEnvironmentField;
+    public TMP_InputField playerInputField;
     public TMP_Dropdown npcRelationDropdown;
+    public Button NextButton;
     public TMP_Dropdown npcEmotionDropdown;
     public TMP_InputField npcReactionField;
     public Button npcGenerateButton;
@@ -269,13 +271,13 @@ public class LLMUIBinder : MonoBehaviour
     // ==========================================================
     public void DisplayResult(string text)
     {
-        if (npcDialogueText != null && npcPanel.activeSelf)
+        if (npcDialogueText != null && NPCDialoguePanel != null && NPCDialoguePanel.activeSelf)
             npcDialogueText.text = text;
 
-        if (storyOutputText != null && storyTellerPanel.activeSelf)
+        if (storyOutputText != null && storyTellerPanel != null && storyTellerPanel.activeSelf)
             storyOutputText.text = text;
 
-        if (iconStatusText != null && iconGeneratorPanel.activeSelf)
+        if (iconStatusText != null && iconGeneratorPanel != null && iconGeneratorPanel.activeSelf)
             iconStatusText.text = text;
     }
 }

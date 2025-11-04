@@ -13,7 +13,7 @@ public class LLMPrototypeController : MonoBehaviour
     
     [Header("LLM Connector")]
     public GameObject llmManagerObject; // Перетащите сюда LLMManager
-    private LLMCharacter llmCharacter;
+    public LLMCharacter llmCharacter;
 
     [Header("Debug Options")]
     public bool useTestJson = false;
