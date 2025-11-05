@@ -1376,10 +1376,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bcd73b7b4c10f148a2139f983ce32fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pythonPath: python
-  comfyUIPath: C:\Users\Machcreator\Downloads\Applied data analysis tasks\Diplom_Shebanov_2026\Diplom_2026_Dynamic_World_Generation\Assets\ComfyUI-master\main.py
-  comfyUIUrl: http://127.0.0.1:8188
-  useCPU: 1
+  comfyUrl: http://127.0.0.1:8188/api/generate
 --- !u!1 &865731224
 GameObject:
   m_ObjectHideFlags: 0
@@ -1409,6 +1406,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 628382f7ca7e6e64c9ada481a7b44c65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  comfyUIManager: {fileID: 804602708}
+  iconDisplay: {fileID: 2043354133}
   uiBinder: {fileID: 1291533693}
   llmManagerObject: {fileID: 214539293}
   llmCharacter: {fileID: 214539294}

@@ -6,11 +6,16 @@ using LLMUnity;
 
 public class LLMPrototypeController : MonoBehaviour
 {
+    [Header("ComfyUI Генератор")]
+    public ComfyUIManager comfyUIManager;   // Ссылка на менеджер ComfyUI
+
+    [Header("UI для отображения иконки")]
+    public UnityEngine.UI.RawImage iconDisplay;  // Поле под RawImage, где показывается картинка
     public LLMUIBinder uiBinder;   // Связь с UI
     private LLMUnity.LLM llm;      // 🔹 ссылка на LLM сервис
 
     [Header("UI Binder")]
-    
+
     [Header("LLM Connector")]
     public GameObject llmManagerObject; // Перетащите сюда LLMManager
     public LLMCharacter llmCharacter;
@@ -134,52 +139,68 @@ public class LLMPrototypeController : MonoBehaviour
 
         var binder = FindObjectOfType<LLMUIBinder>();
         if (binder != null)
-            binder.ShowLoading("🧠 Нейросеть генерирует ответ...");
+            binder.ShowLoading("🧠 Нейросеть генерирует иконку...");
 
-        // Здесь твоя реальная генерация (через API, ComfyUI и т.п.)
-        for (int i = 0; i <= 100; i += 10)
-        {
-            Debug.Log($"⏳ Прогресс генерации: {i}%");
-            await System.Threading.Tasks.Task.Delay(500);
-        }
-
-        string fakeResult = "✅ Генерация завершена успешно!";
-        if (binder != null)
-        {
-            binder.HideLoading();
-            binder.DisplayResult(fakeResult);
-        }
-        Debug.Log($"[LLMPrototypeController] ProcessJsonInput вызван с json: {json}");
+        // 🔹 Парсим JSON
+        IconRequest data = JsonUtility.FromJson<IconRequest>(json);
         Debug.Log($"🧠 [LLMController] Получен JSON:\n{json}");
 
-        // Заглушка ответа
-        string fakeResponse = $"Ответ LLM: обработан запрос\n{json}";
-        
-        // Показываем результат в UI
-        
-        if (binder != null)
-            binder.DisplayResult(fakeResponse);
-        if (llmCharacter == null)
+        // 🔹 Пошаговый визуальный прогресс (фишка)
+        for (int i = 0; i <= 100; i += 20)
         {
-            Debug.LogError("❌ LLMCharacter не назначен!");
+            Debug.Log($"⏳ Прогресс генерации: {i}%");
+            await System.Threading.Tasks.Task.Delay(300);
+        }
+
+        // 🔹 Проверяем наличие ComfyUIManager
+        if (comfyUIManager == null)
+        {
+            Debug.LogError("❌ ComfyUIManager не назначен в инспекторе!");
+            binder?.HideLoading();
+            binder?.DisplayResult("❌ Ошибка: ComfyUIManager не найден!");
             return;
         }
 
         try
         {
-            // 🔹 Отправляем JSON в модель
-            string resultText = await llmCharacter.Chat(json);
-            if (string.IsNullOrWhiteSpace(resultText))
-                resultText = "⚠ Модель не вернула ответ.";
+            // 🔹 Формируем prompt
+            string prompt = $"{data.iconDescription}, стиль {data.iconStyle}, размер {data.iconSize}";
+            Debug.Log($"🎨 [ComfyUI] Отправляем запрос: {prompt}");
 
-            Debug.Log($"🧠 Ответ от LLM:\n{resultText}");
+            // 🔹 Отправляем запрос на генерацию изображения
+            Texture2D texture = await comfyUIManager.GenerateImageAsync(prompt);
 
-            // 🔹 Передаём текст на экран
-            uiBinder?.DisplayResult(resultText);
+            // 🔹 Проверяем результат
+            if (texture != null)
+            {
+                Debug.Log("✅ Картинка успешно получена от ComfyUI!");
+
+                // Отображаем изображение в UI
+                if (iconDisplay != null)
+                {
+                    iconDisplay.texture = texture;
+                    Debug.Log("🖼️ Изображение показано в RawImage!");
+                }
+                else
+                {
+                    Debug.LogWarning("⚠ RawImage (iconDisplay) не назначен в инспекторе!");
+                }
+
+                binder?.HideLoading();
+                binder?.DisplayResult("✅ Иконка успешно сгенерирована!");
+            }
+            else
+            {
+                Debug.LogError("❌ ComfyUI не вернул изображение.");
+                binder?.HideLoading();
+                binder?.DisplayResult("❌ Не удалось получить изображение от ComfyUI.");
+            }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"💥 Ошибка при обращении к LLM: {ex.Message}");
+            Debug.LogError($"💥 Ошибка при генерации изображения: {ex.Message}");
+            binder?.HideLoading();
+            binder?.DisplayResult($"💥 Ошибка при генерации изображения:\n{ex.Message}");
         }
     }
 
@@ -222,7 +243,7 @@ public class LLMPrototypeController : MonoBehaviour
         return "fantasy artifact";
     }
 
-    
+
 
     public async Task<string> GenerateResponse(string prompt)
     {
@@ -257,3 +278,12 @@ public class LLMPrototypeController : MonoBehaviour
 
 
 }
+
+[System.Serializable]
+public class IconRequest
+{
+    public string iconDescription;
+    public string iconStyle;
+    public string iconSize;
+}
+
