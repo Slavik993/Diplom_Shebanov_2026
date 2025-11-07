@@ -57,7 +57,7 @@ public class ComfyUIManager : MonoBehaviour
             Texture2D resultTexture = null;
             bool completed = false;
 
-            for (int attempt = 0; attempt < 120; attempt++) // до ~120 сек ожидания
+            for (int attempt = 0; attempt < 999999999999999999; attempt++) // до ~120 сек ожидания
             {
                 await Task.Delay(2000); // опрашиваем каждые 2 сек
 

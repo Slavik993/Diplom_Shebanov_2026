@@ -137,36 +137,55 @@ public class LLMPrototypeController : MonoBehaviour
 
     public async Task ProcessJsonInput(string json)
     {
-        Debug.Log($"[LLMPrototypeController] ProcessJsonInput вызван с json: {json}");
+        Debug.Log($"[LLMPrototypeController] 🚀 Параллельная генерация контента запущена");
 
         var binder = FindObjectOfType<LLMUIBinder>();
-        if (binder != null)
-            binder.ShowLoading("🧠 Генерация контента...");
+        binder?.ShowLoading("🧠 Генерация квеста, диалога и иконки...");
 
-        // 📁 Создаём уникальную папку для сессии
-        string sessionFolder = Path.Combine(Application.dataPath, "SavedContent", 
+        // 📁 Папка для этой сессии
+        string sessionFolder = Path.Combine(Application.dataPath, "SavedContent",
             "Session_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
         Directory.CreateDirectory(sessionFolder);
 
         try
         {
-            // === 🧠 1. Генерация текста (квест или история) ===
-            string storyText = await llmCharacter.Chat(json);
-            if (string.IsNullOrWhiteSpace(storyText))
-                storyText = "⚠ Модель не вернула текст квеста.";
+            // 🧠 Генерация квеста
+            Task<string> questTask = llmCharacter.Chat(json);
 
+            // 💬 Генерация диалога — параллельно, но после текста
+            Task<string> dialogTask = questTask.ContinueWith(async t =>
+            {
+                string storyText = t.Result ?? "⚠ Пустой текст квеста.";
+                string dialogPrompt = $"Создай короткий диалог персонажей на основе: {storyText}";
+                return await llmCharacter.Chat(dialogPrompt);
+            }).Unwrap();
+
+            // 🎨 Генерация иконки — выполняется в главном потоке через UnitySynchronizationContext
+            // 🎨 Генерация иконки — выполняется на главном потоке
+            Task<Texture2D> iconTask = questTask.ContinueWith(async t =>
+            {
+                string storyText = t.Result ?? "fantasy object";
+                string iconPrompt = $"Изобрази иконку в стиле 2D для темы: {storyText}";
+
+                Texture2D iconResult = null;
+
+                // Переключаемся на главный поток Unity
+                await Awaitable.MainThreadAsync();
+                iconResult = await comfyUIManager.GenerateImageAsync(iconPrompt);
+
+                return iconResult;
+            }).Unwrap();
+
+            // ✅ Ждём выполнения всех трёх задач
+            await Task.WhenAll(questTask, dialogTask, iconTask);
+
+            string storyText = questTask.Result ?? "⚠ Пустой квест";
+            string dialogText = dialogTask.Result ?? "⚠ Пустой диалог";
+            Texture2D icon = iconTask.Result;
+
+            // 💾 Сохраняем результаты
             File.WriteAllText(Path.Combine(sessionFolder, "quest.txt"), storyText, Encoding.UTF8);
-            Debug.Log("📜 Квест сохранён.");
-
-            // === 💬 2. Генерация диалога ===
-            string dialogPrompt = $"Создай короткий диалог персонажей на основе: {storyText}";
-            string dialogText = await llmCharacter.Chat(dialogPrompt);
             File.WriteAllText(Path.Combine(sessionFolder, "dialog.txt"), dialogText, Encoding.UTF8);
-            Debug.Log("💬 Диалог сохранён.");
-
-            // === 🎨 3. Генерация иконки через ComfyUI ===
-            string iconPrompt = $"Нарисуй иконку для: {storyText}";
-            Texture2D icon = await comfyUIManager.GenerateImageAsync(iconPrompt);
 
             if (icon != null)
             {
@@ -175,27 +194,25 @@ public class LLMPrototypeController : MonoBehaviour
                 File.WriteAllBytes(iconPath, bytes);
                 Debug.Log($"🖼️ Иконка сохранена: {iconPath}");
 
+                await Awaitable.MainThreadAsync();
                 if (iconDisplay != null)
                     iconDisplay.texture = icon;
             }
-            else
-            {
-                Debug.LogError("❌ Не удалось сгенерировать иконку.");
-            }
 
-            // === ✅ Вывод результата в UI ===
+            Debug.Log($"✅ Всё готово! Контент сохранён в: {sessionFolder}");
             binder?.DisplayResult("✅ Квест, диалог и иконка успешно сгенерированы и сохранены!");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"💥 Ошибка в процессе генерации: {ex.Message}");
-            binder?.DisplayResult("❌ Ошибка генерации. Подробности в консоли.");
+            Debug.LogError($"💥 Ошибка при генерации: {ex.Message}\n{ex.StackTrace}");
+            binder?.DisplayResult("❌ Ошибка при генерации. Подробности в консоли.");
         }
         finally
         {
             binder?.HideLoading();
         }
     }
+
 
     // =====================================================
     // 🎨 Автогенерация иконки по тексту квеста
