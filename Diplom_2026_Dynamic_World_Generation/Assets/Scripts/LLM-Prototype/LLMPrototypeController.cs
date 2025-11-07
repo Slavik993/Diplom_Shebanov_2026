@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 using LLMUnity;
+using System.IO;
+using System.Text;
 
 public class LLMPrototypeController : MonoBehaviour
 {
@@ -139,68 +141,59 @@ public class LLMPrototypeController : MonoBehaviour
 
         var binder = FindObjectOfType<LLMUIBinder>();
         if (binder != null)
-            binder.ShowLoading("🧠 Нейросеть генерирует иконку...");
+            binder.ShowLoading("🧠 Генерация контента...");
 
-        // 🔹 Парсим JSON
-        IconRequest data = JsonUtility.FromJson<IconRequest>(json);
-        Debug.Log($"🧠 [LLMController] Получен JSON:\n{json}");
-
-        // 🔹 Пошаговый визуальный прогресс (фишка)
-        for (int i = 0; i <= 100; i += 20)
-        {
-            Debug.Log($"⏳ Прогресс генерации: {i}%");
-            await System.Threading.Tasks.Task.Delay(300);
-        }
-
-        // 🔹 Проверяем наличие ComfyUIManager
-        if (comfyUIManager == null)
-        {
-            Debug.LogError("❌ ComfyUIManager не назначен в инспекторе!");
-            binder?.HideLoading();
-            binder?.DisplayResult("❌ Ошибка: ComfyUIManager не найден!");
-            return;
-        }
+        // 📁 Создаём уникальную папку для сессии
+        string sessionFolder = Path.Combine(Application.dataPath, "SavedContent", 
+            "Session_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
+        Directory.CreateDirectory(sessionFolder);
 
         try
         {
-            // 🔹 Формируем prompt
-            string prompt = $"{data.iconDescription}, стиль {data.iconStyle}, размер {data.iconSize}";
-            Debug.Log($"🎨 [ComfyUI] Отправляем запрос: {prompt}");
+            // === 🧠 1. Генерация текста (квест или история) ===
+            string storyText = await llmCharacter.Chat(json);
+            if (string.IsNullOrWhiteSpace(storyText))
+                storyText = "⚠ Модель не вернула текст квеста.";
 
-            // 🔹 Отправляем запрос на генерацию изображения
-            Texture2D texture = await comfyUIManager.GenerateImageAsync(prompt);
+            File.WriteAllText(Path.Combine(sessionFolder, "quest.txt"), storyText, Encoding.UTF8);
+            Debug.Log("📜 Квест сохранён.");
 
-            // 🔹 Проверяем результат
-            if (texture != null)
+            // === 💬 2. Генерация диалога ===
+            string dialogPrompt = $"Создай короткий диалог персонажей на основе: {storyText}";
+            string dialogText = await llmCharacter.Chat(dialogPrompt);
+            File.WriteAllText(Path.Combine(sessionFolder, "dialog.txt"), dialogText, Encoding.UTF8);
+            Debug.Log("💬 Диалог сохранён.");
+
+            // === 🎨 3. Генерация иконки через ComfyUI ===
+            string iconPrompt = $"Нарисуй иконку для: {storyText}";
+            Texture2D icon = await comfyUIManager.GenerateImageAsync(iconPrompt);
+
+            if (icon != null)
             {
-                Debug.Log("✅ Картинка успешно получена от ComfyUI!");
+                byte[] bytes = icon.EncodeToPNG();
+                string iconPath = Path.Combine(sessionFolder, "icon.png");
+                File.WriteAllBytes(iconPath, bytes);
+                Debug.Log($"🖼️ Иконка сохранена: {iconPath}");
 
-                // Отображаем изображение в UI
                 if (iconDisplay != null)
-                {
-                    iconDisplay.texture = texture;
-                    Debug.Log("🖼️ Изображение показано в RawImage!");
-                }
-                else
-                {
-                    Debug.LogWarning("⚠ RawImage (iconDisplay) не назначен в инспекторе!");
-                }
-
-                binder?.HideLoading();
-                binder?.DisplayResult("✅ Иконка успешно сгенерирована!");
+                    iconDisplay.texture = icon;
             }
             else
             {
-                Debug.LogError("❌ ComfyUI не вернул изображение.");
-                binder?.HideLoading();
-                binder?.DisplayResult("❌ Не удалось получить изображение от ComfyUI.");
+                Debug.LogError("❌ Не удалось сгенерировать иконку.");
             }
+
+            // === ✅ Вывод результата в UI ===
+            binder?.DisplayResult("✅ Квест, диалог и иконка успешно сгенерированы и сохранены!");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"💥 Ошибка при генерации изображения: {ex.Message}");
+            Debug.LogError($"💥 Ошибка в процессе генерации: {ex.Message}");
+            binder?.DisplayResult("❌ Ошибка генерации. Подробности в консоли.");
+        }
+        finally
+        {
             binder?.HideLoading();
-            binder?.DisplayResult($"💥 Ошибка при генерации изображения:\n{ex.Message}");
         }
     }
 
