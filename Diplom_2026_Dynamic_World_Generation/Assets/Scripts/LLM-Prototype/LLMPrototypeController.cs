@@ -9,7 +9,7 @@ using System.Text;
 public class LLMPrototypeController : MonoBehaviour
 {
     [Header("ComfyUI Генератор")]
-    public ComfyUIManager comfyUIManager;   // Ссылка на менеджер ComfyUI
+    public PythonImageGenerator pythonImageGenerator;   // Ссылка на менеджер ComfyUI
 
     [Header("UI для отображения иконки")]
     public UnityEngine.UI.RawImage iconDisplay;  // Поле под RawImage, где показывается картинка
@@ -171,7 +171,7 @@ public class LLMPrototypeController : MonoBehaviour
 
                 // Переключаемся на главный поток Unity
                 await Awaitable.MainThreadAsync();
-                iconResult = await comfyUIManager.GenerateImageAsync(iconPrompt);
+                iconResult = await pythonImageGenerator.GenerateImageAsync(iconPrompt);
 
                 return iconResult;
             }).Unwrap();
@@ -214,29 +214,7 @@ public class LLMPrototypeController : MonoBehaviour
     }
 
 
-    // =====================================================
-    // 🎨 Автогенерация иконки по тексту квеста
-    // =====================================================
-    private async void TryAutoGenerateIcon(string storyText)
-    {
-        Debug.Log("🎨 Автогенерация иконки для квеста...");
 
-        // Пример: извлекаем тему квеста как основу для визуала
-        string visualPrompt = $"fantasy icon, {ExtractMainSubject(storyText)}";
-
-        // Отправляем описание в ComfyUI
-        Texture2D iconTexture = await ComfyUILocalConnector.GenerateIcon(visualPrompt);
-
-        if (iconTexture != null)
-        {
-            GeneratedContentSaver.SaveVisual(iconTexture);
-            Debug.Log("✅ Иконка успешно создана и сохранена!");
-        }
-        else
-        {
-            Debug.LogWarning("⚠️ Не удалось сгенерировать иконку!");
-        }
-    }
 
     // Простой анализатор для вытаскивания ключевого объекта из текста
     private string ExtractMainSubject(string storyText)

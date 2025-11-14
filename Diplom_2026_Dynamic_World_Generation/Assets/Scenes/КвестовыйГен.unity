@@ -6419,6 +6419,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bcd73b7b4c10f148a2139f983ce32fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  comfyServerUrl: http://127.0.0.1:8188
+  workflowPath: Assets/ComfyWorkflows/text2image_workflow_api.json
 --- !u!4 &2103138979
 Transform:
   m_ObjectHideFlags: 0

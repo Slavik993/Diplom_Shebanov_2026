@@ -1332,51 +1332,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 0
---- !u!1 &804602706
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 804602707}
-  - component: {fileID: 804602708}
-  m_Layer: 0
-  m_Name: ComfyUIManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &804602707
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 804602706}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 509.1319, y: 223.60194, z: -15.272697}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &804602708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 804602706}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bcd73b7b4c10f148a2139f983ce32fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  comfyUrl: http://127.0.0.1:8188/api/generate
 --- !u!1 &865731224
 GameObject:
   m_ObjectHideFlags: 0
@@ -1406,7 +1361,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 628382f7ca7e6e64c9ada481a7b44c65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  comfyUIManager: {fileID: 804602708}
+  pythonImageGenerator: {fileID: 2043354134}
   iconDisplay: {fileID: 2043354133}
   uiBinder: {fileID: 1291533693}
   llmManagerObject: {fileID: 214539293}
@@ -2537,7 +2492,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 865731225}
   questGenerator: {fileID: 1931635577}
-  comfyUIManager: {fileID: 804602708}
+  pythonImageGenerator: {fileID: 0}
   questPanel: {fileID: 0}
   inputField: {fileID: 0}
   typeDropdown: {fileID: 0}
@@ -3905,6 +3860,7 @@ GameObject:
   - component: {fileID: 2043354131}
   - component: {fileID: 2043354132}
   - component: {fileID: 2043354133}
+  - component: {fileID: 2043354134}
   m_Layer: 5
   m_Name: RawImage
   m_TagString: Untagged
@@ -3966,6 +3922,19 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
+--- !u!114 &2043354134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043354130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb041113fe4b50b49ba7d77f40720a0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverUrl: http://127.0.0.1:8188
 --- !u!1 &2072380923
 GameObject:
   m_ObjectHideFlags: 0
@@ -4303,7 +4272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4542b4bcf0f501e428403f96bf8b3c95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  comfyUI: {fileID: 804602708}
+  pythonImage: {fileID: 2043354134}
 --- !u!1 &2139821307
 GameObject:
   m_ObjectHideFlags: 0
@@ -4471,7 +4440,6 @@ SceneRoots:
   - {fileID: 750675271}
   - {fileID: 1291533694}
   - {fileID: 865731226}
-  - {fileID: 804602707}
   - {fileID: 2123244939}
   - {fileID: 1931635576}
   - {fileID: 214539295}

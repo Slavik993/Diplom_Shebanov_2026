@@ -11,7 +11,7 @@ public class LLMUIBinder : MonoBehaviour
 
     public LLMQuestGenerator questGenerator;
 
-    public ComfyUIManager comfyUIManager;
+    public PythonImageGenerator pythonImageGenerator;
 
     [Header("Quest Generator Панель")]
     public GameObject questPanel;
