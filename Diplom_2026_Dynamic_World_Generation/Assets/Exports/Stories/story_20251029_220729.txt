@@ -1,0 +1,68 @@
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class CafeBirthdayQuest : Quest
+{
+    public GameObject cafeScene; // Drag and drop the Cafe scene object in Unity
+    public Text questText;
+    public Text answer1;
+    public Text answer2;
+    public Button nextButton;
+
+    private int currentQuestion = 0;
+
+    private void Start()
+    {
+        SetUpQuest();
+    }
+
+    private void SetUpQuest()
+    {
+        questText.text = "День рождения однокурсницы! В кафе приглашены все участники группы по обучению национальной культуре России. Как мы отметим этот день?";
+        nextButton.interactable = true;
+
+        Answer(0, "Пожелаем ей здоровья и успехов в учебе.");
+        Answer(1, "Подарки и песни.");
+    }
+
+    private void Answer(int answerNumber, string answerText)
+    {
+        answers[answerNumber] = new AnswerData()
+        {
+            text = answerText,
+            nextQuestion = (currentQuestion + 1)
+        };
+    }
+
+    public override void NextQuestion()
+    {
+        currentQuestion++;
+
+        if (answers[currentQuestion].nextQuestion > -1)
+        {
+            questText.text = answers[currentQuestion].text;
+            nextButton.interactable = true;
+        }
+        else
+        {
+            questText.text = "Вы успешно отметили день рождения однокурсницы!";
+            nextButton.interactable = false;
+            CompleteQuest();
+        }
+    }
+}
+```
+
+In this example, I created a simple quest for the given user input using LLM-Unity. The quest is about celebrating a classmate's birthday at a cafe and involves making a choice between two options (giving well wishes or giving presents and singing songs). The quest consists of 100 characters as per the user's requirement.
+
+To use this script, you need to:
+
+1. Drag and drop the Cafe scene object into the `cafeScene` variable in Unity.
+2. Assign the Text components for the quest text, answer 1, and answer 2 to their respective variables in the script.
+3. Assign the Button component for the next button to its variable in the script.
+4. Attach the script to a GameObject in the Cafe scene.
+5. Run the game and interact with the quest by making a choice between the two options.

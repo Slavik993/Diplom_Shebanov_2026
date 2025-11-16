@@ -1,0 +1,57 @@
+﻿```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro; // For TextMeshPro text components
+
+public class PeterTheFirstNPC : NPCBase
+{
+    public GameObject dialogBox;
+    public Dialogue[] dialogues;
+
+    private int currentDialogueIndex = 0;
+
+    void Start()
+    {
+        dialogBox.SetActive(false); // Hide the dialog box at start
+    }
+
+    public override void Interact()
+    {
+        if (currentDialogueIndex < dialogues.Length)
+        {
+            ShowDialogue(dialogues[currentDialogueIndex].text);
+            currentDialogueIndex++;
+        }
+        else
+        {
+            Debug.Log("No more dialogues for this NPC.");
+        }
+    }
+
+    void ShowDialogue(string dialogueText)
+    {
+        dialogBox.SetActive(true); // Show the dialog box
+        GetComponentInChildren<TextMeshProUGUI>().text = dialogueText; // Set the text of the dialog box
+        StartCoroutine(HideDialogueAfterSeconds(3f)); // Hide the dialog box after a few seconds
+    }
+
+    IEnumerator HideDialogueAfterSeconds(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        dialogBox.SetActive(false); // Hide the dialog box
+    }
+}
+
+[System.Serializable]
+public class Dialogue
+{
+    public string text;
+}
+```
+
+This script creates an NPC named "PeterTheFirstNPC" with a dialog box and some predefined dialogues related to the theme of "Petre The First on the Wild West". The `Interact()` method is overridden from the base `NPCBase` class to show a random dialogue when the player interacts with the NPC.
+
+You can customize the dialogues by changing the text in the `dialogues` array, and you can add more dialogues by adding new `Dialogue` objects to the array. The length of the quest is not considered in this script, but it could be implemented by keeping track of the number of interactions or completed tasks.
+
+Keep in mind that you need to have a `TextMeshProUGUI` component attached to the dialog box for the text to appear correctly. Also, make sure that the `NPCBase` class is defined and working properly in your project.

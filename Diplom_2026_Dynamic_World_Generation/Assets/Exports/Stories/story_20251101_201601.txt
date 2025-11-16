@@ -1,0 +1,72 @@
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro; // For TextMeshPro text components
+
+public class FirstDayDialogue : MonoBehaviour
+{
+    public GameObject dialoguePanel; // Drag and drop the Canvas Group or RectTransform of your dialogue panel in Unity
+    public TMP_Text nameText, dialogueText;
+    public string[] lines = new string[10]; // Add more lines if needed
+
+    private int currentLine = 0;
+
+    void Start()
+    {
+        ShowDialogue("Привет! Я Алексей. Рад тебя видеть на нашем курсе.");
+    }
+
+    public void ShowDialogue(string name)
+    {
+        nameText.text = name;
+        dialoguePanel.SetActive(true);
+        StartCoroutine(TypeDialogue());
+    }
+
+    IEnumerator TypeDialogue()
+    {
+        foreach (char letter in lines[currentLine].ToCharArray())
+        {
+            dialogueText.text += letter;
+            yield return new WaitForSeconds(0.05f);
+        }
+
+        currentLine++;
+
+        if (currentLine < lines.Length)
+        {
+            StartCoroutine(TypeDialogueDelay());
+        }
+        else
+        {
+            dialoguePanel.SetActive(false);
+        }
+    }
+
+    IEnumerator TypeDialogueDelay()
+    {
+        yield return new WaitForSeconds(3f);
+        ShowDialogue("Здравствуйте, я Анна. Рад видеть тебя на нашем курсе.");
+    }
+}
+```
+
+Replace the lines in the `lines` array with your dialogue text for both characters:
+
+```csharp
+string[] lines = new string[10] {
+    "Привет! Я Алексей. Рад тебя видеть на нашем курсе.",
+    "Здравствуйте, я Анна. Рад видеть тебя на нашем курсе.",
+    "Что твоя специальность?",
+    "Я студент факультета истории искусств.",
+    "А я – физики.",
+    "Интересно! Мы можем пообщаться о культуре России.",
+    "Да, я бы это хотел.",
+    "Начав с древнейших времен, мы имеем богатые традиции в литературе, искусстве, музыке и архитектуре.",
+    "Известны многие русские писатели, такие как Достоевский, Толстой, Чехов.",
+    "Да, я знаком с ними. Это интересно, что ты увлекаешься?"
+};
+```
+
+This script creates a simple dialogue system for two characters (Aleksey and Anna) when they meet on the first day of university. The conversation covers the topic of Russian culture. You can modify the `lines` array to add more lines or change the existing ones as needed.

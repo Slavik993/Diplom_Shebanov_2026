@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI NPC Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 35px 30px;
+            flex: 1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .step:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .step-title {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+        
+        .step-content {
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        
+        .step-content div {
+            margin-bottom: 8px;
+        }
+        
+        .bullet {
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .bullet::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .arrow {
+            color: white;
+            font-size: 40px;
+            flex-shrink: 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .code-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .code-block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+        }
+        
+        .code-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #334155;
+        }
+        
+        .code-icon {
+            color: #667eea;
+            font-size: 20px;
+        }
+        
+        .code-title {
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .code-content {
+            color: #94a3b8;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        
+        .key {
+            color: #f472b6;
+        }
+        
+        .string {
+            color: #86efac;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        
+        .legend-text {
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .onnx { background: #667eea; }
+        .unity { background: #764ba2; }
+        .scriptable { background: #f59e0b; }
+        .gpu { background: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span class="icon">🤖</span>
+                AI NPC Pipeline: ONNX → Unity
+            </h1>
+        </div>
+        
+        <div class="pipeline">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">Input JSON</div>
+                <div class="step-content">
+                    <div class="bullet">Поведение игрока и контент сцены</div>
+                    <div class="bullet">Исследования и модели</div>
+                    <div class="bullet">playerAction</div>
+                    <div class="bullet">Dialogue</div>
+                    <div class="bullet">sceneContext</div>
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">ONNX Runtime</div>
+                <div class="step-content">
+                    <div class="bullet">Модель на GPU анализирует контент и взаимодействует с NPC</div>
+                    <div class="bullet">Результат:</div>
+                    <div class="bullet">▪ Behavior Analysis</div>
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-title">Output JSON</div>
+                <div class="step-content">
+                    <div class="bullet">Результат поведения</div>
+                    <div class="bullet">emotion, action, dialogue и NPC</div>
+                    <div class="bullet">dialogue</div>
+                    <div class="bullet">action</div>
+                    <div class="bullet">emotion</div>
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-title">Unity Scene</div>
+                <div class="step-content">
+                    <div class="bullet">C# скрипт обработает ScriptableObject и визуализирует в VFX</div>
+                    <div class="bullet">▪ UI Update</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="code-section">
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-icon">📥</span>
+                    <span class="code-title">ВХОДНОЙ JSON (ВХОД)</span>
+                </div>
+                <div class="code-content">{
+  <span class="key">"действиеИгрока"</span>: <span class="string">"исследовать"</span>,
+  <span class="key">"контекстСцены"</span>: {
+    <span class="key">"локация"</span>: <span class="string">"таверна"</span>,
+    <span class="key">"времяСуток"</span>: <span class="string">"вечер"</span>,
+    <span class="key">"атмосфера"</span>: <span class="string">"таинственная"</span>
+  },
+  <span class="key">"диалог"</span>: <span class="string">"..."</span>
+}</div>
+            </div>
+            
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-icon">📤</span>
+                    <span class="code-title">ВЫХОДНОЙ JSON (ВЫХОД)</span>
+                </div>
+                <div class="code-content">{
+  <span class="key">"диалог"</span>: <span class="string">"Ах, путник..."</span>,
+  <span class="key">"эмоция"</span>: <span class="string">"любопытство"</span>,
+  <span class="key">"действие"</span>: <span class="string">"подойти"</span>,
+  <span class="key">"выражениеЛица"</span>: <span class="string">"заинтересованность"</span>
+}</div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot onnx"></div>
+                <div class="legend-text">ONNX Runtime</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot unity"></div>
+                <div class="legend-text">Unity C#</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot scriptable"></div>
+                <div class="legend-text">ScriptableObjects</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot gpu"></div>
+                <div class="legend-text">GPU Acceleration</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

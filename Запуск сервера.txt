@@ -1,0 +1,1 @@
+python -u "c:\Users\Machcreator\Downloads\Applied data analysis tasks\Diplom_Shebanov_2026\Diplom_2026_Dynamic_World_Generation\Assets\ComfyUI-master\main.py" --cpu

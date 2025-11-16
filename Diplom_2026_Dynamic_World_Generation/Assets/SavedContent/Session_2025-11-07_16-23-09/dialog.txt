@@ -1,0 +1,24 @@
+﻿To create a shorter dialogue between Peter and the player, you can modify the `dialogues` array as follows:
+
+```csharp
+private string[] dialogues = new string[3][];
+private int currentDialogueIndex;
+
+dialogues[0] = new string[] {
+    "Петр Первый: Я слышал о легендарном музее на Антарктиде. Твоя помощь будет ценна, мой добрый друг!",
+    "Ты: А я готов пойти с тобой, царь!"
+};
+
+dialogues[1] = new string[] {
+    "Петр Первый: Мы должны найти старинную карту. Поищем в библиотеке.",
+    "Ты: Хорошо, царь!"
+};
+
+dialogues[2] = new string[] {
+    "Петр Первый: Эта карта! Мы нашли то, что искали!",
+    "Ты: Отлично, царь! Теперь мы можем отправиться в Антарктиду.",
+    "Петр Первый: Мы сделали это вместе, мой добрый друг!"
+};
+```
+
+This will result in a shorter conversation between Peter and the player. The number of lines and the content of each line can be adjusted as needed to fit your specific quest or story.

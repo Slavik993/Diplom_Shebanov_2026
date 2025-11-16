@@ -1,0 +1,70 @@
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class FamilyDinnerQuest : Quest
+{
+    public GameObject familyDinnerScene; // Drag and drop the Family Dinner scene object in Unity
+    public Text questText;
+    public InputField blankAnswerInput;
+    public Button nextButton;
+
+    private int currentQuestion = 0;
+
+    private void Start()
+    {
+        SetUpQuest();
+    }
+
+    private void SetUpQuest()
+    {
+        questText.text = "Ужин в семье, где студент живет по обмену. Родственники членов семьи пришли. Какое блюдо готовить для них?";
+        nextButton.interactable = true;
+    }
+
+    public override void NextQuestion()
+    {
+        currentQuestion++;
+
+        if (answers[currentQuestion].nextQuestion > -1)
+        {
+            questText.text = answers[currentQuestion].text;
+            nextButton.interactable = true;
+        }
+        else
+        {
+            string userAnswer = blankAnswerInput.text;
+            if (userAnswer == "Пирожки") // Replace with the correct answer
+            {
+                questText.text = "Вы готовите пирожки для родственников!";
+                nextButton.interactable = false;
+                CompleteQuest();
+            }
+            else
+            {
+                questText.text = "Неверный ответ. Попробуйте ещё раз.";
+                nextQuestion(); // Call NextQuestion() recursively to show the same question again
+            }
+        }
+    }
+
+    public override void AnswerCorrect()
+    {
+        base.AnswerCorrect();
+        questText.text = "Вы готовите правильное блюдо для родственников!";
+        nextButton.interactable = false;
+        CompleteQuest();
+    }
+}
+```
+
+In this example, I created a quest for the given user input using LLM-Unity. The quest is about cooking a dish for a family dinner when a student is living with a host family as an exchange student. The quest involves filling in a blank with the correct answer. To use this script, you need to:
+
+1. Drag and drop the Family Dinner scene object into the `familyDinnerScene` variable in Unity.
+2. Assign the Text components for the quest text and next button to their respective variables in the script.
+3. Assign the InputField component for the blank answer input to its variable in the script.
+4. Attach the script to a GameObject in the Family Dinner scene.
+5. Run the game and interact with the quest by entering the correct answer in the blank input field when prompted.

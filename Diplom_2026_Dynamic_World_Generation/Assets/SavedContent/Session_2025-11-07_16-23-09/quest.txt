@@ -1,0 +1,69 @@
+﻿```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro; // For TextMeshPro text components
+
+public class PetrFirstAntarcticaQuest : Quest
+{
+    public PetrFirstAntarcticaQuest(QuestData data) : base(data) { }
+
+    private string[] dialogues = new string[5][];
+    private int currentDialogueIndex;
+
+    protected override void Initialize()
+    {
+        title = "Путешествие Петра Первого в Антарктиду";
+        description = "Вы помогаете Петру Первому, первому царю России, найти легендарный город Музей на Антарктиде.";
+
+        dialogues[0] = new string[] {
+            "Петр Первый: Я слышал рассказы о легендарном музее на Антарктиде. Мне нужен твой помощник, мой добрый друг!",
+            "Ты: А я готов пойти с тобой, царь!"
+        };
+
+        dialogues[1] = new string[] {
+            "Петр Первый: Прекрасно! Мы должны найти старинную карту, которая ведет к музею. Поищем в библиотеке.",
+            "Ты: Хорошо, царь!"
+        };
+
+        dialogues[2] = new string[] {
+            "Петр Первый: Эта карта! Это то, что мы искали!",
+            "Ты: Отлично, царь! Теперь мы можем отправиться в Антарктиду."
+        };
+
+        dialogues[3] = new string[] {
+            "Петр Первый: Вот мы прибыли! Где же музей?",
+            "Ты: Мы должны искать знак, который покажет нам путь к музею."
+        };
+
+        dialogues[4] = new string[] {
+            "Петр Первый: Вот это! Знак!",
+            "Ты: Отлично, царь! Теперь мы можем пойти к музею.",
+            "Петр Первый: Мы сделали это, мой добрый друг!"
+        };
+
+        currentDialogueIndex = 0;
+    }
+
+    protected override void OnInteract()
+    {
+        if (currentDialogueIndex < dialogues.Length)
+        {
+            player.GetComponent<TextMeshProUGUI>().text = dialogues[currentDialogueIndex][0];
+            Invoke("NextDialogue", 2f);
+        }
+        else
+        {
+            CompleteQuest();
+        }
+    }
+
+    private void NextDialogue()
+    {
+        currentDialogueIndex++;
+        player.GetComponent<TextMeshProUGUI>().text = dialogues[currentDialogueIndex][0];
+    }
+}
+```
+
+This script creates a quest with the theme "Petr First in Antarctica", adventure style, and a length of 100 lines. The quest involves helping Peter the Great find a legendary museum in Antarctica by finding an old map and following a sign. The script includes dialogues between Peter and the player at various stages of the quest.

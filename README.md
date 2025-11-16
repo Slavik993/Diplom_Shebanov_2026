@@ -22,6 +22,10 @@ To Be
 Нотация BPMN
 <img width="1298" height="220" alt="BPMN" src="https://github.com/user-attachments/assets/8ff4c759-02a9-4c99-9ca9-39b92ec04adb" />
 
+Матрица Ранжирования
+<img width="916" height="615" alt="Матрица ранжирования" src="https://github.com/user-attachments/assets/fa7eac19-2321-4afa-babe-b9a924318c70" />
+
+
 
 
 
