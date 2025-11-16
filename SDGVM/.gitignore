@@ -21,7 +21,8 @@ Token.huggingface
 
 # Recordings can get excessive in size
 /[Rr]ecordings/
-
+/Assets/StreamingAssets/undreamai-v1.2.6-llamacpp/linux-cuda-cu12.2.0/libundreamai_linux-cuda-cu12.2.0.so
+/Assets/StreamingAssets/undreamai-v1.2.6-llamacpp/windows-cuda-cu12.2.0/undreamai_windows-cuda-cu12.2.0.dll
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # /[Aa]ssets/AssetStoreTools*
 
