@@ -7,7 +7,7 @@ using LLMUnity;
 
 public class QualityTester : MonoBehaviour
 {
-    public LLM llm;
+    public LLMCharacter llm;
     public int testCount = 5;
     public float averageTime = 0f;
     public float successRate = 0f;
@@ -45,10 +45,10 @@ public class QualityTester : MonoBehaviour
         var tcs = new TaskCompletionSource<string>();
         string response = "";
 
-        llm.Chat(
+        await llm.Chat(
             prompt,
             token => { response += token; },
-            full => { tcs.SetResult(full); }
+            () => { Debug.LogWarning("TODO QualityTester>> Здесь что-то непонятное, надо разобраться"); }
         );
 
         return await tcs.Task;  // Ждём завершения

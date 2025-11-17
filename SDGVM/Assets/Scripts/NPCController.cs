@@ -2,7 +2,7 @@ using UnityEngine;
   // Sentis 2.1.3 (не InferenceEngine!)
 
 public class NPCController : MonoBehaviour
-{
+{/*
     [Header("Модель ONNX")]
     public Unity.InferenceEngine.ModelAsset model;  // Перетащи .onnx
 
@@ -32,10 +32,10 @@ public class NPCController : MonoBehaviour
     {
         worker?.Dispose();
     }
-
+*/
     public string GetReaction(float rep, float threat)
     {
-        if (worker == null) return "NPC не готов";
+/*        if (worker == null) return "NPC не готов";
 
         try
         {
@@ -67,5 +67,5 @@ public class NPCController : MonoBehaviour
     {
         string reaction = GetReaction(0.8f, 0.2f);
         Debug.Log($"[NPC Тест] Реакция: {reaction}");
-    }
+*/    return "test::heya";}
 }

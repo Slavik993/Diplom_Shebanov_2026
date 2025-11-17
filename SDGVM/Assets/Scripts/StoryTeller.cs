@@ -13,7 +13,7 @@ public class StoryTeller : MonoBehaviour
     public Button generateButton;
 
     [Header("LLM")]
-    public LLM llm;  // Назначь в инспекторе
+    public LLMCharacter llm;  // Назначь в инспекторе
 
     private string currentResponse = "";
 
@@ -39,11 +39,11 @@ public class StoryTeller : MonoBehaviour
         string difficulty = inputDifficulty?.text ?? "средняя";
         string prompt = $"Создай квест. Жанр: {genre}. Сложность: {difficulty}. Формат JSON.";
 
-        // ← ИСПРАВЛЕНО: llm.Chat (реальный API, по GitHub LLMUnity)
+        // TODO: временный фикс под исправление ошибок, надо разобраться
         llm.Chat(
             prompt,
-            OnTokenReceived,  // Стриминг
-            OnChatCompleted   // Завершение
+            token => { Debug.LogWarning($"TODO StoryTeller>> непонятный token: {token}");},
+            () => { Debug.LogWarning("TODO StoryTeller>> Здесь что-то непонятное, надо разобраться"); }
         );
     }
 
