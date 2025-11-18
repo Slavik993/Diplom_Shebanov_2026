@@ -1,116 +1,128 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Networking;   // ← Важно, если используете UnityWebRequest
 using TMPro;
 using LLMUnity;
 using System.Collections;
+using System.IO;
+using System;
 
 public class GameAI : MonoBehaviour
 {
-    [Header("LLM")]
+    [Header("LLM NPC / Текст")]
     public LLMCharacter llmCharacter;
 
-    [Header("UI для текста")]
-    public TMP_InputField textPrompt;
-    public TMP_Text textOutput;
-    public Button textButton;
+    [Header("==== INPUT LEFT PANEL ====")]
+    public TMP_InputField inputPrompt;
+    public TMP_InputField inputLength;
+    public TMP_Dropdown dropdownStyle;
+    public TMP_Dropdown dropdownType;
+    public TMP_Dropdown dropdownDifficulty;
+    public TMP_InputField inputIconStyle;
+    public TMP_InputField inputIconSize;
+    public TMP_Dropdown dropdownNPCEmotion;
+    public TMP_Dropdown dropdownNPCRelation;
 
-    [Header("UI для картинки")]
-    public TMP_InputField imagePrompt; // TMP для единообразия
-    public RawImage imageDisplay;
-    public Button imageButton;
+    [Header("==== TEXT OUTPUT CENTER ====")]
+    public TMP_Text textStoryOutput;
+
+    [Header("==== NPC / PLAYER PANEL ====")]
+    public TMP_Text npcText;
+    public TMP_InputField playerInput;
+
+    [Header("==== IMAGE OUTPUT ====")]
+    public RawImage iconPreview;
+
+    [Header("==== BUTTONS ====")]
+    public Button btnGenerate;
+    public Button btnSaveAll;
+
+    [Header("==== IMAGE GENERATION ====")]
+    public ComfyUIManager comfy;
 
     void Start()
     {
-        if (textButton) textButton.onClick.AddListener(GenerateText);
-        if (imageButton) imageButton.onClick.AddListener(GenerateImage);
+        btnGenerate.onClick.AddListener(GenerateAll);
+        btnSaveAll.onClick.AddListener(SaveAll);
     }
 
-    // ===================== ТЕКСТ (квесты, NPC) =====================
-    public void GenerateText()
+    // ===============================================================
+    // ************** FULL GENERATION PIPELINE  ***********************
+    // ===============================================================
+    public void GenerateAll()
     {
-        if (llmCharacter == null || string.IsNullOrEmpty(textPrompt.text)) return;
-
-        textOutput.text = "Генерация...";
-
-        // LLMUnity 2.5.2: Chat(prompt, Callback<string>)
-        llmCharacter.Chat(textPrompt.text, OnTextGenerated);
+        GenerateStory();
+        GenerateNPC();
+        GenerateIcon();
     }
 
-    // Коллбек, который вызывается когда LLM вернёт финальный ответ (string)
-    private void OnTextGenerated(string full)
+    // ===============================================================
+    // **************  STORY TEXT  ***********************************
+    // ===============================================================
+    public void GenerateStory()
     {
-        // full — полный сгенерированный текст
-        textOutput.text = full;
-        Debug.Log("LLM -> " + full);
+        if (!llmCharacter) return;
+
+        string prompt =
+            $"Создай историю. Тема: {inputPrompt.text}. " +
+            $"Длина: {inputLength.text} слов. " +
+            $"Стиль: {dropdownStyle.captionText.text}. " +
+            $"Тип: {dropdownType.captionText.text}. " +
+            $"Сложность: {dropdownDifficulty.captionText.text}.";
+
+        textStoryOutput.text = "Генерация текста...";
+        llmCharacter.Chat(prompt, (result) => textStoryOutput.text = result);
     }
 
-    // Пример NPC:	(используем ту же сигнатуру — принимаем string)
-    public void NPCSpeak()
+    // ===============================================================
+    // **************  NPC BEHAVIOR  *********************************
+    // ===============================================================
+    public void GenerateNPC()
     {
-        if (llmCharacter == null) return;
+        if (!llmCharacter) return;
 
-        llmCharacter.Chat("Ты — старый воин. Поприветствуй игрока.", OnNPCSpeakComplete);
+        string npcPrompt =
+            $"Ты NPC c эмоцией {dropdownNPCEmotion.captionText.text}. " +
+            $"Отношение к игроку: {dropdownNPCRelation.captionText.text}. " +
+            $"Скажи реплику.";
+
+        npcText.text = "...";
+        llmCharacter.Chat(npcPrompt, (reply) => npcText.text = reply);
     }
 
-    private void OnNPCSpeakComplete(string reply)
+    // ===============================================================
+    // **************  IMAGE GENERATION *******************************
+    // ===============================================================
+    public void GenerateIcon()
     {
-        Debug.Log("NPC говорит: " + reply);
-    }
+        string prompt =
+            $"Иконка {inputIconStyle.text}, размер {inputIconSize.text}. " +
+            $"В стиле {dropdownStyle.captionText.text}.";
 
-    // ===================== КАРТИНКИ (ComfyUI) =====================
-    public void GenerateImage()
-    {
-        if (string.IsNullOrEmpty(imagePrompt.text)) return;
-        StartCoroutine(SendToComfy(imagePrompt.text));
-    }
-
-    IEnumerator SendToComfy(string prompt)
-    {
-        string json = "{\"prompt\": \"" + UnityWebRequest.EscapeURL(prompt) + "\", \"steps\": 20}";
-        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
-
-        using (UnityWebRequest www = new UnityWebRequest("http://127.0.0.1:8188/prompt", "POST"))
+        StartCoroutine(comfy.GenerateTexture(prompt, (tex) =>
         {
-            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            www.downloadHandler = new DownloadHandlerBuffer();
-            www.SetRequestHeader("Content-Type", "application/json");
+            iconPreview.texture = tex;
+        }));
+    }
 
-            yield return www.SendWebRequest();
+    // ===============================================================
+    // **************  SAVE EVERYTHING ********************************
+    // ===============================================================
+    public void SaveAll()
+    {
+        string folder = Application.dataPath + "/Generated/";
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError("ComfyUI: " + www.error + " | " + www.downloadHandler.text);
-                yield break;
-            }
+        File.WriteAllText(folder + "story.txt", textStoryOutput.text);
+        File.WriteAllText(folder + "npc.txt", npcText.text);
+
+        if (iconPreview.texture is Texture2D tex)
+        {
+            File.WriteAllBytes(folder + "icon.png", tex.EncodeToPNG());
         }
 
-        // Ждём рендера — при необходимости подкорректируйте таймаут
-        yield return new WaitForSeconds(6f);
-
-        // Попытка загрузить последний результат (поменяй URL, если в твоём ComfyUI он другой)
-        using (UnityWebRequest texRequest = UnityWebRequestTexture.GetTexture("http://127.0.0.1:8188/history/last"))
-        {
-            yield return texRequest.SendWebRequest();
-
-            if (texRequest.result == UnityWebRequest.Result.Success)
-            {
-                Texture2D tex = DownloadHandlerTexture.GetContent(texRequest);
-                imageDisplay.texture = tex;
-            }
-            else
-            {
-                Debug.LogError("Картинка не пришла: " + texRequest.error + " | " + texRequest.downloadHandler.text);
-            }
-        }
-    }
-
-    // Одна кнопка — всё сразу
-    [ContextMenu("Сгенерировать мир")]
-    public void GenerateWorld()
-    {
-        GenerateText();
-        GenerateImage();
-        NPCSpeak();
+        Debug.Log("✔ Сохранено в /Assets/Generated/");
+#if UNITY_EDITOR
+        UnityEditor.AssetDatabase.Refresh();
+#endif
     }
 }
