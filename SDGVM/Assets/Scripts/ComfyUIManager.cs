@@ -10,7 +10,8 @@ public class ComfyUIManager : MonoBehaviour
 {
     public string workflowFile = "sd_turbo_workflow.json";
     public string comfyURL = "http://127.0.0.1:8188";
-    public int maxWaitTime = 60; // максимальное время ожидания в секундах
+    public int maxWaitTime = 120; // максимальное время ожидания в секундах (2 минуты)
+    public float pollInterval = 1f; // интервал проверки (1 секунда для быстрой генерации)
     
     private string availableModel = null;
 
@@ -91,6 +92,7 @@ public class ComfyUIManager : MonoBehaviour
         string payload = $"{{\"prompt\":{template},\"client_id\":\"unity\"}}";
 
         Debug.Log("📨 Sending workflow with model: " + availableModel);
+        Debug.Log($"📝 Prompt: {prompt}");
 
         byte[] body = Encoding.UTF8.GetBytes(payload);
 
@@ -119,14 +121,22 @@ public class ComfyUIManager : MonoBehaviour
 
         Debug.Log($"⏳ Waiting for generation (prompt_id: {promptId})...");
 
-        // Polling: проверяем статус каждые 2 секунды
+        // Улучшенный polling с проверкой очереди
         string imageFilename = null;
         float elapsed = 0f;
+        int checkCount = 0;
         
         while (elapsed < maxWaitTime)
         {
-            yield return new WaitForSeconds(2f);
-            elapsed += 2f;
+            yield return new WaitForSeconds(pollInterval);
+            elapsed += pollInterval;
+            checkCount++;
+
+            // Проверяем статус очереди
+            if (checkCount % 3 == 0) // каждые 3 секунды проверяем очередь
+            {
+                yield return CheckQueueStatus(promptId);
+            }
 
             string historyUrl = $"{comfyURL}/history/{promptId}";
             UnityWebRequest historyReq = UnityWebRequest.Get(historyUrl);
@@ -135,36 +145,44 @@ public class ComfyUIManager : MonoBehaviour
 
             if (historyReq.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"❌ History check failed: {historyReq.error}");
+                Debug.LogWarning($"⚠️ History check failed: {historyReq.error}");
                 continue;
             }
 
             string historyJson = historyReq.downloadHandler.text;
-            Debug.Log($"📊 History response ({elapsed}s): {historyJson}");
+            
+            // Логируем только каждые 5 секунд чтобы не засорять консоль
+            if (checkCount % (int)(5f / pollInterval) == 0)
+            {
+                Debug.Log($"📊 Still processing... ({elapsed:F1}s / {maxWaitTime}s)");
+            }
 
             // Проверяем наличие изображения
             imageFilename = ExtractImageFilename(historyJson);
             
             if (!string.IsNullOrEmpty(imageFilename))
             {
-                Debug.Log($"✅ Image ready: {imageFilename}");
+                Debug.Log($"✅ Image ready: {imageFilename} (took {elapsed:F1}s)");
                 break;
             }
             
-            // Проверяем ошибки
-            if (historyJson.Contains("\"status\"") && historyJson.Contains("error"))
+            // Проверяем ошибки более детально
+            if (historyJson.Contains("\"error\"") || historyJson.Contains("\"exception\""))
             {
-                Debug.LogError($"❌ Generation error detected in history: {historyJson}");
+                Debug.LogError($"❌ Generation error detected!");
+                Debug.LogError($"History response: {historyJson}");
                 yield break;
             }
-
-            Debug.Log($"⏳ Still processing... ({elapsed}s / {maxWaitTime}s)");
         }
 
         if (string.IsNullOrEmpty(imageFilename))
         {
             Debug.LogError($"❌ Timeout: No image generated after {maxWaitTime} seconds");
-            Debug.LogError("Check ComfyUI console for errors!");
+            Debug.LogError("🔧 Possible causes:");
+            Debug.LogError("   1. ComfyUI is not running or crashed");
+            Debug.LogError("   2. Model is too slow (use SD Turbo or SDXL Turbo)");
+            Debug.LogError("   3. Workflow has errors (check ComfyUI console)");
+            Debug.LogError("   4. GPU memory issue (reduce resolution/batch size)");
             yield break;
         }
 
@@ -178,13 +196,33 @@ public class ComfyUIManager : MonoBehaviour
         if (texReq.result == UnityWebRequest.Result.Success)
         {
             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
-            Debug.Log("✅ Texture loaded successfully!");
+            Debug.Log($"✅ Texture loaded successfully! Size: {tex.width}x{tex.height}");
             callback?.Invoke(tex);
         }
         else
         {
             Debug.LogError($"❌ Texture download failed: {texReq.error}");
             callback?.Invoke(null);
+        }
+    }
+
+    private IEnumerator CheckQueueStatus(string promptId)
+    {
+        UnityWebRequest queueReq = UnityWebRequest.Get($"{comfyURL}/queue");
+        yield return queueReq.SendWebRequest();
+
+        if (queueReq.result == UnityWebRequest.Result.Success)
+        {
+            string queueJson = queueReq.downloadHandler.text;
+            
+            // Простая проверка позиции в очереди
+            int runningCount = Regex.Matches(queueJson, @"""queue_running""").Count;
+            int pendingCount = Regex.Matches(queueJson, @"""queue_pending""").Count;
+            
+            if (runningCount > 0 || pendingCount > 0)
+            {
+                Debug.Log($"📊 Queue status - Running: {runningCount}, Pending: {pendingCount}");
+            }
         }
     }
 
