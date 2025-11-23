@@ -1,0 +1,34 @@
+I'm here to help you create a quest for international students about Russian national culture, using ComfyUI for creation. Based on your instructions, here's a story concept for a "Petrovskaia Village Horror" quest with the theme of "Peter the Great on Mars" and the objective of "Finding the Death of Koschei the Deathless".
+
+**Story:**
+
+Once upon a time in the distant reaches of the cosmos, there was a mysterious Russian village named Petrovskaia. This quaint settlement, established by the great Peter the First himself during his legendary journey to Mars, was unlike any other. The villagers were descendants of brave explorers who had followed their Tsar to the Red Planet.
+
+However, peace and prosperity in Petrovskaia were soon disrupted when rumors began to spread about the return of an ancient evil - Koschei the Deathless. This legendary figure was said to be nearly invulnerable, with his immortal soul hidden deep within a series of nested matryoshka dolls.
+
+**Quest:**
+
+The quest begins as students arrive in Petrovskaia, greeted by the village elder who shares the ominous news about Koschei's return. The students are tasked with finding and defeating this menacing creature to restore peace to the village.
+
+**Dialogue Tree:**
+
+1. Students approach the village elder for information on the recent disturbances.
+   a) Elder shares the legend of Koschei the Deathless.
+      i) Students ask about the rumors of his return.
+         a) Elder explains that he has been sighted near the ancient forest.
+      ii) Students ask for any clues or leads.
+         a) Elder gives them an old map and warns them to be careful.
+
+2. Students follow the lead from the elder and reach the ancient forest.
+   a) They encounter various challenges, such as solving riddles, overcoming natural obstacles, and dealing with supernatural creatures inspired by Russian folklore.
+   b) Upon reaching the heart of the forest, they find a hidden chamber containing a series of matryoshka dolls.
+
+3. Students must figure out which doll contains the immortal soul of Koschei the Deathless.
+   a) They can consult with village elders, research ancient texts, or seek help from local spirits.
+   b) Once they've identified the correct doll, they must find a way to destroy it and end Koschei's reign of terror.
+
+**Visual Aids:**
+
+The quest will include various visual aids such as illustrations of Petrovskaia village, the ancient forest, and the matryoshka dolls. Additionally, there may be animations or interactive elements to enhance the overall experience for students.
+
+This "Petrovskaia Village Horror" quest is designed to provide an engaging and immersive learning experience for international students while introducing them to various aspects of Russian national culture, folklore, and history.

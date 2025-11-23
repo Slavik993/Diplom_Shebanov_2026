@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 public class ComfyUIManager : MonoBehaviour
 {
-    public string workflowFile = "sd_turbo_workflow.json";
+    public string workflowFile = "awesome_rpg_icon_workflow.json";
     public string comfyURL = "http://127.0.0.1:8188";
     public int maxWaitTime = 120; // максимальное время ожидания в секундах (2 минуты)
     public float pollInterval = 1f; // интервал проверки (1 секунда для быстрой генерации)
@@ -84,6 +84,7 @@ public class ComfyUIManager : MonoBehaviour
         string template = File.ReadAllText(path);
         
         // Заменяем плейсхолдеры
+        template = template.Replace("<PROMPT>", EscapeJson(prompt)).Replace("-1", UnityEngine.Random.Range(100000000, 999999999).ToString());
         template = template.Replace("<PROMPT>", EscapeJson(prompt));
         template = template.Replace("УКАЖИТЕ_ИМЯ_ВАШЕЙ_МОДЕЛИ.safetensors", availableModel);
         template = template.Replace("sd_turbo.safetensors", availableModel);

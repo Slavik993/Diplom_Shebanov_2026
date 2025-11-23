@@ -1,0 +1,106 @@
+{
+  "last_node_id": 9,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [100, 100],
+      "inputs": {
+        "ckpt_name": "awesomeRPGIcon2000_awesomeRPGIcon2000.safetensors"
+      },
+      "outputs": {
+        "MODEL": ["3", 0],
+        "CLIP": ["6", 0],
+        "VAE": ["8", 1]
+      }
+    },
+    {
+      "id": 3,
+      "type": "KSampler",
+      "pos": [500, 100],
+      "inputs": {
+        "seed": -1,
+        "steps": 20,
+        "cfg": 7.5,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "positive": ["6", 0],
+        "negative": ["7", 0],
+        "model": ["1", 0],
+        "latent_image": ["4", 0]
+      },
+      "outputs": {
+        "LATENT": ["8", 0]
+      }
+    },
+    {
+      "id": 4,
+      "type": "EmptyLatentImage",
+      "pos": [300, 400],
+      "inputs": {
+        "width": 64,
+        "height": 64,
+        "batch_size": 1
+      },
+      "outputs": {
+        "LATENT": ["3", 6]
+      }
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [300, 100],
+      "inputs": {
+        "text": "<PROMPT>",
+        "clip": ["1", 1]
+      },
+      "outputs": {
+        "CONDITIONING": ["3", 4]
+      }
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [300, 250],
+      "inputs": {
+        "text": "blurry, low quality, deformed, ugly, text, watermark, lowres, bad anatomy, extra limbs, out of frame",
+        "clip": ["1", 1]
+      },
+      "outputs": {
+        "CONDITIONING": ["3", 5]
+      }
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [700, 100],
+      "inputs": {
+        "samples": ["3", 0],
+        "vae": ["1", 2]
+      },
+      "outputs": {
+        "IMAGE": ["9", 0]
+      }
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [900, 100],
+      "inputs": {
+        "filename_prefix": "RPG_Icon",
+        "images": ["8", 0]
+      }
+    }
+  ],
+  "links": [
+    [1,1,0,3,0],
+    [1,1,1,6,1],
+    [1,1,2,8,1],
+    [4,0,0,3,6],
+    [6,0,0,3,4],
+    [7,0,0,3,5],
+    [3,0,0,8,0],
+    [8,0,0,9,0]
+  ],
+  "version": 0.4
+}

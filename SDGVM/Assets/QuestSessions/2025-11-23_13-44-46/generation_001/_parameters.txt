@@ -1,0 +1,17 @@
+=== GENERATION PARAMETERS ===
+Time: 2025-11-23 13:50:05
+
+[STORY/QUEST]
+Prompt: Петр Первый на Марсе
+Length:  words
+Style: Деревенский хоррор
+Type: Найти смерть Кощееву
+Difficulty: Реальная деревенская
+
+[NPC]
+Emotion: Старообрядческое смирение
+Relation: Хотят тебя сжечь на всякий
+
+[ICON]
+Style: 
+Size: 

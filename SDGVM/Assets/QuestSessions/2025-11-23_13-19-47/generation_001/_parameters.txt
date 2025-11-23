@@ -1,0 +1,17 @@
+=== GENERATION PARAMETERS ===
+Time: 2025-11-23 13:31:58
+
+[STORY/QUEST]
+Prompt: Петр Первый на Марсе
+Length: 100 words
+Style: Северные поморские сказки
+Type: Сходить за тридевять земель
+Difficulty: Сказочная
+
+[NPC]
+Emotion: Старообрядческое смирение
+Relation: Приняли за святого
+
+[ICON]
+Style: 
+Size: 
