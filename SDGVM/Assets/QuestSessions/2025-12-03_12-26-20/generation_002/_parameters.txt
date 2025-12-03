@@ -1,0 +1,17 @@
+=== GENERATION PARAMETERS ===
+Time: 2025-12-03 12:36:04
+
+[STORY/QUEST]
+Prompt: Приключение Царя Соломона
+Length: 100 words
+Style: Сказания о Святой Руси
+Type: Найти смерть Кощееву
+Difficulty: Как в жизни 90-х
+
+[NPC]
+Emotion: Бабкин плач-ярыч
+Relation: Приняли за нежить
+
+[ICON]
+Style: 
+Size: 
