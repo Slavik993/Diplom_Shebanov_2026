@@ -16,8 +16,30 @@ public class ComfyUIManager : MonoBehaviour
     
     [Header("Server Auto-Start")]
     public bool autoStartServer = true;
-    public string comfyUIPath = @"C:\ComfyUI_windows_portable"; // Путь к вашей установке ComfyUI
-    public int serverStartTimeout = 30; // Время ожидания запуска сервера
+    public bool useCPU = true; // Новый флаг для --cpu
+    
+    // Путь будет относительно билда
+    private string ComfyUIPath
+    {
+        get
+        {
+            #if UNITY_EDITOR
+            // В редакторе: ищем в Assets/ComfyUI
+            string editorPath = Path.Combine(Application.dataPath, "ComfyUI");
+            if (Directory.Exists(editorPath))
+            {
+                return editorPath;
+            }
+            // Если нет в Assets, пробуем рядом с проектом
+            return Path.Combine(Application.dataPath, "..", "ComfyUI");
+            #else
+            // В билде: рядом с .exe в папке ComfyUI_Portable
+            return Path.Combine(Application.dataPath, "..", "ComfyUI_Portable");
+            #endif
+        }
+    }
+    
+    public int serverStartTimeout = 60; // Увеличил таймаут для CPU режима
     
     private string availableModel = null;
     private Process comfyProcess = null;
@@ -71,13 +93,23 @@ public class ComfyUIManager : MonoBehaviour
 
     IEnumerator StartComfyUIServer()
     {
-        string pythonExe = Path.Combine(comfyUIPath, "python_embeded", "python.exe");
-        string mainScript = Path.Combine(comfyUIPath, "ComfyUI", "main.py");
+        string comfyPath = ComfyUIPath;
+        string pythonExe = Path.Combine(comfyPath, "python_embeded", "python.exe");
+        string mainScript = Path.Combine(comfyPath, "ComfyUI", "main.py");
+
+        UnityEngine.Debug.Log($"🔍 Looking for ComfyUI at: {comfyPath}");
+
+        if (!Directory.Exists(comfyPath))
+        {
+            UnityEngine.Debug.LogError($"❌ ComfyUI folder not found: {comfyPath}");
+            UnityEngine.Debug.LogError("💡 Make sure ComfyUI_Portable folder is next to the .exe!");
+            yield break;
+        }
 
         if (!File.Exists(pythonExe))
         {
             UnityEngine.Debug.LogError($"❌ Python not found: {pythonExe}");
-            UnityEngine.Debug.LogError("💡 Set correct comfyUIPath in Inspector!");
+            UnityEngine.Debug.LogError("💡 Check python_embeded folder in ComfyUI_Portable!");
             yield break;
         }
 
@@ -87,8 +119,8 @@ public class ComfyUIManager : MonoBehaviour
             yield break;
         }
 
-        // Запускаем процесс (без try-catch чтобы избежать ошибки с yield)
-        bool processStarted = StartComfyProcess(pythonExe, mainScript);
+        // Запускаем процесс
+        bool processStarted = StartComfyProcess(pythonExe, mainScript, comfyPath);
         
         if (!processStarted)
         {
@@ -97,6 +129,10 @@ public class ComfyUIManager : MonoBehaviour
         }
 
         UnityEngine.Debug.Log("⏳ Waiting for ComfyUI to start...");
+        if (useCPU)
+        {
+            UnityEngine.Debug.Log("⚠️ CPU mode enabled - may take longer to start and generate");
+        }
 
         // Ждем пока сервер запустится
         float elapsed = 0f;
@@ -127,20 +163,31 @@ public class ComfyUIManager : MonoBehaviour
         }
     }
 
-    private bool StartComfyProcess(string pythonExe, string mainScript)
+    private bool StartComfyProcess(string pythonExe, string mainScript, string comfyPath)
     {
         try
         {
+            // Формируем аргументы с флагом --cpu если нужно
+            string arguments = $"\"{mainScript}\" --listen 127.0.0.1 --port 8188";
+            if (useCPU)
+            {
+                arguments += " --cpu";
+                UnityEngine.Debug.Log("🖥️ Starting in CPU mode");
+            }
+
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = pythonExe,
-                Arguments = $"\"{mainScript}\" --listen 127.0.0.1 --port 8188",
-                WorkingDirectory = Path.Combine(comfyUIPath, "ComfyUI"),
+                Arguments = arguments,
+                WorkingDirectory = Path.Combine(comfyPath, "ComfyUI"),
                 UseShellExecute = false,
                 CreateNoWindow = false, // Показываем окно для отладки
                 RedirectStandardOutput = false,
                 RedirectStandardError = false
             };
+
+            UnityEngine.Debug.Log($"▶️ Launching: {pythonExe}");
+            UnityEngine.Debug.Log($"📝 Arguments: {arguments}");
 
             comfyProcess = Process.Start(startInfo);
             return comfyProcess != null;
@@ -252,16 +299,14 @@ public class ComfyUIManager : MonoBehaviour
         UnityEngine.Debug.Log($"⏳ Waiting for generation (prompt_id: {promptId})...");
         UnityEngine.Debug.Log("⚠️ NO TIMEOUT - Will wait indefinitely until image is ready");
 
-        // УБРАН ТАЙМЕР - ждем бесконечно пока не сгенерируется
         string imageFilename = null;
         int checkCount = 0;
         
-        while (true) // Бесконечный цикл вместо проверки времени
+        while (true)
         {
             yield return new WaitForSeconds(pollInterval);
             checkCount++;
 
-            // Проверяем статус очереди каждые 3 секунды
             if (checkCount % 3 == 0)
             {
                 yield return CheckQueueStatus(promptId);
@@ -280,13 +325,11 @@ public class ComfyUIManager : MonoBehaviour
 
             string historyJson = historyReq.downloadHandler.text;
             
-            // Логируем каждые 5 секунд
             if (checkCount % (int)(5f / pollInterval) == 0)
             {
                 UnityEngine.Debug.Log($"📊 Still processing... ({checkCount * pollInterval:F0}s elapsed)");
             }
 
-            // Проверяем наличие изображения
             imageFilename = ExtractImageFilename(historyJson);
             
             if (!string.IsNullOrEmpty(imageFilename))
@@ -295,7 +338,6 @@ public class ComfyUIManager : MonoBehaviour
                 break;
             }
             
-            // Проверяем ошибки
             if (historyJson.Contains("\"error\"") || historyJson.Contains("\"exception\""))
             {
                 UnityEngine.Debug.LogError($"❌ Generation error detected!");
