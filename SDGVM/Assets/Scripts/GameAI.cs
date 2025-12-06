@@ -26,11 +26,12 @@ public class GameAI : MonoBehaviour
     [Header("==== NPC CHAT ====")]
     public Button playerSendButton;
     public ScrollRect chatScrollRect;
-    public TMP_Text chatHistoryText;           // ← теперь это основной чат
-    public TMP_InputField playerInput;         // ← поле ввода игрока
+    public TMP_Text chatHistoryText;
+    public TMP_InputField playerInput;
 
     [Header("==== TEXT OUTPUT CENTER ====")]
     public TMP_Text textStoryOutput;
+    public ScrollRect storyScrollRect;
 
     [Header("==== IMAGE OUTPUT ====")]
     public RawImage iconPreview;
@@ -69,8 +70,13 @@ public class GameAI : MonoBehaviour
             });
         }
 
-        // Приветствие NPC при старте (по желанию)
-        StartCoroutine(GenerateNPCResponse("")); // пустое сообщение = просто приветствие
+        // Настройка центрирования текста квеста
+        if (textStoryOutput != null)
+        {
+            textStoryOutput.alignment = TextAlignmentOptions.Center;
+        }
+
+        StartCoroutine(GenerateNPCResponse(""));
     }
 
     void CreateSessionFolder()
@@ -87,7 +93,6 @@ public class GameAI : MonoBehaviour
         StartCoroutine(GenerateAllSequence());
     }
 
-    // ====================== ОТПРАВКА СООБЩЕНИЯ ИГРОКОМ ======================
     public void SendPlayerMessage()
     {
         if (string.IsNullOrWhiteSpace(playerInput.text)) return;
@@ -101,7 +106,6 @@ public class GameAI : MonoBehaviour
         StartCoroutine(GenerateNPCResponse(playerMessage));
     }
 
-    // ====================== ОТВЕТ NPC ======================
     IEnumerator GenerateNPCResponse(string playerMessage)
     {
         if (!llmCharacter)
@@ -113,71 +117,129 @@ public class GameAI : MonoBehaviour
         AddChatMessage("NPC", "…");
         StartCoroutine(ScrollDelayed());
 
-        string history = GetShortChatHistory();
+        // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: используем прямую инструкцию без ролевых меток
+        string systemPrompt;
+        
+        if (string.IsNullOrEmpty(playerMessage))
+        {
+            systemPrompt = "Напиши короткое приветствие от дружелюбного персонажа русской сказки. 2-3 предложения. Говори от первого лица.";
+        }
+        else
+        {
+            string emotion = dropdownNPCEmotion.captionText.text;
+            systemPrompt = $@"Игрок сказал тебе: ""{playerMessage}""
 
-        string prompt = $@"Ты — NPC в русской народной сказке или фэнтези.
-ОТВЕЧАЙ ИСКЛЮЧИТЕЛЬНО ОДНОЙ-ДВУМЯ КОРОТКИМИ ФРАЗАМИ НА РУССКОМ ЯЗЫКЕ.
-БЕЗ КАВЫЧЕК. БЕЗ ДЕЙСТВИЙ В СКОБКАХ. БЕЗ ПОЯСНЕНИЙ.
+    Ты - персонаж русской сказки. Твоё настроение: {emotion}
+    Ответь игроку естественно, от первого лица, 2-3 предложения на русском языке.
+    Говори просто и по-человечески, без меток вроде ""NPC:"" или ""Ответ:"".
 
-Эмоция: {dropdownNPCEmotion.captionText.text}
-Отношение к игроку: {dropdownNPCRelation.captionText.text}
-
-Предыдущий диалог:
-{history}
-
-{(string.IsNullOrEmpty(playerMessage) ? "Поприветствуй игрока теплом и по-русски." : $"Игрок сказал: {playerMessage}")}
-
-Твоя реплика сейчас:";
+    Твой ответ:";
+        }
 
         bool done = false;
-        string reply = "";
+        string fullResponse = "";
+        int tokenCount = 0;
+        const int maxTokens = 150; // Ограничение на количество токенов
 
-        llmCharacter.Chat(prompt, r =>
+        llmCharacter.Chat(systemPrompt, r =>
         {
-            reply = r.Trim();
-
-            // Жёсткая очистка от мусора
-            reply = Regex.Replace(reply, @"[\(\[][^)\]]*[)\]]", "");     // убираем (смеётся)
-            reply = Regex.Replace(reply, @"^[""«»'""](.*)[""»'""]$", "$1"); // убираем кавычки
-            reply = reply.Split('\n')[0].Trim();                        // только первая строка
-            reply = reply.Split('—')[0].Trim();                         // иногда тире
-            reply = reply.Split('-')[0].Trim();
-
-            done = true;
+            fullResponse = r;
+            tokenCount++;
+            
+            // Завершаем когда есть 2-3 предложения или достигнут лимит токенов
+            int sentenceCount = Regex.Matches(r, @"[.!?]").Count;
+            if (sentenceCount >= 2 || tokenCount > maxTokens)
+            {
+                done = true;
+            }
         });
 
-        yield return new WaitUntil(() => done);
+        // Ждём завершения с таймаутом
+        float timeout = 30f;
+        float elapsed = 0f;
+        while (!done && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
 
-        if (string.IsNullOrWhiteSpace(reply) || reply == "…")
-            reply = "Хм...";
+        yield return new WaitForSeconds(0.3f);
 
-        // Заменяем "…" на настоящий ответ
+        string reply = fullResponse.Trim();
+        
+        Debug.Log($"[DEBUG] Сырой ответ модели (длина {reply.Length}): '{reply}'");
+
+        if (!string.IsNullOrWhiteSpace(reply))
+        {
+            // Очистка от markdown
+            reply = Regex.Replace(reply, @"\*\*(.*?)\*\*", "$1");
+            reply = Regex.Replace(reply, @"\*(.*?)\*", "$1");
+            
+            // ВАЖНО: убираем все возможные префиксы ролей (включая в начале строки)
+            reply = Regex.Replace(reply, @"^(NPC|Ответ|Реплика|Персонаж|Твой ответ):\s*", "", RegexOptions.IgnoreCase);
+            reply = Regex.Replace(reply, @"^\([^)]+\)\s*[-–—]?\s*", ""); // убираем (Пираты против Петра Первого) - 
+            
+            // Убираем повторяющиеся префиксы внутри текста
+            reply = Regex.Replace(reply, @"\bNPC[:\s]*", "", RegexOptions.IgnoreCase);
+            
+            // Убираем кавычки
+            reply = reply.Trim('"', '«', '»', ' ', '\n', '\r');
+            
+            // Ограничиваем 2-3 предложениями
+            var sentenceMatches = Regex.Matches(reply, @"[^.!?]+[.!?]+");
+            if (sentenceMatches.Count > 0 && sentenceMatches.Count > 3)
+            {
+                string limited = "";
+                for (int i = 0; i < Math.Min(3, sentenceMatches.Count); i++)
+                {
+                    limited += sentenceMatches[i].Value;
+                }
+                reply = limited.Trim();
+            }
+            
+            // Убираем мусор типа "...", если это единственное содержимое
+            if (reply == "..." || reply == "…") reply = "";
+        }
+
+        // Fallback если ответ неадекватный
+        if (string.IsNullOrWhiteSpace(reply) || reply.Length < 5 || reply.ToLower().StartsWith("npc"))
+        {
+            string[] fallback = {
+                "Ох, милок, расскажи поподробнее...",
+                "Ну ты даёшь! А дальше-то что?",
+                "Слушаю тебя, странник.",
+                "Хм... интересно. Продолжай.",
+                "Да ты что! Не может быть!",
+                "Ох, батюшки... ну и дела.",
+                "Ишь ты какой! Это надо же!",
+                "Ай да молодец! Рассказывай дальше."
+            };
+            reply = fallback[UnityEngine.Random.Range(0, fallback.Length)];
+            Debug.LogWarning($"[DEBUG] Неадекватный ответ: '{fullResponse}', используем fallback");
+        }
+
+        // Убираем "…" и вставляем настоящий ответ
         if (chatHistoryText != null)
         {
-            chatHistoryText.text = chatHistoryText.text.TrimEnd();
-            int idx = chatHistoryText.text.LastIndexOf("\n<color=#FFAA00>NPC:</color> …");
-            if (idx >= 0)
-                chatHistoryText.text = chatHistoryText.text.Remove(idx);
+            string text = chatHistoryText.text;
+            int index = text.LastIndexOf("<color=#FFAA00>NPC:</color> …");
+            if (index >= 0)
+                chatHistoryText.text = text.Substring(0, index);
         }
 
         AddChatMessage("NPC", reply);
         StartCoroutine(ScrollDelayed());
+        
+        Debug.Log($"[DEBUG] Итоговый ответ NPC: '{reply}'");
     }
 
-    // ====================== ДОБАВЛЕНИЕ В ЧАТ ======================
     private void AddChatMessage(string sender, string message)
     {
         if (chatHistoryText == null) return;
 
         string color = sender == "Игрок" ? "#00FF00" : "#FFAA00";
         chatHistoryText.text += $"\n<color={color}>{sender}:</color> {message}";
-    }
 
-    // ====================== СКРОЛЛ ======================
-    private IEnumerator ScrollDelayed()
-    {
-        yield return null;
-        yield return null;
         ScrollToBottom();
     }
 
@@ -187,28 +249,35 @@ public class GameAI : MonoBehaviour
         {
             Canvas.ForceUpdateCanvases();
             chatScrollRect.verticalNormalizedPosition = 0f;
+            Canvas.ForceUpdateCanvases();
         }
     }
 
-    // ====================== ИСТОРИЯ ======================
+    private IEnumerator ScrollDelayed()
+    {
+        yield return null;
+        yield return null;
+        ScrollToBottom();
+    }
+
     private string GetShortChatHistory()
     {
-        if (chatHistoryText == null || string.IsNullOrEmpty(chatHistoryText.text))
+        if (string.IsNullOrEmpty(chatHistoryText.text))
             return "Диалог только начинается.";
 
-        string[] lines = chatHistoryText.text.Split('\n');
-        int start = Mathf.Max(0, lines.Length - 12);
-        string result = "";
-        for (int i = start; i < lines.Length; i++)
+        string fullHistory = chatHistoryText.text
+            .Replace("<color=#00FF00>Игрок:</color>", "Игрок:")
+            .Replace("<color=#FFAA00>NPC:</color>", "NPC:")
+            .Replace("\n", " | ");
+
+        if (fullHistory.Length > 3000)
         {
-            string line = lines[i].Trim();
-            if (line.Contains("Игрок:") || line.Contains("NPC:"))
-                result += line + "\n";
+            fullHistory = "..." + fullHistory.Substring(fullHistory.Length - 3000);
         }
-        return string.IsNullOrEmpty(result.Trim()) ? "Диалог только начинается." : result.Trim();
+
+        return fullHistory;
     }
 
-    // ====================== ОСТАЛЬНЫЕ ГЕНЕРАЦИИ ======================
     IEnumerator GenerateAllSequence()
     {
         yield return StartCoroutine(GenerateStoryCoroutine());
@@ -223,19 +292,46 @@ public class GameAI : MonoBehaviour
     {
         if (!llmCharacter) yield break;
 
-        string prompt = $@"Ты — гениальный русскоязычный геймдизайнер. 
-ОТВЕЧАЙ ТОЛЬКО НА РУССКОМ ЯЗЫКЕ, без английских слов.
-Создай квест на тему: {inputPrompt.text}
+        string prompt = $@"Создай квест на русском языке.
+Тема: {inputPrompt.text}
 Длина: {inputLength.text} слов
 Стиль: {dropdownStyle.captionText.text}
 Тип: {dropdownType.captionText.text}
 Сложность: {dropdownDifficulty.captionText.text}
-Выведи только текст квеста, без кавычек и пояснений.";
+
+Напиши только текст квеста, без пояснений.";
 
         textStoryOutput.text = "Генерация текста...";
         bool done = false;
-        llmCharacter.Chat(prompt, r => { textStoryOutput.text = r; done = true; });
-        yield return new WaitUntil(() => done);
+        
+        llmCharacter.Chat(prompt, r => 
+        { 
+            textStoryOutput.text = r;
+            // Проверяем что текст завершён
+            if (r.Length > 100 && (r.EndsWith(".") || r.EndsWith("!") || r.EndsWith("?")))
+            {
+                done = true;
+            }
+        });
+        
+        // Ждём завершения с таймаутом
+        float timeout = 60f;
+        float elapsed = 0f;
+        while (!done && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        yield return new WaitForSeconds(0.5f); // Дожидаем последние токены
+        
+        // Скролл для текста квеста
+        if (storyScrollRect != null)
+        {
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            storyScrollRect.verticalNormalizedPosition = 1f;
+        }
     }
 
     IEnumerator GenerateIconCoroutine()
@@ -250,7 +346,6 @@ public class GameAI : MonoBehaviour
         yield return new WaitUntil(() => done);
     }
 
-    // ====================== СОХРАНЕНИЕ ======================
     void SaveCurrentGeneration()
     {
         try

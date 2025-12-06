@@ -16,30 +16,50 @@ public class ComfyUIManager : MonoBehaviour
     
     [Header("Server Auto-Start")]
     public bool autoStartServer = true;
-    public bool useCPU = true; // Новый флаг для --cpu
+    public bool useCPU = true;
     
-    // Путь будет относительно билда
+    [Header("Timeout Settings")]
+    [Tooltip("Таймаут запуска сервера в секундах (рекомендуется 180+ для CPU режима)")]
+    public int serverStartTimeout = 300; // Увеличен до 3 минут
+    
+    [Header("Path Settings")]
+    [Tooltip("Оставьте пустым для автоматического поиска")]
+    public string customComfyUIPath = "";
+    
     private string ComfyUIPath
     {
         get
         {
+            if (!string.IsNullOrEmpty(customComfyUIPath) && Directory.Exists(customComfyUIPath))
+            {
+                return customComfyUIPath;
+            }
+
             #if UNITY_EDITOR
-            // В редакторе: ищем в Assets/ComfyUI
             string editorPath = Path.Combine(Application.dataPath, "ComfyUI");
             if (Directory.Exists(editorPath))
             {
                 return editorPath;
             }
-            // Если нет в Assets, пробуем рядом с проектом
-            return Path.Combine(Application.dataPath, "..", "ComfyUI");
+            
+            string projectPath = Path.Combine(Application.dataPath, "..", "ComfyUI");
+            if (Directory.Exists(projectPath))
+            {
+                return projectPath;
+            }
+            
+            string portablePath = Path.Combine(Application.dataPath, "..", "..", "ComfyUI_windows_portable");
+            if (Directory.Exists(portablePath))
+            {
+                return portablePath;
+            }
+            
+            return editorPath;
             #else
-            // В билде: рядом с .exe в папке ComfyUI_Portable
             return Path.Combine(Application.dataPath, "..", "ComfyUI_Portable");
             #endif
         }
     }
-    
-    public int serverStartTimeout = 60; // Увеличил таймаут для CPU режима
     
     private string availableModel = null;
     private Process comfyProcess = null;
@@ -47,12 +67,12 @@ public class ComfyUIManager : MonoBehaviour
 
     void Start()
     {
+        UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
         StartCoroutine(InitializeComfyUI());
     }
 
     void OnApplicationQuit()
     {
-        // Оставляем сервер работать после закрытия Unity
         if (comfyProcess != null && !comfyProcess.HasExited)
         {
             UnityEngine.Debug.Log("🔵 Leaving ComfyUI server running...");
@@ -61,7 +81,6 @@ public class ComfyUIManager : MonoBehaviour
 
     IEnumerator InitializeComfyUI()
     {
-        // Проверяем, запущен ли сервер
         UnityWebRequest testReq = UnityWebRequest.Get($"{comfyURL}/system_stats");
         yield return testReq.SendWebRequest();
         
@@ -87,7 +106,6 @@ public class ComfyUIManager : MonoBehaviour
             }
         }
 
-        // Загружаем модели
         yield return LoadAvailableModels();
     }
 
@@ -102,14 +120,14 @@ public class ComfyUIManager : MonoBehaviour
         if (!Directory.Exists(comfyPath))
         {
             UnityEngine.Debug.LogError($"❌ ComfyUI folder not found: {comfyPath}");
-            UnityEngine.Debug.LogError("💡 Make sure ComfyUI_Portable folder is next to the .exe!");
+            UnityEngine.Debug.LogError("💡 Make sure ComfyUI folder exists or set customComfyUIPath!");
             yield break;
         }
 
         if (!File.Exists(pythonExe))
         {
             UnityEngine.Debug.LogError($"❌ Python not found: {pythonExe}");
-            UnityEngine.Debug.LogError("💡 Check python_embeded folder in ComfyUI_Portable!");
+            UnityEngine.Debug.LogError("💡 Check python_embeded folder in ComfyUI!");
             yield break;
         }
 
@@ -119,7 +137,6 @@ public class ComfyUIManager : MonoBehaviour
             yield break;
         }
 
-        // Запускаем процесс
         bool processStarted = StartComfyProcess(pythonExe, mainScript, comfyPath);
         
         if (!processStarted)
@@ -128,20 +145,20 @@ public class ComfyUIManager : MonoBehaviour
             yield break;
         }
 
-        UnityEngine.Debug.Log("⏳ Waiting for ComfyUI to start...");
+        UnityEngine.Debug.Log($"⏳ Waiting for ComfyUI to start (timeout: {serverStartTimeout}s)...");
         if (useCPU)
         {
-            UnityEngine.Debug.Log("⚠️ CPU mode enabled - may take longer to start and generate");
+            UnityEngine.Debug.Log("⚠️ CPU mode enabled - startup may take 2-3 minutes");
         }
 
-        // Ждем пока сервер запустится
         float elapsed = 0f;
         bool started = false;
+        int checkInterval = 3; // Проверяем каждые 3 секунды вместо 2
 
         while (elapsed < serverStartTimeout)
         {
-            yield return new WaitForSeconds(2f);
-            elapsed += 2f;
+            yield return new WaitForSeconds(checkInterval);
+            elapsed += checkInterval;
 
             UnityWebRequest checkReq = UnityWebRequest.Get($"{comfyURL}/system_stats");
             yield return checkReq.SendWebRequest();
@@ -149,17 +166,26 @@ public class ComfyUIManager : MonoBehaviour
             if (checkReq.result == UnityWebRequest.Result.Success)
             {
                 started = true;
-                UnityEngine.Debug.Log($"✅ ComfyUI server started! (took {elapsed:F1}s)");
+                UnityEngine.Debug.Log($"✅ ComfyUI server started successfully! (took {elapsed:F1}s)");
                 break;
             }
 
-            UnityEngine.Debug.Log($"⏳ Still starting... ({elapsed:F0}s / {serverStartTimeout}s)");
+            // Показываем прогресс каждые 15 секунд
+            if ((int)elapsed % 15 == 0 || elapsed >= serverStartTimeout - checkInterval)
+            {
+                float progress = (elapsed / serverStartTimeout) * 100f;
+                UnityEngine.Debug.Log($"⏳ Still starting... {elapsed:F0}s / {serverStartTimeout}s ({progress:F0}%)");
+            }
         }
 
         if (!started)
         {
-            UnityEngine.Debug.LogError("❌ Server failed to start within timeout!");
-            UnityEngine.Debug.LogError("💡 Try starting ComfyUI manually first");
+            UnityEngine.Debug.LogError($"❌ Server failed to start within {serverStartTimeout}s!");
+            UnityEngine.Debug.LogError("💡 Solutions:");
+            UnityEngine.Debug.LogError("   1. Increase 'Server Start Timeout' in Inspector (try 300s)");
+            UnityEngine.Debug.LogError("   2. Start ComfyUI manually first, then run Unity");
+            UnityEngine.Debug.LogError("   3. Check if ComfyUI console shows any errors");
+            UnityEngine.Debug.LogError("   4. Disable 'Use CPU' if you have NVIDIA GPU");
         }
     }
 
@@ -167,12 +193,11 @@ public class ComfyUIManager : MonoBehaviour
     {
         try
         {
-            // Формируем аргументы с флагом --cpu если нужно
             string arguments = $"\"{mainScript}\" --listen 127.0.0.1 --port 8188";
             if (useCPU)
             {
                 arguments += " --cpu";
-                UnityEngine.Debug.Log("🖥️ Starting in CPU mode");
+                UnityEngine.Debug.Log("🖥️ Starting in CPU mode (slower but works without GPU)");
             }
 
             ProcessStartInfo startInfo = new ProcessStartInfo
@@ -181,13 +206,14 @@ public class ComfyUIManager : MonoBehaviour
                 Arguments = arguments,
                 WorkingDirectory = Path.Combine(comfyPath, "ComfyUI"),
                 UseShellExecute = false,
-                CreateNoWindow = false, // Показываем окно для отладки
+                CreateNoWindow = false,
                 RedirectStandardOutput = false,
                 RedirectStandardError = false
             };
 
             UnityEngine.Debug.Log($"▶️ Launching: {pythonExe}");
             UnityEngine.Debug.Log($"📝 Arguments: {arguments}");
+            UnityEngine.Debug.Log($"📁 Working dir: {startInfo.WorkingDirectory}");
 
             comfyProcess = Process.Start(startInfo);
             return comfyProcess != null;
@@ -241,7 +267,7 @@ public class ComfyUIManager : MonoBehaviour
             }
         }));
     }
-
+    
     public IEnumerator GenerateTexture(string prompt, Action<Texture2D> callback)
     {
         if (string.IsNullOrEmpty(availableModel))
@@ -260,8 +286,18 @@ public class ComfyUIManager : MonoBehaviour
 
         string template = File.ReadAllText(path);
         
+        // ✅ ГЕНЕРИРУЕМ НОВЫЙ SEED КАЖДЫЙ РАЗ
+        int newSeed = UnityEngine.Random.Range(1, int.MaxValue);
+        UnityEngine.Debug.Log($"🎲 Using seed: {newSeed}");
+
         template = template.Replace("<PROMPT>", EscapeJson(prompt));
-        template = template.Replace("-1", UnityEngine.Random.Range(100000000, 999999999).ToString());
+
+        // Безопасная замена seed - только в нужном месте
+        template = Regex.Replace(template, 
+            @"""seed""\s*:\s*-?\d+", 
+            $"\"seed\": {newSeed}", 
+            RegexOptions.IgnoreCase);
+
         template = template.Replace("УКАЖИТЕ_ИМЯ_ВАШЕЙ_МОДЕЛИ.safetensors", availableModel);
         template = template.Replace("sd_turbo.safetensors", availableModel);
         template = template.Replace("v1-5-pruned-emaonly.safetensors", availableModel);
