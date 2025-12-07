@@ -278,7 +278,7 @@ public class GameAI : MonoBehaviour
         return fullHistory;
     }
 
-    IEnumerator GenerateAllSequence()
+   IEnumerator GenerateAllSequence()
     {
         yield return StartCoroutine(GenerateStoryCoroutine());
         yield return new WaitForSeconds(0.5f);
@@ -286,6 +286,22 @@ public class GameAI : MonoBehaviour
 
         if (autoSaveAfterGeneration)
             SaveCurrentGeneration();
+
+        // ЭТА СТРОЧКА — ГАРАНТИРОВАНТИРОВАННАЯ ПРОКРУТКА ВНИЗ ПОСЛЕ ВСЕГО!
+        yield return StartCoroutine(ScrollStoryToBottom());
+    }
+
+    private IEnumerator ScrollStoryToBottom()
+    {
+        yield return null; // ждём один кадр
+        yield return null; // ещё один — чтобы текст точно отрисовался
+        Canvas.ForceUpdateCanvases();
+        
+        if (storyScrollRect != null)
+        {
+            storyScrollRect.verticalNormalizedPosition = 0f; // 0 = самый низ
+            Canvas.ForceUpdateCanvases();
+        }
     }
 
     IEnumerator GenerateStoryCoroutine()
@@ -293,44 +309,33 @@ public class GameAI : MonoBehaviour
         if (!llmCharacter) yield break;
 
         string prompt = $@"Создай квест на русском языке.
-Тема: {inputPrompt.text}
-Длина: {inputLength.text} слов
-Стиль: {dropdownStyle.captionText.text}
-Тип: {dropdownType.captionText.text}
-Сложность: {dropdownDifficulty.captionText.text}
+    Тема: {inputPrompt.text}
+    Длина: {inputLength.text} слов
+    Стиль: {dropdownStyle.captionText.text}
+    Тип: {dropdownType.captionText.text}
+    Сложность: {dropdownDifficulty.captionText.text}
 
-Напиши только текст квеста, без пояснений.";
+    Напиши только текст квеста, без пояснений.";
 
-        textStoryOutput.text = "Генерация текста...";
-        bool done = false;
+        textStoryOutput.text = "Генерация текста квеста...";
         
+        bool done = false;
         llmCharacter.Chat(prompt, r => 
         { 
             textStoryOutput.text = r;
-            // Проверяем что текст завершён
-            if (r.Length > 100 && (r.EndsWith(".") || r.EndsWith("!") || r.EndsWith("?")))
-            {
-                done = true;
-            }
+            done = true;
         });
+
+        yield return new WaitUntil(() => done);
+
+        // КЛЮЧЕВАЯ ЧАСТЬ — ПРОКРУТКА ВНИЗ ПОСЛЕ ГЕНЕРАЦИИ
+        yield return null; // ждём один кадр
+        Canvas.ForceUpdateCanvases();
         
-        // Ждём завершения с таймаутом
-        float timeout = 60f;
-        float elapsed = 0f;
-        while (!done && elapsed < timeout)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(0.5f); // Дожидаем последние токены
-        
-        // Скролл для текста квеста
         if (storyScrollRect != null)
         {
-            yield return null;
+            storyScrollRect.verticalNormalizedPosition = 0f; // 0 = низ
             Canvas.ForceUpdateCanvases();
-            storyScrollRect.verticalNormalizedPosition = 1f;
         }
     }
 

@@ -216,6 +216,22 @@ public class ComfyUIManager : MonoBehaviour
             UnityEngine.Debug.Log($"📁 Working dir: {startInfo.WorkingDirectory}");
 
             comfyProcess = Process.Start(startInfo);
+            if (comfyProcess != null)
+            {
+                // Принудительно убиваем старый процесс, если он остался
+                try
+                {
+                    foreach (var process in Process.GetProcessesByName("python"))
+                    {
+                        if (process.MainModule.FileName.Contains("ComfyUI"))
+                        {
+                            process.Kill();
+                            process.WaitForExit(3000);
+                        }
+                    }
+                }
+                catch { }
+            }
             return comfyProcess != null;
         }
         catch (Exception e)
