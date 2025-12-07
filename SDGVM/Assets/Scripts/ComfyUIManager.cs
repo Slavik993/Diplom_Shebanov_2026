@@ -1,11 +1,14 @@
 using UnityEngine;
+using UnityEngine.UI;               // для Slider
 using UnityEngine.Networking;
-using System;
+using TMPro;                        // для TMP_Text
+using System;                       // ← ОБЯЗАТЕЛЬНО! Action<>, Func<>, etc.
+using System.Collections;
 using System.IO;
 using System.Text;
-using System.Collections;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
+using System.Diagnostics;            // для Process
+using Debug = UnityEngine.Debug;    // чтобы не было конфликта Debug   // ← чтобы не было конфликта Debug
 
 public class ComfyUIManager : MonoBehaviour
 {
@@ -13,6 +16,11 @@ public class ComfyUIManager : MonoBehaviour
     public string workflowFile = "awesome_rpg_icon_workflow.json";
     public string comfyURL = "http://127.0.0.1:8188";
     public float pollInterval = 1f;
+    //public Slider progressBar;        // перетащи Slider из UI
+    //public TMP_Text progressText;     // опционально — текст "45%"
+    public Slider iconProgressBar;        // Перетащи сюда Slider из UI
+    public TMP_Text iconProgressText;     // Перетащи сюда TextMeshPro для процентов (можно оставить пустым)
+    private string currentPromptId = "";
     
     [Header("Server Auto-Start")]
     public bool autoStartServer = true;
@@ -286,136 +294,144 @@ public class ComfyUIManager : MonoBehaviour
     
     public IEnumerator GenerateTexture(string prompt, Action<Texture2D> callback)
     {
+        // Сброс прогресс-бара в начало
+        ResetProgressBar();
+
         if (string.IsNullOrEmpty(availableModel))
         {
-            UnityEngine.Debug.LogError("❌ Model not loaded yet!");
+            UnityEngine.Debug.LogError("Модель не найдена в checkpoints!");
+            callback?.Invoke(null);
             yield break;
         }
 
         string path = Path.Combine(Application.streamingAssetsPath, workflowFile);
-
         if (!File.Exists(path))
         {
-            UnityEngine.Debug.LogError("❌ Workflow not found: " + path);
+            UnityEngine.Debug.LogError("Workflow не найден: " + path);
+            callback?.Invoke(null);
             yield break;
         }
 
+        // Подготовка JSON-шаблона
         string template = File.ReadAllText(path);
-        
-        // ✅ ГЕНЕРИРУЕМ НОВЫЙ SEED КАЖДЫЙ РАЗ
         int newSeed = UnityEngine.Random.Range(1, int.MaxValue);
-        UnityEngine.Debug.Log($"🎲 Using seed: {newSeed}");
-
         template = template.Replace("<PROMPT>", EscapeJson(prompt));
-
-        // Безопасная замена seed - только в нужном месте
-        template = Regex.Replace(template, 
-            @"""seed""\s*:\s*-?\d+", 
-            $"\"seed\": {newSeed}", 
-            RegexOptions.IgnoreCase);
-
+        template = Regex.Replace(template, @"""seed""\s*:\s*-?\d+", $"\"seed\": {newSeed}");
         template = template.Replace("УКАЖИТЕ_ИМЯ_ВАШЕЙ_МОДЕЛИ.safetensors", availableModel);
-        template = template.Replace("sd_turbo.safetensors", availableModel);
-        template = template.Replace("v1-5-pruned-emaonly.safetensors", availableModel);
 
-        string payload = $"{{\"prompt\":{template},\"client_id\":\"unity\"}}";
+        string payload = $"{{\"prompt\": {template}, \"client_id\": \"unity_{UnityEngine.Random.Range(100000,999999)}\"}}";
 
-        UnityEngine.Debug.Log("📨 Sending workflow with model: " + availableModel);
-        UnityEngine.Debug.Log($"📝 Prompt: {prompt}");
+        // Ждём готовности сервера
+        bool serverReady = false;
+        float waitTime = 0f;
+        while (!serverReady && waitTime < 30f)
+        {
+            var testReq = UnityWebRequest.Get($"{comfyURL}/prompt");
+            yield return testReq.SendWebRequest();
 
+            if (testReq.result == UnityWebRequest.Result.Success)
+                serverReady = true;
+            else
+            {
+                yield return new WaitForSeconds(1f);
+                waitTime += 1f;
+            }
+        }
+
+        if (!serverReady)
+        {
+            UnityEngine.Debug.LogError("ComfyUI не отвечает! Запустите сервер вручную.");
+            callback?.Invoke(null);
+            yield break;
+        }
+
+        // Отправляем промт
         byte[] body = Encoding.UTF8.GetBytes(payload);
-
-        UnityWebRequest req = new UnityWebRequest($"{comfyURL}/prompt", "POST");
-        req.uploadHandler = new UploadHandlerRaw(body);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-
-        yield return req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
+        using (var req = new UnityWebRequest($"{comfyURL}/prompt", "POST"))
         {
-            UnityEngine.Debug.LogError($"❌ POST failed: {req.error}\n{req.downloadHandler.text}");
-            yield break;
-        }
+            req.uploadHandler = new UploadHandlerRaw(body);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
 
-        UnityEngine.Debug.Log("✅ PROMPT ACCEPTED: " + req.downloadHandler.text);
+            yield return req.SendWebRequest();
 
-        string promptId = ExtractPromptId(req.downloadHandler.text);
-
-        if (string.IsNullOrEmpty(promptId))
-        {
-            UnityEngine.Debug.LogError("❌ Failed to extract prompt_id");
-            yield break;
-        }
-
-        UnityEngine.Debug.Log($"⏳ Waiting for generation (prompt_id: {promptId})...");
-        UnityEngine.Debug.Log("⚠️ NO TIMEOUT - Will wait indefinitely until image is ready");
-
-        string imageFilename = null;
-        int checkCount = 0;
-        
-        while (true)
-        {
-            yield return new WaitForSeconds(pollInterval);
-            checkCount++;
-
-            if (checkCount % 3 == 0)
+            if (req.result != UnityWebRequest.Result.Success)
             {
-                yield return CheckQueueStatus(promptId);
-            }
-
-            string historyUrl = $"{comfyURL}/history/{promptId}";
-            UnityWebRequest historyReq = UnityWebRequest.Get(historyUrl);
-            
-            yield return historyReq.SendWebRequest();
-
-            if (historyReq.result != UnityWebRequest.Result.Success)
-            {
-                UnityEngine.Debug.LogWarning($"⚠️ History check failed: {historyReq.error}");
-                continue;
-            }
-
-            string historyJson = historyReq.downloadHandler.text;
-            
-            if (checkCount % (int)(5f / pollInterval) == 0)
-            {
-                UnityEngine.Debug.Log($"📊 Still processing... ({checkCount * pollInterval:F0}s elapsed)");
-            }
-
-            imageFilename = ExtractImageFilename(historyJson);
-            
-            if (!string.IsNullOrEmpty(imageFilename))
-            {
-                UnityEngine.Debug.Log($"✅ Image ready: {imageFilename} (took {checkCount * pollInterval:F1}s)");
-                break;
-            }
-            
-            if (historyJson.Contains("\"error\"") || historyJson.Contains("\"exception\""))
-            {
-                UnityEngine.Debug.LogError($"❌ Generation error detected!");
-                UnityEngine.Debug.LogError($"History response: {historyJson}");
+                UnityEngine.Debug.LogError($"Ошибка отправки промта: {req.error}");
+                callback?.Invoke(null);
                 yield break;
             }
+
+            currentPromptId = ExtractPromptId(req.downloadHandler.text);
+            if (string.IsNullOrEmpty(currentPromptId))
+            {
+                UnityEngine.Debug.LogError("Не удалось получить prompt_id");
+                callback?.Invoke(null);
+                yield break;
+            }
+
+            UnityEngine.Debug.Log($"Генерация иконки началась (prompt_id: {currentPromptId})");
         }
 
-        string imageUrl = $"{comfyURL}/view?filename={imageFilename}";
-        UnityEngine.Debug.Log($"📥 Downloading: {imageUrl}");
-        
-        UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imageUrl);
+        // ОЖИДАНИЕ + ПРОГРЕСС-БАР (15 МИНУТ!)
+        string imageFilename = null;
+        float elapsed = 0f;
+        float timeout = 900f; // 15 минут — спокойно ждёт даже CPU-режим
 
+        while (elapsed < timeout && string.IsNullOrEmpty(imageFilename))
+        {
+            yield return new WaitForSeconds(1f);
+            elapsed += 1f;
+
+            // Прогресс-бар
+            if (iconProgressBar != null)
+                iconProgressBar.value = Mathf.Clamp01(elapsed / timeout);
+            if (iconProgressText != null)
+                iconProgressText.text = $"{(int)(elapsed / timeout * 100)}%";
+
+            var historyReq = UnityWebRequest.Get($"{comfyURL}/history/{currentPromptId}");
+            yield return historyReq.SendWebRequest();
+
+            if (historyReq.result == UnityWebRequest.Result.Success)
+            {
+                imageFilename = ExtractImageFilename(historyReq.downloadHandler.text);
+            }
+        }
+
+        // Финал прогресс-бара
+        if (iconProgressBar != null) iconProgressBar.value = 1f;
+        if (iconProgressText != null) iconProgressText.text = "Готово!";
+
+        if (string.IsNullOrEmpty(imageFilename))
+        {
+            UnityEngine.Debug.LogError($"Таймаут генерации иконки (15 минут)");
+            callback?.Invoke(null);
+            yield break;
+        }
+
+        // Скачиваем готовую иконку
+        string imageUrl = $"{comfyURL}/view?filename={imageFilename}&type=output&subfolder=";
+        var texReq = UnityWebRequestTexture.GetTexture(imageUrl);
         yield return texReq.SendWebRequest();
 
         if (texReq.result == UnityWebRequest.Result.Success)
         {
             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
-            UnityEngine.Debug.Log($"✅ Texture loaded successfully! Size: {tex.width}x{tex.height}");
+            UnityEngine.Debug.Log($"Иконка загружена: {tex.width}x{tex.height}");
             callback?.Invoke(tex);
         }
         else
         {
-            UnityEngine.Debug.LogError($"❌ Texture download failed: {texReq.error}");
+            UnityEngine.Debug.LogError("Ошибка загрузки иконки: " + texReq.error);
             callback?.Invoke(null);
         }
+    }
+
+    // Сброс прогресс-бара
+    private void ResetProgressBar()
+    {
+        if (iconProgressBar != null) iconProgressBar.value = 0f;
+        if (iconProgressText != null) iconProgressText.text = "";
     }
 
     private IEnumerator CheckQueueStatus(string promptId)
