@@ -117,7 +117,6 @@ public class GameAI : MonoBehaviour
         AddChatMessage("NPC", "…");
         StartCoroutine(ScrollDelayed());
 
-        // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: используем прямую инструкцию без ролевых меток
         string systemPrompt;
         
         if (string.IsNullOrEmpty(playerMessage))
@@ -138,24 +137,32 @@ public class GameAI : MonoBehaviour
 
         bool done = false;
         string fullResponse = "";
-        int tokenCount = 0;
-        const int maxTokens = 150; // Ограничение на количество токенов
-
+        
+        // ИСПРАВЛЕНИЕ 1: Убираем подсчет токенов, используем только проверку предложений
         llmCharacter.Chat(systemPrompt, r =>
         {
             fullResponse = r;
-            tokenCount++;
             
-            // Завершаем когда есть 2-3 предложения или достигнут лимит токенов
+            // Завершаем когда есть 2-3 полных предложения
             int sentenceCount = Regex.Matches(r, @"[.!?]").Count;
-            if (sentenceCount >= 2 || tokenCount > maxTokens)
+            if (sentenceCount >= 2)
+            {
+                // Проверяем, что последнее предложение завершено
+                if (r.TrimEnd().EndsWith(".") || r.TrimEnd().EndsWith("!") || r.TrimEnd().EndsWith("?"))
+                {
+                    done = true;
+                }
+            }
+            
+            // ИСПРАВЛЕНИЕ 2: Увеличиваем максимальную длину ответа
+            if (r.Length > 500) // ~500 символов для 2-3 предложений
             {
                 done = true;
             }
         });
 
-        // Ждём завершения с таймаутом
-        float timeout = 30f;
+        // ИСПРАВЛЕНИЕ 3: Увеличиваем таймаут
+        float timeout = 60f; // было 30
         float elapsed = 0f;
         while (!done && elapsed < timeout)
         {
@@ -175,29 +182,27 @@ public class GameAI : MonoBehaviour
             reply = Regex.Replace(reply, @"\*\*(.*?)\*\*", "$1");
             reply = Regex.Replace(reply, @"\*(.*?)\*", "$1");
             
-            // ВАЖНО: убираем все возможные префиксы ролей (включая в начале строки)
+            // Убираем все возможные префиксы ролей
             reply = Regex.Replace(reply, @"^(NPC|Ответ|Реплика|Персонаж|Твой ответ):\s*", "", RegexOptions.IgnoreCase);
-            reply = Regex.Replace(reply, @"^\([^)]+\)\s*[-–—]?\s*", ""); // убираем (Пираты против Петра Первого) - 
-            
-            // Убираем повторяющиеся префиксы внутри текста
+            reply = Regex.Replace(reply, @"^\([^)]+\)\s*[-—–]?\s*", "");
             reply = Regex.Replace(reply, @"\bNPC[:\s]*", "", RegexOptions.IgnoreCase);
             
             // Убираем кавычки
             reply = reply.Trim('"', '«', '»', ' ', '\n', '\r');
             
-            // Ограничиваем 2-3 предложениями
+            // ИСПРАВЛЕНИЕ 4: Более мягкое ограничение предложений
             var sentenceMatches = Regex.Matches(reply, @"[^.!?]+[.!?]+");
-            if (sentenceMatches.Count > 0 && sentenceMatches.Count > 3)
+            if (sentenceMatches.Count > 3)
             {
                 string limited = "";
-                for (int i = 0; i < Math.Min(3, sentenceMatches.Count); i++)
+                for (int i = 0; i < 3; i++)
                 {
                     limited += sentenceMatches[i].Value;
                 }
                 reply = limited.Trim();
             }
             
-            // Убираем мусор типа "...", если это единственное содержимое
+            // Убираем мусор
             if (reply == "..." || reply == "…") reply = "";
         }
 
