@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СДГВМ - Система динамической генерации виртуальных миров</title>
+    <style>
+        /* Базовые стили и сброс */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Open Sans', sans-serif;
+            background: #050510;
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Многослойный фон */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+        }
+
+        .base-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, #0A1A2F 0%, #050510 100%);
+            opacity: 0.8;
+        }
+
+        .grid-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+
+        .particles-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(0, 240, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .world-wireframes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .wireframe {
+            position: absolute;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            opacity: 0;
+            animation: wireframeAppear 8s infinite;
+        }
+
+        @keyframes wireframeAppear {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 0.4; transform: scale(1); }
+        }
+
+        /* Контейнер и общие стили */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Навигация */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 26, 47, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00F0FF;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 2rem;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #00F0FF;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #00F0FF;
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Секции */
+        section {
+            padding: 100px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Герой секция */
+        .hero {
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, #00F0FF, #7B1FA2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #ccc;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #FFD700;
+            margin-bottom: 3rem;
+            font-style: italic;
+        }
+
+        /* Демо генерации */
+        .generation-demo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 42, 58, 0.6);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        }
+
+        .demo-step {
+            text-align: center;
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .demo-title {
+            font-size: 0.9rem;
+            color: #00F0FF;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .json-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            color: #00F0FF;
+            height: 120px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .embeddings-sphere {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #00F0FF, #7B1FA2);
+            position: relative;
+            animation: sphereRotate 6s infinite linear;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        @keyframes sphereRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .generated-asset {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background: linear-gradient(45deg, #FFD700, #B22222);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .demo-connector {
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, #00F0FF, #7B1FA2);
+            position: relative;
+        }
+
+        .demo-connector::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: -10px;
+            color: #00F0FF;
+            font-size: 1.2rem;
+        }
+
+        /* Кнопки */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00F0FF;
+            border-radius: 30px;
+            color: #00F0FF;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-gold {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #FFD700;
+            color: #FFD700;
+        }
+
+        .btn-gold:hover {
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Секция генератора */
+        .generator-section {
+            background: rgba(30, 42, 58, 0.3);
+        }
+
+        .generator-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #00F0FF;
+        }
+
+        .generator-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .generator-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-panel {
+            background: rgba(30, 42, 58, 0.6);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .output-panel {
+            background: rgba(30, 42, 58, 0.6);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00F0FF;
+            font-weight: 500;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #00F0FF;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .content-type-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .type-option {
+            position: relative;
+        }
+
+        .type-option input {
+            display: none;
+        }
+
+        .type-label {
+            display: block;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .type-option input:checked + .type-label {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: #00F0FF;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        .type-label i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .json-preview {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            color: #00F0FF;
+            height: 200px;
+            overflow: auto;
+            white-space: pre-wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .generation-output {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .output-placeholder {
+            color: #666;
+            font-style: italic;
+        }
+
+        .generated-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .generated-text {
+            text-align: left;
+            width: 100%;
+        }
+
+        /* Секция технологий */
+        .tech-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #00F0FF;
+        }
+
+        .tech-architecture {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: relative;
+        }
+
+        .tech-node {
+            width: 180px;
+            padding: 1.5rem;
+            margin: 1rem;
+            background: rgba(30, 42, 58, 0.6);
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tech-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.3);
+            border-color: #00F0FF;
+        }
+
+        .tech-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #00F0FF;
+        }
+
+        .tech-node h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-node p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .connection-line {
+            position: absolute;
+            background: rgba(0, 240, 255, 0.5);
+            height: 2px;
+            z-index: 1;
+        }
+
+        /* Секция образования */
+        .education-section {
+            background: rgba(30, 42, 58, 0.3);
+        }
+
+        .education-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #FFD700;
+        }
+
+        .quests-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .quest-card {
+            background: rgba(139, 69, 19, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quest-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FFD700, #B22222);
+        }
+
+        .quest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .quest-icon {
+            font-size: 2rem;
+            color: #FFD700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .quest-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .quest-card p {
+            color: #ccc;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Футер */
+        footer {
+            background: rgba(10, 26, 47, 0.9);
+            padding: 2rem 0;
+            text-align: center;
+            border-top: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: #00F0FF;
+        }
+
+        .footer-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-left: 1.5rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #00F0FF;
+        }
+
+        .copyright {
+            margin-top: 1rem;
+            width: 100%;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .generation-demo {
+                flex-direction: column;
+            }
+            
+            .demo-connector {
+                width: 2px;
+                height: 50px;
+            }
+            
+            .demo-connector::after {
+                content: '↓';
+                right: -8px;
+                top: auto;
+                bottom: -15px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+            
+            .footer-links {
+                margin-top: 1rem;
+            }
+            
+            .footer-links li {
+                margin: 0 0.75rem;
+            }
+
+            .content-type-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Многослойный фон -->
+    <div class="background">
+        <div class="base-layer"></div>
+        <div class="grid-layer"></div>
+        <div class="particles-container" id="particles"></div>
+        <div class="world-wireframes" id="wireframes"></div>
+    </div>
+
+    <!-- Навигация -->
+    <nav>
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="logo-icon">⚙️</span>
+                СДГВМ
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#generator">Генератор</a></li>
+                <li><a href="#tech">Технологии</a></li>
+                <li><a href="#education">Образование</a></li>
+                <li><a href="#about">О системе</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Главная секция -->
+    <section id="home" class="hero">
+        <div class="container hero-content">
+            <h1>СДГВМ</h1>
+            <p class="tagline">Динамическая генерация миров. Наследие культуры в цифре.</p>
+            <p>Система динамической генерации виртуальных миров представляет собой инновационное программное обеспечение для автоматизированной генерации игрового контента, включая квесты, диалоговые деревья и визуальные активы (спрайты, иконки) для виртуальных миров.</p>
+            
+            <!-- Демо генерации -->
+            <div class="generation-demo">
+                <div class="demo-step">
+                    <div class="demo-title">JSON-параметры</div>
+                    <div class="json-input" id="json-display"></div>
+                </div>
+                <div class="demo-connector"></div>
+                <div class="demo-step">
+                    <div class="demo-title">Эмбеддинги</div>
+                    <div class="embeddings-sphere"></div>
+                </div>
+                <div class="demo-connector"></div>
+                <div class="demo-step">
+                    <div class="demo-title">2D-активы</div>
+                    <div class="generated-asset">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-buttons">
+                <a href="#generator" class="btn">Попробовать генератор</a>
+                <a href="#tech" class="btn btn-gold">Изучить технологии</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция генератора -->
+    <section id="generator" class="generator-section">
+        <div class="container">
+            <h2>Генератор контента</h2>
+            <div class="generator-container">
+                <div class="input-panel">
+                    <div class="form-group">
+                        <label for="content-type">Тип контента:</label>
+                        <div class="content-type-selector">
+                            <div class="type-option">
+                                <input type="radio" id="type-quest" name="content-type" value="quest" checked>
+                                <label class="type-label" for="type-quest">
+                                    <i class="fas fa-tasks"></i>
+                                    Квест
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="type-dialogue" name="content-type" value="dialogue">
+                                <label class="type-label" for="type-dialogue">
+                                    <i class="fas fa-comments"></i>
+                                    Диалоги
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="type-sprite" name="content-type" value="sprite">
+                                <label class="type-label" for="type-sprite">
+                                    <i class="fas fa-user"></i>
+                                    Спрайт
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="type-icon" name="content-type" value="icon">
+                                <label class="type-label" for="type-icon">
+                                    <i class="fas fa-icons"></i>
+                                    Иконка
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="type-map" name="content-type" value="map">
+                                <label class="type-label" for="type-map">
+                                    <i class="fas fa-map"></i>
+                                    Карта
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="type-item" name="content-type" value="item">
+                                <label class="type-label" for="type-item">
+                                    <i class="fas fa-gem"></i>
+                                    Предмет
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="culture-theme">Тема культуры:</label>
+                        <select id="culture-theme">
+                            <option value="russian">Русская культура</option>
+                            <option value="slavic">Славянская мифология</option>
+                            <option value="architecture">Деревянное зодчество</option>
+                            <option value="crafts">Народные промыслы</option>
+                            <option value="folklore">Фольклор и сказки</option>
+                            <option value="traditions">Традиции и обряды</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prompt-text">Описание для генерации:</label>
+                        <textarea id="prompt-text" rows="5" placeholder="Опишите, что вы хотите сгенерировать..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>JSON параметры (биграммы, n-граммы):</label>
+                        <div class="json-preview" id="json-preview">
+{
+  "тип": "квест",
+  "культура": "русская",
+  "сложность": "средняя",
+  "тема": "деревянное зодчество",
+  "биграммы": ["деревянный храм", "русский север", "культурное наследие"],
+  "n-граммы": ["изучение архитектуры", "сохранение памятников"]
+}
+                        </div>
+                    </div>
+                    
+                    <button id="generate-btn" class="btn" style="width: 100%;">
+                        <i class="fas fa-bolt"></i> Сгенерировать контент
+                    </button>
+                </div>
+                
+                <div class="output-panel">
+                    <h3 style="color: #00F0FF; margin-bottom: 1rem;">Результат генерации</h3>
+                    <div class="generation-output" id="generation-output">
+                        <div class="output-placeholder">
+                            <i class="fas fa-cube" style="font-size: 3rem; margin-bottom: 1rem; color: #666;"></i>
+                            <p>Здесь появится сгенерированный контент</p>
+                            <p>Выберите параметры и нажмите "Сгенерировать"</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem; display: flex; gap: 10px;">
+                        <button id="save-btn" class="btn btn-gold" style="flex: 1;" disabled>
+                            <i class="fas fa-download"></i> Сохранить
+                        </button>
+                        <button id="regenerate-btn" class="btn" style="flex: 1;" disabled>
+                            <i class="fas fa-redo"></i> Перегенерировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция технологий -->
+    <section id="tech" class="tech-section">
+        <div class="container">
+            <h2>Технологии системы</h2>
+            <div class="tech-architecture" id="tech-architecture">
+                <!-- Технологические узлы будут добавлены через JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция образования -->
+    <section id="education" class="education-section">
+        <div class="container">
+            <h2>Образовательные квесты</h2>
+            <div class="quests-container">
+                <!-- Карточки квестов будут добавлены через JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">СДГВМ</div>
+                <ul class="footer-links">
+                    <li><a href="#home">Главная</a></li>
+                    <li><a href="#generator">Генератор</a></li>
+                    <li><a href="#tech">Технологии</a></li>
+                    <li><a href="#education">Образование</a></li>
+                    <li><a href="#about">О системе</a></li>
+                </ul>
+                <div class="copyright">
+                    &copy; 2023 Система динамической генерации виртуальных миров. Разработано на платформе Unity 6000.1.1f с использованием моделей Mistral 7B Instruct, sd_turbo, sd3_medium
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Создание частиц для фона
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Случайные свойства
+                const size = Math.random() * 4 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 20;
+                const duration = Math.random() * 10 + 10;
+                const color = Math.random() > 0.7 ? '#FFD700' : '#00F0FF';
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.background = color;
+                particle.style.animation = `float ${duration}s ${delay}s infinite linear`;
+                
+                container.appendChild(particle);
+            }
+            
+            // Добавляем CSS анимацию для частиц
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+                    10% { opacity: 1; }
+                    90% { opacity: 1; }
+                    100% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(360deg); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Создание проволочных контуров миров
+        function createWireframes() {
+            const container = document.getElementById('wireframes');
+            const wireframeCount = 5;
+            
+            for (let i = 0; i < wireframeCount; i++) {
+                const wireframe = document.createElement('div');
+                wireframe.classList.add('wireframe');
+                
+                // Случайные свойства
+                const width = Math.random() * 200 + 100;
+                const height = Math.random() * 150 + 80;
+                const posX = Math.random() * 90;
+                const posY = Math.random() * 90;
+                const delay = Math.random() * 8;
+                
+                wireframe.style.width = `${width}px`;
+                wireframe.style.height = `${height}px`;
+                wireframe.style.left = `${posX}%`;
+                wireframe.style.top = `${posY}%`;
+                wireframe.style.animationDelay = `${delay}s`;
+                
+                // Создаем простые формы (прямоугольники с разными скруглениями)
+                const borderRadius = Math.random() > 0.5 ? '10%' : '0%';
+                wireframe.style.borderRadius = borderRadius;
+                
+                container.appendChild(wireframe);
+            }
+        }
+        
+        // Анимация JSON параметров
+        function animateJSON() {
+            const jsonDisplay = document.getElementById('json-display');
+            const jsonExamples = [
+                '{\n  "культура": "русская",\n  "тип": "архитектура",\n  "сложность": "средняя",\n  "тема": "деревянное зодчество"\n}',
+                '{\n  "культура": "русская",\n  "тип": "ремесло",\n  "сложность": "легкая",\n  "тема": "гжельская роспись"\n}',
+                '{\n  "культура": "русская",\n  "тип": "обычай",\n  "сложность": "сложная",\n  "тема": "масленичные традиции"\n}'
+            ];
+            
+            let currentIndex = 0;
+            
+            function updateJSON() {
+                jsonDisplay.textContent = jsonExamples[currentIndex];
+                currentIndex = (currentIndex + 1) % jsonExamples.length;
+            }
+            
+            updateJSON();
+            setInterval(updateJSON, 3000);
+        }
+        
+        // Создание технологических узлов
+        function createTechNodes() {
+            const container = document.getElementById('tech-architecture');
+            const technologies = [
+                { 
+                    name: 'Unity 6000', 
+                    icon: 'fa-cube',
+                    description: 'Игровой движок нового поколения'
+                },
+                { 
+                    name: 'Mistral 7B', 
+                    icon: 'fa-brain',
+                    description: 'Модель для генерации текста и квестов'
+                },
+                { 
+                    name: 'Stable Diffusion', 
+                    icon: 'fa-palette',
+                    description: 'Генерация 2D-активов и спрайтов'
+                },
+                { 
+                    name: 'ONNX', 
+                    icon: 'fa-project-diagram',
+                    description: 'Межнейросетевое взаимодействие'
+                },
+                { 
+                    name: 'ComfyUI', 
+                    icon: 'fa-sliders-h',
+                    description: 'Интеграция через Python сервер'
+                },
+                { 
+                    name: 'CPU Mode', 
+                    icon: 'fa-microchip',
+                    description: 'Работа без видеокарты'
+                }
+            ];
+            
+            technologies.forEach(tech => {
+                const node = document.createElement('div');
+                node.classList.add('tech-node');
+                
+                node.innerHTML = `
+                    <div class="tech-icon">
+                        <i class="fas ${tech.icon}"></i>
+                    </div>
+                    <h3>${tech.name}</h3>
+                    <p>${tech.description}</p>
+                `;
+                
+                container.appendChild(node);
+            });
+        }
+        
+        // Создание карточек квестов
+        function createQuestCards() {
+            const container = document.querySelector('.quests-container');
+            const quests = [
+                {
+                    icon: 'fa-church',
+                    title: 'Тайны деревянного зодчества',
+                    description: 'Исследуйте архитектуру древнерусских храмов и создайте свою собственную церковь по канонам северного зодчества.'
+                },
+                {
+                    icon: 'fa-paint-brush',
+                    title: 'Мастерская Гжели',
+                    description: 'Погрузитесь в искусство гжельской росписи и создайте уникальные узоры на традиционной посуде.'
+                },
+                {
+                    icon: 'fa-utensils',
+                    title: 'Русская кухня: от полей до стола',
+                    description: 'Изучите традиционные рецепты и приготовьте блюда, которые веками готовили на Руси.'
+                },
+                {
+                    icon: 'fa-music',
+                    title: 'Фольклорные напевы',
+                    description: 'Откройте для себя мир русских народных инструментов и создайте собственную мелодию в традиционном стиле.'
+                },
+                {
+                    icon: 'fa-book',
+                    title: 'Славянская мифология',
+                    description: 'Познакомьтесь с богами и духами древних славян и восстановите утраченные мифы.'
+                },
+                {
+                    icon: 'fa-tshirt',
+                    title: 'Искусство народного костюма',
+                    description: 'Изучите элементы традиционного костюма и создайте собственный наряд с региональными особенностями.'
+                }
+            ];
+            
+            quests.forEach(quest => {
+                const card = document.createElement('div');
+                card.classList.add('quest-card');
+                
+                card.innerHTML = `
+                    <div class="quest-icon">
+                        <i class="fas ${quest.icon}"></i>
+                    </div>
+                    <h3>${quest.title}</h3>
+                    <p>${quest.description}</p>
+                    <a href="#generator" class="btn btn-gold">Сгенерировать подобный</a>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Плавная прокрутка для навигационных ссылок
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Генератор контента
+        function initContentGenerator() {
+            const generateBtn = document.getElementById('generate-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const promptText = document.getElementById('prompt-text');
+            const cultureTheme = document.getElementById('culture-theme');
+            const contentTypeRadios = document.querySelectorAll('input[name="content-type"]');
+            const jsonPreview = document.getElementById('json-preview');
+            const outputContainer = document.getElementById('generation-output');
+            
+            // Обновление JSON превью при изменении параметров
+            function updateJsonPreview() {
+                const selectedType = document.querySelector('input[name="content-type"]:checked').value;
+                const theme = cultureTheme.value;
+                const prompt = promptText.value;
+                
+                let jsonTemplate = {};
+                
+                switch(selectedType) {
+                    case 'quest':
+                        jsonTemplate = {
+                            "тип": "квест",
+                            "культура": getCultureName(theme),
+                            "сложность": "средняя",
+                            "тема": getThemeName(theme),
+                            "описание": prompt || "изучение культурного наследия",
+                            "биграммы": generateBigrams(theme, prompt),
+                            "n-граммы": generateNgrams(theme, prompt),
+                            "параметры_генерации": {
+                                "модель": "Mistral 7B Instruct",
+                                "формат": "диалоговое дерево",
+                                "целевая_аудитория": "студенты"
+                            }
+                        };
+                        break;
+                    case 'dialogue':
+                        jsonTemplate = {
+                            "тип": "диалоговое_дерево",
+                            "культура": getCultureName(theme),
+                            "персонажи": ["студент", "эксперт", "хранитель"],
+                            "тема": getThemeName(theme),
+                            "контекст": prompt || "обсуждение культурного наследия",
+                            "биграммы": generateBigrams(theme, prompt),
+                            "параметры_генерации": {
+                                "модель": "Mistral 7B Instruct",
+                                "стиль": "образовательный"
+                            }
+                        };
+                        break;
+                    case 'sprite':
+                    case 'icon':
+                    case 'map':
+                    case 'item':
+                        jsonTemplate = {
+                            "тип": selectedType,
+                            "культура": getCultureName(theme),
+                            "стиль": "русский традиционный",
+                            "тема": getThemeName(theme),
+                            "описание": prompt || "элемент русской культуры",
+                            "параметры_генерации": {
+                                "модель": "sd3_medium",
+                                "разрешение": "512x512",
+                                "стиль": "2D спрайт"
+                            }
+                        };
+                        break;
+                }
+                
+                jsonPreview.textContent = JSON.stringify(jsonTemplate, null, 2);
+            }
+            
+            function getCultureName(theme) {
+                const themes = {
+                    'russian': 'русская',
+                    'slavic': 'славянская',
+                    'architecture': 'деревянное зодчество',
+                    'crafts': 'народные промыслы',
+                    'folklore': 'фольклор',
+                    'traditions': 'традиции'
+                };
+                return themes[theme] || 'русская';
+            }
+            
+            function getThemeName(theme) {
+                const themes = {
+                    'russian': 'русская культура',
+                    'slavic': 'славянская мифология',
+                    'architecture': 'архитектура',
+                    'crafts': 'ремесла',
+                    'folklore': 'фольклор',
+                    'traditions': 'традиции'
+                };
+                return themes[theme] || 'русская культура';
+            }
+            
+            function generateBigrams(theme, prompt) {
+                const bigramsByTheme = {
+                    'russian': ['русская культура', 'народные традиции', 'историческое наследие'],
+                    'slavic': ['славянские боги', 'древние обряды', 'мифические существа'],
+                    'architecture': ['деревянный храм', 'русский север', 'архитектурный памятник'],
+                    'crafts': ['гжельская роспись', 'хохломские узоры', 'народные промыслы'],
+                    'folklore': ['народные сказки', 'былинные герои', 'фольклорные мотивы'],
+                    'traditions': ['народные праздники', 'традиционные обряды', 'культурные обычаи']
+                };
+                
+                return bigramsByTheme[theme] || ['культурное наследие', 'русские традиции'];
+            }
+            
+            function generateNgrams(theme, prompt) {
+                const baseNgrams = ['изучение культурного наследия', 'сохранение традиций'];
+                
+                if (prompt) {
+                    const words = prompt.split(' ').filter(word => word.length > 3);
+                    if (words.length >= 3) {
+                        return [`${words[0]} ${words[1]} ${words[2]}`, ...baseNgrams];
+                    }
+                }
+                
+                return baseNgrams;
+            }
+            
+            // Генерация контента
+            function generateContent() {
+                const selectedType = document.querySelector('input[name="content-type"]:checked').value;
+                const theme = cultureTheme.value;
+                const prompt = promptText.value;
+                
+                // Показываем индикатор загрузки
+                outputContainer.innerHTML = `
+                    <div style="text-align: center;">
+                        <div class="embeddings-sphere" style="width: 80px; height: 80px; margin-bottom: 1rem;"></div>
+                        <p>Генерация контента...</p>
+                        <p style="font-size: 0.9rem; color: #00F0FF;">Преобразование JSON в эмбеддинги</p>
+                        <p style="font-size: 0.8rem; color: #666;">Используются модели Mistral 7B и Stable Diffusion</p>
+                    </div>
+                `;
+                
+                // Имитация процесса генерации
+                setTimeout(() => {
+                    let resultHTML = '';
+                    
+                    switch(selectedType) {
+                        case 'quest':
+                            resultHTML = `
+                                <div class="generated-text">
+                                    <h4 style="color: #FFD700; margin-bottom: 1rem;">Квест: Тайны ${getThemeName(theme)}</h4>
+                                    <p><strong>Цель:</strong> Изучить особенности ${getThemeName(theme).toLowerCase()} и создать собственный проект.</p>
+                                    <p><strong>Задачи:</strong></p>
+                                    <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                                        <li>Исследовать исторические аспекты</li>
+                                        <li>Проанализировать современное состояние</li>
+                                        <li>Разработать собственный артефакт</li>
+                                    </ul>
+                                    <p><strong>Награда:</strong> Знание о ${getThemeName(theme).toLowerCase()} и сертификат об успешном завершении.</p>
+                                </div>
+                            `;
+                            break;
+                        case 'dialogue':
+                            resultHTML = `
+                                <div class="generated-text">
+                                    <h4 style="color: #FFD700; margin-bottom: 1rem;">Диалог: Обсуждение ${getThemeName(theme)}</h4>
+                                    <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                        <p><strong>Эксперт:</strong> Что вы знаете о ${getThemeName(theme).toLowerCase()}?</p>
+                                        <p><strong>Студент:</strong> Я слышал, что это важная часть нашего культурного наследия.</p>
+                                        <p><strong>Эксперт:</strong> Верно! Давайте углубимся в эту тему...</p>
+                                    </div>
+                                    <p style="font-size: 0.9rem; color: #ccc;">Диалоговое дерево сгенерировано моделью Mistral 7B</p>
+                                </div>
+                            `;
+                            break;
+                        case 'sprite':
+                            resultHTML = `
+                                <div>
+                                    <div class="generated-asset" style="width: 150px; height: 150px; margin-bottom: 1rem;">
+                                        <i class="fas fa-user" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h4 style="color: #FFD700;">Спрайт персонажа</h4>
+                                    <p>Персонаж в традиционном русском костюме</p>
+                                    <p style="font-size: 0.9rem; color: #ccc;">Сгенерировано моделью Stable Diffusion 3</p>
+                                </div>
+                            `;
+                            break;
+                        case 'icon':
+                            resultHTML = `
+                                <div>
+                                    <div class="generated-asset" style="width: 100px; height: 100px; margin-bottom: 1rem; background: linear-gradient(45deg, #B22222, #FFD700);">
+                                        <i class="fas fa-star" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h4 style="color: #FFD700;">Иконка: ${getThemeName(theme)}</h4>
+                                    <p>Стилизованное изображение в русском стиле</p>
+                                    <p style="font-size: 0.9rem; color: #ccc;">Сгенерировано моделью sd_turbo</p>
+                                </div>
+                            `;
+                            break;
+                        case 'map':
+                            resultHTML = `
+                                <div>
+                                    <div style="width: 100%; height: 150px; background: linear-gradient(45deg, #8B4513, #FFD700); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-map-marked-alt" style="font-size: 3rem; color: #fff;"></i>
+                                    </div>
+                                    <h4 style="color: #FFD700;">Карта локации</h4>
+                                    <p>Территория для изучения ${getThemeName(theme).toLowerCase()}</p>
+                                    <p style="font-size: 0.9rem; color: #ccc;">Сгенерировано моделью Stable Diffusion</p>
+                                </div>
+                            `;
+                            break;
+                        case 'item':
+                            resultHTML = `
+                                <div>
+                                    <div class="generated-asset" style="width: 100px; height: 100px; margin-bottom: 1rem; background: linear-gradient(45deg, #7B1FA2, #00F0FF);">
+                                        <i class="fas gem" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h4 style="color: #FFD700;">Артефакт: ${getThemeName(theme)}</h4>
+                                    <p>Магический предмет русской мифологии</p>
+                                    <p style="font-size: 0.9rem; color: #ccc;">Сгенерировано моделью sd3_medium</p>
+                                </div>
+                            `;
+                            break;
+                    }
+                    
+                    outputContainer.innerHTML = resultHTML;
+                    
+                    // Активируем кнопки сохранения и перегенерации
+                    saveBtn.disabled = false;
+                    regenerateBtn.disabled = false;
+                }, 2000);
+            }
+            
+            // Обработчики событий
+            contentTypeRadios.forEach(radio => {
+                radio.addEventListener('change', updateJsonPreview);
+            });
+            
+            cultureTheme.addEventListener('change', updateJsonPreview);
+            promptText.addEventListener('input', updateJsonPreview);
+            generateBtn.addEventListener('click', generateContent);
+            regenerateBtn.addEventListener('click', generateContent);
+            
+            saveBtn.addEventListener('click', () => {
+                alert('Контент сохранен в системе!');
+            });
+            
+            // Инициализация JSON превью
+            updateJsonPreview();
+        }
+        
+        // Инициализация всех функций после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            createWireframes();
+            animateJSON();
+            createTechNodes();
+            createQuestCards();
+            initSmoothScroll();
+            initContentGenerator();
+        });
+    </script>
+</body>
+</html>
