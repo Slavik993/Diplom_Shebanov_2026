@@ -13,7 +13,7 @@ using Debug = UnityEngine.Debug;    // чтобы не было конфликт
 public class ComfyUIManager : MonoBehaviour
 {
     [Header("ComfyUI Settings")]
-    public string workflowFile = "awesome_rpg_icon_workflow.json";
+    public string workflowFile = "cpu_optimized_workflow.json";
     public string comfyURL = "http://127.0.0.1:8188";
     public float pollInterval = 1f;
     //public Slider progressBar;        // перетащи Slider из UI
@@ -64,6 +64,12 @@ public class ComfyUIManager : MonoBehaviour
             
             return editorPath;
             #else
+            // В билде ищем ComfyUI в Assets папке рядом с exe
+            string buildPath = Path.Combine(Application.dataPath, "..", "Assets", "ComfyUI");
+            if (Directory.Exists(buildPath))
+                return buildPath;
+            
+            // Альтернативный путь для портативной версии
             return Path.Combine(Application.dataPath, "..", "ComfyUI_Portable");
             #endif
         }
@@ -376,7 +382,7 @@ public class ComfyUIManager : MonoBehaviour
         // ОЖИДАНИЕ + ПРОГРЕСС-БАР (15 МИНУТ!)
         string imageFilename = null;
         float elapsed = 0f;
-        float timeout = 900f; // 15 минут — спокойно ждёт даже CPU-режим
+        float timeout = 300f; // 5 минут — достаточно для CPU с оптимизированным workflow
 
         while (elapsed < timeout && string.IsNullOrEmpty(imageFilename))
         {
