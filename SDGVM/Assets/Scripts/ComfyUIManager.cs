@@ -270,6 +270,7 @@ public class ComfyUIManager : MonoBehaviour
             if (!string.IsNullOrEmpty(availableModel))
             {
                 UnityEngine.Debug.Log($"✅ Found model: {availableModel}");
+                UnityEngine.Debug.Log($"📄 Raw JSON response: {response.Substring(0, Math.Min(response.Length, 200))}..."); // Логируем начало JSON для проверки
             }
             else
             {
@@ -323,7 +324,9 @@ public class ComfyUIManager : MonoBehaviour
         int newSeed = UnityEngine.Random.Range(1, int.MaxValue);
         template = template.Replace("<PROMPT>", EscapeJson(prompt));
         template = Regex.Replace(template, @"""seed""\s*:\s*-?\d+", $"\"seed\": {newSeed}");
-        template = template.Replace("УКАЖИТЕ_ИМЯ_ВАШЕЙ_МОДЕЛИ.safetensors", availableModel);
+        
+        UnityEngine.Debug.Log($"🔍 Using model for generation: '{availableModel}'"); // ЛОГ МОДЕЛИ
+        template = template.Replace("PLACEHOLDER_MODEL_NAME", availableModel);
 
         string payload = $"{{\"prompt\": {template}, \"client_id\": \"unity_{UnityEngine.Random.Range(100000,999999)}\"}}";
 
@@ -389,18 +392,45 @@ public class ComfyUIManager : MonoBehaviour
             yield return new WaitForSeconds(1f);
             elapsed += 1f;
 
-            // Прогресс-бар
+            // Асимптотический прогресс-бар (чтобы не было 100% за 1 секунду)
+            // Быстро доходим до 80%, потом медленно ползем
+            float targetProgress = 0.95f; 
+            float currentLimit = (elapsed < 30f) ? 0.8f : targetProgress; 
+            float speed = (elapsed < 30f) ? 0.1f : 0.01f;
+            
             if (iconProgressBar != null)
-                iconProgressBar.value = Mathf.Clamp01(elapsed / timeout);
+            {
+                float newVal = Mathf.MoveTowards(iconProgressBar.value, currentLimit, Time.deltaTime * speed);
+                iconProgressBar.value = newVal;
+            }
+                
             if (iconProgressText != null)
-                iconProgressText.text = $"{(int)(elapsed / timeout * 100)}%";
+            {
+                // Показываем реальный статус вместо фейковых процентов
+                if (elapsed < 10f) iconProgressText.text = "Запуск...";
+                else if (elapsed < 60f) iconProgressText.text = "Генерация...";
+                else iconProgressText.text = "Обработка...";
+            }
 
             var historyReq = UnityWebRequest.Get($"{comfyURL}/history/{currentPromptId}");
             yield return historyReq.SendWebRequest();
 
             if (historyReq.result == UnityWebRequest.Result.Success)
             {
-                imageFilename = ExtractImageFilename(historyReq.downloadHandler.text);
+                string json = historyReq.downloadHandler.text;
+                imageFilename = ExtractImageFilename(json);
+                
+                if (string.IsNullOrEmpty(imageFilename))
+                {
+                    string errorMsg = ExtractErrorMessage(json);
+                    if (!string.IsNullOrEmpty(errorMsg))
+                    {
+                        UnityEngine.Debug.LogError($"❌ ComfyUI reported error: {errorMsg}");
+                        if (iconProgressText != null) iconProgressText.text = "Ошибка!";
+                        callback?.Invoke(null);
+                        yield break;
+                    }
+                }
             }
         }
 
@@ -410,7 +440,7 @@ public class ComfyUIManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(imageFilename))
         {
-            UnityEngine.Debug.LogError($"Таймаут генерации иконки (15 минут)");
+            UnityEngine.Debug.LogError($"Таймаут генерации иконки ({timeout} секунд) - возможно, ComfyUI завис или не может загрузить модель");
             callback?.Invoke(null);
             yield break;
         }
@@ -514,5 +544,21 @@ public class ComfyUIManager : MonoBehaviour
         {
             return null;
         }
+    }
+
+    private string ExtractErrorMessage(string json)
+    {
+        if (json.Contains("\"status_str\": \"error\"") || json.Contains("\"execution_error\""))
+        {
+            try
+            {
+                // Простая попытка достать сообщение об ошибке
+                Match match = Regex.Match(json, @"""exception_message""\s*:\s*""([^""]+)""");
+                if (match.Success) return match.Groups[1].Value;
+                return "Unknown execution error (check ComfyUI console)";
+            }
+            catch { return "Error parsing failed status"; }
+        }
+        return null;
     }
 }

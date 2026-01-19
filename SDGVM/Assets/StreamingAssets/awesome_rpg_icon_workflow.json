@@ -9,7 +9,7 @@
         100
       ],
       "inputs": {
-        "ckpt_name": "awesomeRPGIcon2000_awesomeRPGIcon2000.safetensors"
+        "ckpt_name": "PLACEHOLDER_MODEL_NAME"
       },
       "outputs": {
         "MODEL": [

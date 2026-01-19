@@ -87,6 +87,97 @@ public class GameAI : MonoBehaviour
         }
 
         StartCoroutine(GenerateNPCResponse(""));
+        
+        // Автоматическое исправление Scroll View
+        FixScrollViews();
+    }
+
+    void FixScrollViews()
+    {
+        // 1. Исправление прокрутки Квеста (Story)
+        if (storyScrollRect != null)
+        {
+            if (storyScrollRect.content != null && textStoryOutput != null)
+            {
+                textStoryOutput.transform.SetParent(storyScrollRect.content, false);
+            }
+            SetupContentLayout(storyScrollRect);
+        }
+
+        // 2. Исправление прокрутки Чата NPC
+        if (chatScrollRect != null)
+        {
+            if (chatScrollRect.content != null && chatHistoryText != null)
+            {
+                chatHistoryText.transform.SetParent(chatScrollRect.content, false);
+            }
+            SetupContentLayout(chatScrollRect);
+        }
+    }
+
+    // Хелпер для настройки Layout и Scrollbar
+    void SetupContentLayout(ScrollRect scrollRect)
+    {
+        if (scrollRect == null || scrollRect.content == null) return;
+
+        // 1. Находим и привязываем Scrollbar Vertical, если он потерялся
+        if (scrollRect.verticalScrollbar == null)
+        {
+            var sb = scrollRect.GetComponentInChildren<Scrollbar>(); // Ищем любой
+            // Или ищем по имени "Scrollbar Vertical"
+            foreach(var s in scrollRect.GetComponentsInChildren<Scrollbar>(true))
+            {
+                if (s.direction == Scrollbar.Direction.BottomToTop) // Обычно вертикальный
+                {
+                    scrollRect.verticalScrollbar = s;
+                    scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent; // Всегда показывать
+                    s.gameObject.SetActive(true);
+                    break;
+                }
+            }
+        }
+
+        // 2. Настройка Content с VerticalLayoutGroup
+        var layoutGroup = scrollRect.content.GetComponent<VerticalLayoutGroup>();
+        if (layoutGroup == null) layoutGroup = scrollRect.content.gameObject.AddComponent<VerticalLayoutGroup>();
+        
+        layoutGroup.childControlHeight = true;  // Текст сам скажет высоту
+        layoutGroup.childControlWidth = true;   // Текст сам скажет ширину (или растянется)
+        layoutGroup.childForceExpandHeight = false; // Не растягивать насильно
+        layoutGroup.childForceExpandWidth = true;
+        layoutGroup.spacing = 10f;
+        layoutGroup.padding = new RectOffset(10, 10, 10, 10);
+
+        // 3. Content Size Fitter (Слушает LayoutGroup)
+        var fitter = scrollRect.content.GetComponent<ContentSizeFitter>();
+        if (fitter == null) fitter = scrollRect.content.gameObject.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained; // Ширина задается Viewport'ом
+
+        // 4. Pivot и Anchors для Content
+        var contentRect = scrollRect.content;
+        contentRect.pivot = new Vector2(0.5f, 1f);
+        contentRect.anchorMin = new Vector2(0, 1);
+        contentRect.anchorMax = new Vector2(1, 1);
+        contentRect.sizeDelta = new Vector2(0, 0); // Сброс размера (Fitter сам выставит высоту)
+
+        // 5. Обновляем детей (Текст)
+        // 5. Обновляем детей (Текст)
+        foreach(Transform child in scrollRect.content)
+        {
+             // Сброс левых анкоров, чтобы LayoutGroup управлял ими
+             // Но важно включить Wrapping у TMP
+             var tmp = child.GetComponent<TMP_Text>();
+             if (tmp != null)
+             {
+                 tmp.enableWordWrapping = true;
+                 tmp.overflowMode = TextOverflowModes.Overflow; // Чтобы текст не обрезался внутри себя
+                 tmp.fontSize = 24; // Меньший шрифт для читаемости (был огромный)
+                 tmp.alignment = TextAlignmentOptions.TopLeft;
+             }
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
     }
 
     void CreateSessionFolder()
@@ -160,22 +251,42 @@ public class GameAI : MonoBehaviour
                 // Проверяем, что последнее предложение завершено
                 if (r.TrimEnd().EndsWith(".") || r.TrimEnd().EndsWith("!") || r.TrimEnd().EndsWith("?"))
                 {
-                    done = true;
+                    // Игнорируем это условие, пусть генерирует пока есть токены, 
+                    // чтобы не обрывать мысль. LLM сама остановится.
+                    // done = true; 
                 }
             }
             
-            // ИСПРАВЛЕНИЕ 2: Увеличиваем максимальную длину ответа
-            if (r.Length > 500) // ~500 символов для 2-3 предложений
+            // Завершаем только если ответ уже ОЧЕНЬ длинный
+            if (r.Length > 800) 
             {
                 done = true;
             }
         });
 
-        // ИСПРАВЛЕНИЕ 3: Увеличиваем таймаут
-        float timeout = 60f; // было 30
+        // Увеличиваем таймаут ожидания LLM
+        float timeout = 45f;
         float elapsed = 0f;
+        
+        // Ждем пока LLM сама закончит (обычно callback перестает дергаться)
+        // Но LLMUnity не имеет флага "Finished", поэтому просто ждем изменения длины
+        string lastResponse = "";
+        float noChangeTimer = 0f;
+        
         while (!done && elapsed < timeout)
         {
+            if (fullResponse != lastResponse)
+            {
+                lastResponse = fullResponse;
+                noChangeTimer = 0f;
+            }
+            else
+            {
+                noChangeTimer += Time.deltaTime;
+                // Если текст не менялся 2 секунды и он не пустой - считаем что готово
+                if (noChangeTimer > 2.0f && !string.IsNullOrEmpty(fullResponse)) done = true;
+            }
+            
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -186,13 +297,17 @@ public class GameAI : MonoBehaviour
         
         Debug.Log($"[DEBUG] Сырой ответ модели (длина {reply.Length}): '{reply}'");
 
-        if (!string.IsNullOrWhiteSpace(reply))
+        if (string.IsNullOrWhiteSpace(reply))
+        {
+             reply = "Извини, я задумался о вечном и забыл, что хотел сказать.";
+        }
+        else 
         {
             // Очистка от markdown
             reply = Regex.Replace(reply, @"\*\*(.*?)\*\*", "$1");
             reply = Regex.Replace(reply, @"\*(.*?)\*", "$1");
             
-            // Убираем все возможные префиксы ролей
+            // Убираем префиксы
             reply = Regex.Replace(reply, @"^(NPC|Ответ|Реплика|Персонаж|Твой ответ):\s*", "", RegexOptions.IgnoreCase);
             reply = Regex.Replace(reply, @"^\([^)]+\)\s*[-—–]?\s*", "");
             reply = Regex.Replace(reply, @"\bNPC[:\s]*", "", RegexOptions.IgnoreCase);
@@ -200,52 +315,35 @@ public class GameAI : MonoBehaviour
             // Убираем кавычки
             reply = reply.Trim('"', '«', '»', ' ', '\n', '\r');
             
-            // ИСПРАВЛЕНИЕ 4: Более мягкое ограничение предложений
-            var sentenceMatches = Regex.Matches(reply, @"[^.!?]+[.!?]+");
-            if (sentenceMatches.Count > 3)
-            {
-                string limited = "";
-                for (int i = 0; i < 3; i++)
-                {
-                    limited += sentenceMatches[i].Value;
-                }
-                reply = limited.Trim();
-            }
-            
-            // Убираем мусор
-            if (reply == "..." || reply == "…") reply = "";
+            // Если ответ слишком короткий
+            if (reply.Length < 2) reply = "...";
         }
 
-        // Fallback если ответ неадекватный
-        if (string.IsNullOrWhiteSpace(reply) || reply.Length < 5 || reply.ToLower().StartsWith("npc"))
-        {
-            string[] fallback = {
-                "Ох, милок, расскажи поподробнее...",
-                "Ну ты даёшь! А дальше-то что?",
-                "Слушаю тебя, странник.",
-                "Хм... интересно. Продолжай.",
-                "Да ты что! Не может быть!",
-                "Ох, батюшки... ну и дела.",
-                "Ишь ты какой! Это надо же!",
-                "Ай да молодец! Рассказывай дальше."
-            };
-            reply = fallback[UnityEngine.Random.Range(0, fallback.Length)];
-            Debug.LogWarning($"[DEBUG] Неадекватный ответ: '{fullResponse}', используем fallback");
-        }
-
-        // Убираем "…" и вставляем настоящий ответ
+        // Обновляем чат (заменяем "...")
         if (chatHistoryText != null)
         {
-            string text = chatHistoryText.text;
-            int index = text.LastIndexOf("<color=#FFAA00>NPC:</color> …");
-            if (index >= 0)
-                chatHistoryText.text = text.Substring(0, index);
+             string currentText = chatHistoryText.text;
+             // Ищем наш маркер ожидания. В AddChatMessage мы добавляли "..."
+             // Но там был и цвет: <color=#FFAA00>NPC:</color> …
+             string ellipsisMarkup = "<color=#FFAA00>NPC:</color> …";
+             int index = currentText.LastIndexOf(ellipsisMarkup);
+             
+             if (index >= 0)
+             {
+                 // Отрезаем всё после последнего NPC (то есть удаляем "…")
+                 // И добавляем нормальный ответ
+                 chatHistoryText.text = currentText.Substring(0, index);
+                 AddChatMessage("NPC", reply);
+             }
+             else
+             {
+                 // Если маркера нет (странно), просто добавляем
+                 AddChatMessage("NPC", reply);
+             }
         }
 
-        AddChatMessage("NPC", reply);
-        StartCoroutine(ScrollDelayed());
-        
         Debug.Log($"[DEBUG] Итоговый ответ NPC: '{reply}'");
+        StartCoroutine(ScrollDelayed());
     }
 
     private void AddChatMessage(string sender, string message)
