@@ -171,8 +171,8 @@ public class GameAI : MonoBehaviour
              if (tmp != null)
              {
                  tmp.enableWordWrapping = true;
-                 tmp.overflowMode = TextOverflowModes.Overflow; // Чтобы текст не обрезался внутри себя
-                 tmp.fontSize = 24; // Меньший шрифт для читаемости (был огромный)
+                 tmp.overflowMode = TextOverflowModes.Overflow; 
+                 tmp.fontSize = 24; // FORCE FONT SIZE 24
                  tmp.alignment = TextAlignmentOptions.TopLeft;
              }
         }
@@ -239,33 +239,17 @@ public class GameAI : MonoBehaviour
         bool done = false;
         string fullResponse = "";
         
-        // ИСПРАВЛЕНИЕ 1: Убираем подсчет токенов, используем только проверку предложений
-        llmCharacter.Chat(systemPrompt, r =>
+        // ИСПРАВЛЕНИЕ: Используем completion callback (как в истории)
+        llmCharacter.Chat(systemPrompt, (r) =>
         {
             fullResponse = r;
-            
-            // Завершаем когда есть 2-3 полных предложения
-            int sentenceCount = Regex.Matches(r, @"[.!?]").Count;
-            if (sentenceCount >= 2)
-            {
-                // Проверяем, что последнее предложение завершено
-                if (r.TrimEnd().EndsWith(".") || r.TrimEnd().EndsWith("!") || r.TrimEnd().EndsWith("?"))
-                {
-                    // Игнорируем это условие, пусть генерирует пока есть токены, 
-                    // чтобы не обрывать мысль. LLM сама остановится.
-                    // done = true; 
-                }
-            }
-            
-            // Завершаем только если ответ уже ОЧЕНЬ длинный
-            if (r.Length > 800) 
-            {
-                done = true;
-            }
+        }, () => 
+        {
+            done = true;
         });
 
         // Увеличиваем таймаут ожидания LLM
-        float timeout = 45f;
+        float timeout = 120f;
         float elapsed = 0f;
         
         // Ждем пока LLM сама закончит (обычно callback перестает дергаться)
@@ -433,13 +417,42 @@ public class GameAI : MonoBehaviour
         textStoryOutput.text = "Генерация текста квеста...";
         
         bool done = false;
-        llmCharacter.Chat(prompt, r => 
+        
+        // Пытаемся задать параметры (если библиотека позволяет)
+        // llmCharacter.SetOption("num_predict", 2048); // Пример, если есть такой метод
+        
+        // Используем 3-й аргумент (completionCallback) если он есть в этой версии LLMUnity
+        llmCharacter.Chat(prompt, (r) => 
         { 
             textStoryOutput.text = r;
+        }, () => 
+        {
             done = true;
         });
 
-        yield return new WaitUntil(() => done);
+        // Блокировка на время генерации (с таймаутом и проверкой тишины)
+        float timeout = 240f; // 4 минуты на текст
+        float elapsed = 0f;
+        string lastText = "";
+        float noChangeTimer = 0f;
+
+        while (!done && elapsed < timeout)
+        {
+            if (textStoryOutput.text != lastText)
+            {
+                lastText = textStoryOutput.text;
+                noChangeTimer = 0f;
+            }
+            else
+            {
+                noChangeTimer += Time.deltaTime;
+                // Если текст не менялся 5 секунд и он длинный — считаем что всё
+                if (noChangeTimer > 5.0f && lastText.Length > 100) done = true;
+            }
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
 
         // КЛЮЧЕВАЯ ЧАСТЬ — ПРОКРУТКА ВНИЗ ПОСЛЕ ГЕНЕРАЦИИ
         yield return null; // ждём один кадр
@@ -454,7 +467,17 @@ public class GameAI : MonoBehaviour
 
     IEnumerator GenerateIconCoroutine()
     {
-        string prompt = $"Awesome RPG icon of {inputPrompt.text}, russian folk style, sharp, centered, transparent background";
+        // Формируем более точный промпт для персонажа
+        string role = dropdownNPCRole != null ? dropdownNPCRole.captionText.text : "Character";
+        string culture = dropdownCulturalContext != null ? dropdownCulturalContext.captionText.text : "Russian Folk";
+        
+        // Переводим некоторые русские термины для лучшего понимания моделью (если модель английская)
+        // Но если модель понимает русский - оставляем. Обычно модели лучше работают с английскими тегами.
+        // Простой маппинг:
+        string stylePrompt = "digital painting, rpg character portrait, high quality, sharp focus";
+        
+        string prompt = $"Portrait of a {role}, {culture} style, {inputPrompt.text}, {stylePrompt}, centered, transparent background";
+        
         bool done = false;
         yield return comfy.GenerateTexture(prompt, tex =>
         {

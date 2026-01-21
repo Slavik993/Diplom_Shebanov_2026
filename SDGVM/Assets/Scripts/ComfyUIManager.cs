@@ -385,34 +385,33 @@ public class ComfyUIManager : MonoBehaviour
         // ОЖИДАНИЕ + ПРОГРЕСС-БАР (15 МИНУТ!)
         string imageFilename = null;
         float elapsed = 0f;
-        float timeout = 300f; // 5 минут — достаточно для CPU с оптимизированным workflow
+        float timeout = 600f; // 10 минут — для медленных ПК
 
         while (elapsed < timeout && string.IsNullOrEmpty(imageFilename))
         {
-            yield return new WaitForSeconds(1f);
-            elapsed += 1f;
-
-            // Асимптотический прогресс-бар (чтобы не было 100% за 1 секунду)
-            // Быстро доходим до 80%, потом медленно ползем
-            float targetProgress = 0.95f; 
-            float currentLimit = (elapsed < 30f) ? 0.8f : targetProgress; 
-            float speed = (elapsed < 30f) ? 0.1f : 0.01f;
-            
             if (iconProgressBar != null)
             {
+                // Асимптотическое приближение к 0.95
+                float targetLimit = 0.95f; 
+                float currentLimit = Mathf.Lerp(0f, targetLimit, 1f - Mathf.Exp(-elapsed * 0.05f));
+                float speed = 0.2f;
+                
                 float newVal = Mathf.MoveTowards(iconProgressBar.value, currentLimit, Time.deltaTime * speed);
                 iconProgressBar.value = newVal;
             }
                 
             if (iconProgressText != null)
             {
-                // Показываем реальный статус вместо фейковых процентов
                 if (elapsed < 10f) iconProgressText.text = "Запуск...";
                 else if (elapsed < 60f) iconProgressText.text = "Генерация...";
                 else iconProgressText.text = "Обработка...";
             }
 
-            var historyReq = UnityWebRequest.Get($"{comfyURL}/history/{currentPromptId}");
+            yield return new WaitForSeconds(1f);
+            elapsed += 1f;
+
+            // Проверяем историю
+            UnityWebRequest historyReq = UnityWebRequest.Get($"{comfyURL}/history/{currentPromptId}");
             yield return historyReq.SendWebRequest();
 
             if (historyReq.result == UnityWebRequest.Result.Success)
@@ -420,18 +419,22 @@ public class ComfyUIManager : MonoBehaviour
                 string json = historyReq.downloadHandler.text;
                 imageFilename = ExtractImageFilename(json);
                 
-                if (string.IsNullOrEmpty(imageFilename))
+                if (!string.IsNullOrEmpty(imageFilename))
                 {
-                    string errorMsg = ExtractErrorMessage(json);
-                    if (!string.IsNullOrEmpty(errorMsg))
-                    {
-                        UnityEngine.Debug.LogError($"❌ ComfyUI reported error: {errorMsg}");
-                        if (iconProgressText != null) iconProgressText.text = "Ошибка!";
-                        callback?.Invoke(null);
-                        yield break;
-                    }
+                     break; // Нашли!
+                }
+                
+                // Если файла нет, проверяем на явную ошибку
+                string errorMsg = ExtractErrorMessage(json);
+                if (!string.IsNullOrEmpty(errorMsg))
+                {
+                     UnityEngine.Debug.LogError($"❌ ComfyUI reported error: {errorMsg}");
+                     if (iconProgressText != null) iconProgressText.text = "Ошибка!";
+                     callback?.Invoke(null);
+                     yield break;
                 }
             }
+            // Если 404 или просто нет файла — продолжаем ждать
         }
 
         // Финал прогресс-бара
