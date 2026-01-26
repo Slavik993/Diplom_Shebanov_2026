@@ -1,0 +1,112 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="Страница — 1" id="Vv1aLKTrVizsOj1HeZaM">
+    <mxGraphModel dx="1042" dy="1829" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="qur6fV8oEj_5pjscQGEl-1" value="Внедрение Neuro Tale" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="160" y="200" width="350" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-2" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="40" y="220" as="sourcePoint" />
+            <mxPoint x="160" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-3" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="39" y="280" as="sourcePoint" />
+            <mxPoint x="159" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-5" value="Текстовые сюжеты" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="70" y="185" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-6" value="Требование преподавателей" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="69" y="242" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-7" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" target="qur6fV8oEj_5pjscQGEl-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="250" y="50" as="sourcePoint" />
+            <mxPoint x="300" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-8" value="Текстовые сюжеты" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
+          <mxGeometry x="155" y="105" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-9" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="403" y="-27.5" as="sourcePoint" />
+            <mxPoint x="400" y="197.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-10" value="Стратегия цифровизации МУИВ" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
+          <mxGeometry x="270" y="70" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-11" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="510" y="230" as="sourcePoint" />
+            <mxPoint x="710" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-12" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="510" y="301" as="sourcePoint" />
+            <mxPoint x="710" y="301" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-13" value="Сгенерированные раскадировки" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="512" y="190" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-14" value="Экономия времени" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="510" y="270" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-15" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="510" y="264" as="sourcePoint" />
+            <mxPoint x="710" y="264" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-16" value="Иллюстрации" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="510" y="230" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-17" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="242" y="470" as="sourcePoint" />
+            <mxPoint x="242" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-18" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="318" y="473" as="sourcePoint" />
+            <mxPoint x="318" y="313" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-19" value="Преподаватель" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
+          <mxGeometry x="155" y="380" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-20" value="Студент" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
+          <mxGeometry x="225" y="385" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-21" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="395" y="475" as="sourcePoint" />
+            <mxPoint x="395" y="315" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qur6fV8oEj_5pjscQGEl-22" value="Графический редактор" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" parent="1" vertex="1">
+          <mxGeometry x="300" y="380" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VPeLERYHXKEYksD441-R-1" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="322" y="50" as="sourcePoint" />
+            <mxPoint x="320" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VPeLERYHXKEYksD441-R-2" value="Учебный план" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" vertex="1" parent="1">
+          <mxGeometry x="230" y="105" width="130" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -50,9 +50,20 @@ class ImageGenerator:
             if self.pipeline is None:
                 return self.create_dummy_image(prompt)
 
-        if seed is None:
+    def generate(self, prompt, negative_prompt="", seed=None, height=512, width=512, steps=30):
+        """Generates an image from a prompt."""
+        if self.pipeline is None:
+            # Try loading again if it wasn't loaded
+            self.load_model()
+            if self.pipeline is None:
+                return self.create_dummy_image(prompt)
+
+        # If seed is provided, we use it for consistency.
+        # If seed is -1 or None, we randomize.
+        if seed is None or seed == -1:
             seed = torch.randint(0, 1000000, (1,)).item()
         
+        print(f"Generating with seed: {seed}")
         generator = torch.Generator(device=self.device).manual_seed(seed)
 
         try:

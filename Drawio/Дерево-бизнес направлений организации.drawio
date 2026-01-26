@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Страница — 1" id="wlz_HN1blQooHRyOo7wY">
-    <mxGraphModel dx="1855" dy="2983" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="1">
+    <mxGraphModel dx="2767" dy="3353" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -16,13 +16,13 @@
         <mxCell id="4GZBMI-w_tXJanFAA9ad-4" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="230" y="120" width="20" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4GZBMI-w_tXJanFAA9ad-5" value="&lt;span style=&quot;color: rgb(20, 20, 19); font-family: jetbrains, &amp;quot;jetbrains Fallback&amp;quot;, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace, Menlo, Monaco, monospace, monospace; text-align: start; white-space-collapse: preserve; background-color: rgb(255, 255, 255);&quot;&gt;Развитие&lt;/span&gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
+        <mxCell id="4GZBMI-w_tXJanFAA9ad-5" value="Развитие" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
           <mxGeometry x="980" y="120" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="4GZBMI-w_tXJanFAA9ad-6" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="980" y="120" width="20" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4GZBMI-w_tXJanFAA9ad-7" value="&lt;span style=&quot;color: rgb(20, 20, 19); font-family: jetbrains, &amp;quot;jetbrains Fallback&amp;quot;, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace, Menlo, Monaco, monospace, monospace; text-align: start; white-space-collapse: preserve; background-color: rgb(255, 255, 255);&quot;&gt;Монетизация&lt;/span&gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
+        <mxCell id="4GZBMI-w_tXJanFAA9ad-7" value="Монетизация" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
           <mxGeometry x="580" y="120" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="4GZBMI-w_tXJanFAA9ad-8" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -64,7 +64,7 @@
         <mxCell id="4GZBMI-w_tXJanFAA9ad-28" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1170" y="240" width="20" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4GZBMI-w_tXJanFAA9ad-33" value="SaaS" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
+        <mxCell id="4GZBMI-w_tXJanFAA9ad-33" value="&lt;span style=&quot;color: rgb(20, 20, 19); font-family: jetbrains, &amp;quot;jetbrains Fallback&amp;quot;, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace, Menlo, Monaco, monospace, monospace; text-align: start; white-space-collapse: preserve; background-color: rgb(255, 255, 255);&quot;&gt;SaaS&lt;/span&gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
           <mxGeometry x="334" y="240" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="4GZBMI-w_tXJanFAA9ad-34" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">

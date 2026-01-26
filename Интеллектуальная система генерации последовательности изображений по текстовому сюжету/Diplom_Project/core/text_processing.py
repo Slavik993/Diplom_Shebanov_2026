@@ -44,5 +44,34 @@ class TextProcessor:
 
     def enhance_prompt(self, scene_text, style_prefix=""):
         """Enhances the prompt with style keywords."""
-        enhancement = random.choice(self.enhancements)
-        return f"{style_prefix} {scene_text}, {enhancement}".strip()
+        # If we have a style prefix, use it.
+        # Ideally, we don't want RANDOM enhancements for a comic where consistency matters.
+        # But for now, let's keep it simple or allow a fixed enhancement if provided.
+        if not style_prefix and not any(x in scene_text for x in ["artstation", "detailed"]):
+             enhancement = random.choice(self.enhancements)
+             return f"{scene_text}, {enhancement}".strip()
+        
+        return f"{style_prefix} {scene_text}".strip()
+
+    def extract_visual_part(self, text):
+        """
+        Extracts the part of the text that describes the scene visually, 
+        ignoring dialogue if possible or summarizing.
+        For a simple MVP: We assume the generator output might contain 
+        mixed dialogue and description. We'll try to use the whole text 
+        but maybe truncate or focus on non-dialogue lines if marked.
+        """
+        # Simple heuristic: remove quotes? Or just pass it all.
+        # Let's clean up quotes to avoid text bubble confusion in the model 
+        # (though SD usually ignores text meaning, dialogue can confuse the scene composition).
+        
+        # Remove text inside quotes (Dialogue)
+        import re
+        # Remove "Page X" or "chapter" headers if any
+        clean_text = re.sub(r'"[^"]*"', '', text) 
+        
+        # If we removed everything (only dialogue), revert to original text
+        if len(clean_text) < 10:
+            return text
+            
+        return clean_text.strip()

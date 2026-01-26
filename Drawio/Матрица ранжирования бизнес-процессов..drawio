@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Страница — 1" id="OALoT3N7iOh_u0J4rqke">
-    <mxGraphModel dx="1209" dy="759" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1042" dy="660" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -148,16 +148,16 @@
         <mxCell id="jigqmfsTfTKTDYZOqwdQ-48" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="710" y="490" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="-pniZmbZ1JqOTjyuwjw8-1" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;Зоны приоритетности&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="-pniZmbZ1JqOTjyuwjw8-1" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;Зоны приоритетности&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="860" y="80" width="200" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="-pniZmbZ1JqOTjyuwjw8-2" value="Высокий приоритет" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#808080;" vertex="1" parent="1">
+        <mxCell id="-pniZmbZ1JqOTjyuwjw8-2" value="Высокий приоритет" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#808080;" parent="1" vertex="1">
           <mxGeometry x="860" y="180" width="200" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="-pniZmbZ1JqOTjyuwjw8-3" value="Средний приоритет" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CCCCCC;" vertex="1" parent="1">
+        <mxCell id="-pniZmbZ1JqOTjyuwjw8-3" value="Средний приоритет" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CCCCCC;" parent="1" vertex="1">
           <mxGeometry x="860" y="270" width="200" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="-pniZmbZ1JqOTjyuwjw8-4" value="Низкий приоритет" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="-pniZmbZ1JqOTjyuwjw8-4" value="Низкий приоритет" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="860" y="360" width="200" height="70" as="geometry" />
         </mxCell>
       </root>
