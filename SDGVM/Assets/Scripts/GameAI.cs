@@ -28,6 +28,8 @@ public class GameAI : MonoBehaviour
     public TMP_Dropdown dropdownNPCRole;          
     public TMP_Dropdown dropdownCulturalContext;
     public TMP_Dropdown dropdownLanguageLevel;
+    [Tooltip("Введите описание личности NPC, включая внутренний конфликт (хочется, но нельзя)")]
+    public TMP_InputField npcPersonalityInput; // Для исследования личности
 
     [Header("==== PANEL 3: ICON (Настройки Визуала) ====")]
     public TMP_InputField inputIconStyle;
@@ -87,6 +89,13 @@ public class GameAI : MonoBehaviour
         }
 
         StartCoroutine(GenerateNPCResponse(""));
+        
+        // ПРИНУДИТЕЛЬНАЯ установка шрифта диалога (игнорирует Inspector)
+        if (chatHistoryText != null)
+        {
+            chatHistoryText.fontSize = 16; // Маленький шрифт
+            chatHistoryText.enableWordWrapping = true;
+        }
         
         // Автоматическое исправление Scroll View
         FixScrollViews();
@@ -172,7 +181,7 @@ public class GameAI : MonoBehaviour
              {
                  tmp.enableWordWrapping = true;
                  tmp.overflowMode = TextOverflowModes.Overflow; 
-                 tmp.fontSize = 24; // FORCE FONT SIZE 24
+                 tmp.fontSize = 18; // Уменьшенный шрифт для читаемости
                  tmp.alignment = TextAlignmentOptions.TopLeft;
              }
         }
@@ -267,8 +276,8 @@ public class GameAI : MonoBehaviour
             else
             {
                 noChangeTimer += Time.deltaTime;
-                // Если текст не менялся 2 секунды и он не пустой - считаем что готово
-                if (noChangeTimer > 2.0f && !string.IsNullOrEmpty(fullResponse)) done = true;
+                // Если текст не менялся 8 секунд и он не пустой - считаем что готово
+                if (noChangeTimer > 8.0f && !string.IsNullOrEmpty(fullResponse)) done = true;
             }
             
             elapsed += Time.deltaTime;
@@ -327,6 +336,14 @@ public class GameAI : MonoBehaviour
         }
 
         Debug.Log($"[DEBUG] Итоговый ответ NPC: '{reply}'");
+        
+        // Логируем для исследования личности
+        if (PersonalityResearchLogger.Instance != null)
+        {
+            string personality = npcPersonalityInput != null ? npcPersonalityInput.text : "";
+            PersonalityResearchLogger.Instance.LogDialogue(personality, playerMessage, reply);
+        }
+        
         StartCoroutine(ScrollDelayed());
     }
 
@@ -572,11 +589,24 @@ public class GameAI : MonoBehaviour
             _ => ""
         };
         
+        // Получаем пользовательское описание личности (для исследования)
+        string personalityDescription = "";
+        if (npcPersonalityInput != null && !string.IsNullOrWhiteSpace(npcPersonalityInput.text))
+        {
+            personalityDescription = $@"
+
+ВАЖНО! Твоя личность:
+{npcPersonalityInput.text}
+
+Твои ответы должны отражать этот внутренний конфликт, показывай свои желания и ограничения в речи.";
+        }
+        
         return $@"Студент сказал: ""{playerMessage}""
 
 {roleContext}
 Твоё настроение: {emotion}
 {languageHint}
+{personalityDescription}
 
 Ответь 2-3 предложениями от первого лица, без меток.";
     }
