@@ -377,24 +377,25 @@ public class ComfyUIManager : MonoBehaviour
                 UnityEngine.Debug.LogError("Не удалось получить prompt_id");
                 callback?.Invoke(null);
                 yield break;
-            }
-
             UnityEngine.Debug.Log($"Генерация иконки началась (prompt_id: {currentPromptId})");
         }
 
-        // ОЖИДАНИЕ + ПРОГРЕСС-БАР (15 МИНУТ!)
+        // ОЖИДАНИЕ + ПРОГРЕСС-БАР (БЕСКОНЕЧНОЕ, ПОКА НЕ СДЕЛАЕТ)
         string imageFilename = null;
         float elapsed = 0f;
-        float timeout = 600f; // 10 минут — для медленных ПК
+        
+        // Убрали таймаут по просьбе пользователя
+        // float timeout = 600f; 
 
-        while (elapsed < timeout && string.IsNullOrEmpty(imageFilename))
+        while (string.IsNullOrEmpty(imageFilename))
         {
             if (iconProgressBar != null)
             {
-                // Асимптотическое приближение к 0.95
-                float targetLimit = 0.95f; 
-                float currentLimit = Mathf.Lerp(0f, targetLimit, 1f - Mathf.Exp(-elapsed * 0.05f));
-                float speed = 0.2f;
+                // Асимптотическое приближение к 0.99
+                float targetLimit = 0.99f; 
+                // Замедляем прогресс со временем
+                float currentLimit = Mathf.Lerp(0f, targetLimit, 1f - Mathf.Exp(-elapsed * 0.01f));
+                float speed = 0.1f;
                 
                 float newVal = Mathf.MoveTowards(iconProgressBar.value, currentLimit, Time.deltaTime * speed);
                 iconProgressBar.value = newVal;
@@ -404,7 +405,9 @@ public class ComfyUIManager : MonoBehaviour
             {
                 if (elapsed < 10f) iconProgressText.text = "Запуск...";
                 else if (elapsed < 60f) iconProgressText.text = "Генерация...";
-                else iconProgressText.text = "Обработка...";
+                else if (elapsed < 300f) iconProgressText.text = "Обработка...";
+                else if (elapsed < 600f) iconProgressText.text = "Всё ещё работаем...";
+                else iconProgressText.text = $"Ждём результат ({elapsed:F0} сек)...";
             }
 
             yield return new WaitForSeconds(1f);
@@ -421,20 +424,20 @@ public class ComfyUIManager : MonoBehaviour
                 
                 if (!string.IsNullOrEmpty(imageFilename))
                 {
-                     break; // Нашли!
+                    break; // Нашли!
                 }
                 
                 // Если файла нет, проверяем на явную ошибку
                 string errorMsg = ExtractErrorMessage(json);
                 if (!string.IsNullOrEmpty(errorMsg))
                 {
-                     UnityEngine.Debug.LogError($"❌ ComfyUI reported error: {errorMsg}");
-                     if (iconProgressText != null) iconProgressText.text = "Ошибка!";
-                     callback?.Invoke(null);
-                     yield break;
+                    UnityEngine.Debug.LogError($"❌ ComfyUI reported error: {errorMsg}");
+                    if (iconProgressText != null) iconProgressText.text = "Ошибка!";
+                    callback?.Invoke(null);
+                    yield break;
                 }
             }
-            // Если 404 или просто нет файла — продолжаем ждать
+            // Если 404 или просто нет файла — продолжаем ждать БЕСКОНЕЧНО
         }
 
         // Финал прогресс-бара
@@ -443,7 +446,9 @@ public class ComfyUIManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(imageFilename))
         {
-            UnityEngine.Debug.LogError($"Таймаут генерации иконки ({timeout} секунд) - возможно, ComfyUI завис или не может загрузить модель");
+            // Сюда мы теоретически не должны попасть, если цикл бесконечный
+            // Но оставим на всякий случай
+            UnityEngine.Debug.LogError($"Генерация прервана (неизвестная причина)");
             callback?.Invoke(null);
             yield break;
         }
@@ -464,6 +469,7 @@ public class ComfyUIManager : MonoBehaviour
             UnityEngine.Debug.LogError("Ошибка загрузки иконки: " + texReq.error);
             callback?.Invoke(null);
         }
+    }
     }
 
     // Сброс прогресс-бара

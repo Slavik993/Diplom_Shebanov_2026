@@ -52,19 +52,25 @@ def generate_sequence(base_prompt_ru, character, style, count=3, educational_mod
     if style == "Algorithm Flowchart":
         if "пузырьк" in base_content or "bubble" in base_content:
             variations = [
-                "bubble sort algorithm initialization, array setup",
-                "bubble sort main loop, comparing adjacent elements",
-                "bubble sort swapping elements if out of order",
-                "bubble sort optimized version with flag",
-                "bubble sort time complexity analysis"
+                "bubble sort initialization: array declaration, start rectangle, arrow to loop",
+                "bubble sort outer loop: for i from 0 to n-1, loop diamond, counter variable",
+                "bubble sort inner loop: for j from 0 to n-i-1, nested loop structure",
+                "bubble sort comparison: if array[j] > array[j+1], decision diamond, comparison operator",
+                "bubble sort swap: exchange elements, swap operation rectangle, temporary variable",
+                "bubble sort pass completion: end of inner loop, arrow back to outer loop",
+                "bubble sort algorithm termination: end rectangle, sorted array result",
+                "bubble sort time complexity: O(n²) notation, complexity analysis diagram"
             ]
         elif "быстр" in base_content or "quick" in base_content:
             variations = [
-                "quick sort pivot selection",
-                "quick sort partitioning step",
-                "quick sort recursive calls",
-                "quick sort worst case scenario",
-                "quick sort average performance"
+                "quick sort function call: sort(array, low, high), start rectangle, parameters",
+                "quick sort base case: if low >= high, return, decision diamond",
+                "quick sort pivot selection: choose pivot element, pivot assignment rectangle",
+                "quick sort partitioning: rearrange elements around pivot, partition function call",
+                "quick sort left subarray: recursive call sort(left), recursive arrow",
+                "quick sort right subarray: recursive call sort(right), recursive arrow",
+                "quick sort completion: all subarrays sorted, end rectangle",
+                "quick sort complexity: O(n log n) average case, complexity diagram"
             ]
         else:
             variations = ["initialization step", "main processing loop", "decision making", "final output"]
@@ -94,7 +100,7 @@ def generate_sequence(base_prompt_ru, character, style, count=3, educational_mod
     for i in range(count):
         variation = variations[i % len(variations)]
         
-        complex_prompt = prompt_engineer.build_prompt(
+        complex_prompt, negative_prompt = prompt_engineer.build_prompt(
             base_description=f"{visual_text}, {variation}", 
             style_name=style, 
             character_desc=character,
@@ -103,11 +109,14 @@ def generate_sequence(base_prompt_ru, character, style, count=3, educational_mod
         )
         
         en_prompt = translator.translate(complex_prompt)
+        en_negative_prompt = translator.translate(negative_prompt) if negative_prompt else ""
         app_logger.info(f"Generating frame {i+1}: {en_prompt}")
+        if en_negative_prompt:
+            app_logger.info(f"Negative prompt: {en_negative_prompt}")
         
         # Use varied seed for each scene (base seed + scene index) for diversity
         scene_seed = session.current_seed + i if session.current_seed != -1 else None
-        img = generator.generate(en_prompt, seed=scene_seed, educational_mode=educational_mode)
+        img = generator.generate(en_prompt, negative_prompt=en_negative_prompt, seed=scene_seed, educational_mode=educational_mode)
         images.append(img)
         
     return images
