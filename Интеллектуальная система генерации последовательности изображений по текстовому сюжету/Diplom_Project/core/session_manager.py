@@ -9,7 +9,7 @@ class SessionManager:
         if not os.path.exists(storage_path):
             os.makedirs(storage_path)
 
-    def save_session(self, session_id, history, character, style, seed):
+    def save_session(self, session_id, history, character, style, seed, educational_mode=False):
         """
         Saves the current session state to a JSON file.
         """
@@ -19,6 +19,7 @@ class SessionManager:
             "character": character,
             "style": style,
             "seed": seed,
+            "educational_mode": educational_mode,
             "history": history
         }
         

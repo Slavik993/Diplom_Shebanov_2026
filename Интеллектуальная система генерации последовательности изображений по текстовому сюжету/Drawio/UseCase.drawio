@@ -1,0 +1,60 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="Страница — 1" id="Fe5VPvippNKbrBrYPsHv">
+    <mxGraphModel dx="1924" dy="695" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-1" target="ofmT9BVE4DuEUn3rnm9R-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-1" target="ofmT9BVE4DuEUn3rnm9R-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-1" target="ofmT9BVE4DuEUn3rnm9R-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-1" target="ofmT9BVE4DuEUn3rnm9R-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-1" target="ofmT9BVE4DuEUn3rnm9R-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-1" value="Пользователь" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="130" y="90" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-2" value="Выбрать стиль" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="210" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-3" value="Ввести текст сюжета" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="75" y="210" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-4" value="Перевести и улучшить промт" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-60" y="210" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-5" value="Сохранить результаты" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-186" y="210" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-6" value="Сгенерировать раскадровку" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-350" y="210" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-12" value="include" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=0.743;exitY=0.022;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.333;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-6" target="ofmT9BVE4DuEUn3rnm9R-4">
+          <mxGeometry x="-0.0024" relative="1" as="geometry">
+            <mxPoint x="-150" y="160" as="sourcePoint" />
+            <mxPoint x="-20" y="150" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-210" y="150" />
+              <mxPoint x="-70" y="150" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ofmT9BVE4DuEUn3rnm9R-13" value="extend" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ofmT9BVE4DuEUn3rnm9R-6" target="ofmT9BVE4DuEUn3rnm9R-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-120" y="180" as="sourcePoint" />
+            <mxPoint x="-200" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

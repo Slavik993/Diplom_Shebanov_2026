@@ -1419,7 +1419,7 @@ MonoBehaviour:
   save: 
   saveCache: 0
   debugPrompt: 0
-  numPredict: 512
+  numPredict: 1024
   slot: -1
   grammar: 
   grammarJSON: 
@@ -2612,6 +2612,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 257461046}
   m_CullTransparentMesh: 1
+--- !u!1 &264802328
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 264802330}
+  - component: {fileID: 264802329}
+  m_Layer: 0
+  m_Name: PersonalityAnalyzer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &264802329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264802328}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2761d25177eb6d44be9cd21a34e6cb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersonalityAnalyzer
+  analysisResultText: {fileID: 0}
+  consistencySlider: {fileID: 0}
+  emotionalitySlider: {fileID: 0}
+  personalityScoreSlider: {fileID: 0}
+  personalityThreshold: 0.6
+--- !u!4 &264802330
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264802328}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 956.9188, y: 584.8085, z: 48.18561}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &264822104
 GameObject:
   m_ObjectHideFlags: 0
@@ -3459,7 +3508,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0.0007019043, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 548, y: 1000}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &355667538
@@ -10284,7 +10333,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00080688606}
+  m_AnchoredPosition: {x: 0, y: 0.00004169303}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1082898192
@@ -13357,7 +13406,7 @@ MonoBehaviour:
   parallelPrompts: -1
   dontDestroyOnLoad: 1
   contextSize: 8192
-  batchSize: 512
+  batchSize: 1024
   model: mistral-7b-instruct-v0.2.Q4_K_M.gguf
   chatTemplate: mistral chat
   lora: 
@@ -20588,3 +20637,4 @@ SceneRoots:
   - {fileID: 690815316}
   - {fileID: 355667540}
   - {fileID: 1244370454}
+  - {fileID: 264802330}

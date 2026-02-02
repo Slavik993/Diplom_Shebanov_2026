@@ -192,7 +192,8 @@ public class GameAI : MonoBehaviour
     void CreateSessionFolder()
     {
         string sessionName = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        currentSessionFolder = Path.Combine(Application.dataPath, saveFolderRoot, sessionName);
+        // Используем persistentDataPath вместо dataPath, чтобы избежать конфликтов с Unity meta-файлами
+        currentSessionFolder = Path.Combine(Application.persistentDataPath, saveFolderRoot, sessionName);
         Directory.CreateDirectory(currentSessionFolder);
         Debug.Log($"Session folder: {currentSessionFolder}");
     }
@@ -344,6 +345,16 @@ public class GameAI : MonoBehaviour
             PersonalityResearchLogger.Instance.LogDialogue(personality, playerMessage, reply);
         }
         
+        // Автоматический анализ личности
+        if (PersonalityAnalyzer.Instance != null)
+        {
+            if (npcPersonalityInput != null)
+                PersonalityAnalyzer.Instance.SetPersonalityDescription(npcPersonalityInput.text);
+            
+            var metrics = PersonalityAnalyzer.Instance.AnalyzeResponse(reply);
+            Debug.Log($"[Personality] Балл: {metrics.PersonalityScore:P0}, Личность: {(metrics.HasPersonality ? "ДА" : "НЕТ")}");
+        }
+        
         StartCoroutine(ScrollDelayed());
     }
 
@@ -422,14 +433,49 @@ public class GameAI : MonoBehaviour
     {
         if (!llmCharacter) yield break;
 
-        string prompt = $@"Создай квест на русском языке.
-    Тема: {inputPrompt.text}
-    Длина: {inputLength.text} слов
-    Стиль: {dropdownStyle.captionText.text}
-    Тип: {dropdownType.captionText.text}
-    Сложность: {dropdownDifficulty.captionText.text}
+        // Получаем культурный контекст
+        string culture = dropdownCulturalContext != null ? dropdownCulturalContext.captionText.text : "";
+        
+        // Научно-строгий промпт для качественных историй
+        string prompt = $@"Ты — профессиональный писатель и историк. Создай СВЯЗНУЮ и ЛОГИЧНУЮ историю, опираясь на реальные факты.
 
-    Напиши только текст квеста, без пояснений.";
+{HistoricalContext.SergeiWitteBiography}
+
+ТЕМА: {inputPrompt.text}
+КУЛЬТУРНЫЙ КОНТЕКСТ: {culture}
+СТИЛЬ: {dropdownStyle.captionText.text}
+
+СТРОГИЕ ТРЕБОВАНИЯ К КАЧЕСТВУ:
+
+1. ИСТОРИЧЕСКАЯ ДОСТОВЕРНОСТЬ:
+   - Учитывай биографию С.Ю. Витте и реалии той эпохи
+   - НЕ допускай фактических ошибок и анахронизмов
+   - Если тема связана с университетом Витте — подчеркни его наследие
+
+2. ЛОГИЧЕСКАЯ СВЯЗНОСТЬ:
+   - Каждое предложение должно логически следовать из предыдущего
+   - НЕ смешивай несовместимые эпохи (современность и средневековье)
+   - НЕ используй абсурдные сочетания (башня пиццы, марсианские чудища)
+   - Исторические личности должны использоваться УМЕСТНО
+
+2. СТРУКТУРА:
+   - Экспозиция: кто, где, когда (1-2 предложения)
+   - Завязка: возникновение проблемы (2 предложения)
+   - Развитие: действия героя (2-3 предложения)
+   - Кульминация и развязка (2 предложения)
+
+3. КУЛЬТУРНАЯ АДАПТАЦИЯ:
+   - Если указан культурный контекст, уважительно интегрируй его
+   - Объясняй культурные элементы понятно для иностранного студента
+   - Избегай стереотипов и оскорблений
+
+4. ЯЗЫК:
+   - Пиши грамотным русским языком
+   - Избегай сленга и просторечий
+   - Каждое предложение должно быть ЗАВЕРШЁННЫМ
+   - Примерно {inputLength.text} слов
+
+НАПИШИ ТОЛЬКО ТЕКСТ ИСТОРИИ:";
 
         textStoryOutput.text = "Генерация текста квеста...";
         
@@ -471,6 +517,21 @@ public class GameAI : MonoBehaviour
             yield return null;
         }
 
+        // Анализ качества сгенерированного текста
+        if (TextQualityAnalyzer.Instance != null)
+        {
+            var metrics = TextQualityAnalyzer.Instance.AnalyzeText(textStoryOutput.text, inputPrompt.text);
+            
+            // Очищаем текст от мелких проблем
+            textStoryOutput.text = TextQualityAnalyzer.Instance.SanitizeText(textStoryOutput.text);
+            
+            // Если текст неадекватен, добавляем предупреждение
+            if (!metrics.IsAdequate && metrics.Issues.Count > 0)
+            {
+                Debug.LogWarning($"[TextQuality] Проблемы с текстом: {string.Join(", ", metrics.Issues)}");
+            }
+        }
+
         // КЛЮЧЕВАЯ ЧАСТЬ — ПРОКРУТКА ВНИЗ ПОСЛЕ ГЕНЕРАЦИИ
         yield return null; // ждём один кадр
         Canvas.ForceUpdateCanvases();
@@ -484,19 +545,14 @@ public class GameAI : MonoBehaviour
 
     IEnumerator GenerateIconCoroutine()
     {
-        // Формируем более точный промпт для персонажа
-        string role = dropdownNPCRole != null ? dropdownNPCRole.captionText.text : "Character";
-        string culture = dropdownCulturalContext != null ? dropdownCulturalContext.captionText.text : "Russian Folk";
+        // Строгий промпт для единого стиля (реалистичный портрет, русская история)
+        string imagePrompt = $"Close-up portrait of {inputPrompt.text}, in the style of 19th century Russian realism, oil painting, Sergei Witte era, historical costume, intricate details, dignified expression, masterpiece, sharp focus, neutral background";
         
-        // Переводим некоторые русские термины для лучшего понимания моделью (если модель английская)
-        // Но если модель понимает русский - оставляем. Обычно модели лучше работают с английскими тегами.
-        // Простой маппинг:
-        string stylePrompt = "digital painting, rpg character portrait, high quality, sharp focus";
-        
-        string prompt = $"Portrait of a {role}, {culture} style, {inputPrompt.text}, {stylePrompt}, centered, transparent background";
+        // Для отладки
+        Debug.Log($"[IconGen] Prompt: {imagePrompt}");
         
         bool done = false;
-        yield return comfy.GenerateTexture(prompt, tex =>
+        yield return comfy.GenerateTexture(imagePrompt, tex =>
         {
             if (tex != null) iconPreview.texture = tex;
             done = true;
@@ -595,20 +651,35 @@ public class GameAI : MonoBehaviour
         {
             personalityDescription = $@"
 
-ВАЖНО! Твоя личность:
+ТВОЯ ЛИЧНОСТЬ И ВНУТРЕННИЙ КОНФЛИКТ:
 {npcPersonalityInput.text}
 
-Твои ответы должны отражать этот внутренний конфликт, показывай свои желания и ограничения в речи.";
+Твои ответы ДОЛЖНЫ отражать этот конфликт! Показывай желания и ограничения ЕСТЕСТВЕННО.";
         }
         
-        return $@"Студент сказал: ""{playerMessage}""
+        return $@"Ты — образованный персонаж университета, знающий историю. Отвечай ЛОГИЧНО и СВЯЗНО.
 
-{roleContext}
-Твоё настроение: {emotion}
+{HistoricalContext.SergeiWitteBiography}
+
+КОНТЕКСТ ДИАЛОГА:
+Студент сказал: ""{playerMessage}""
+
+ТВОЯ РОЛЬ: {roleContext}
+НАСТРОЕНИЕ: {emotion}
 {languageHint}
 {personalityDescription}
 
-Ответь 2-3 предложениями от первого лица, без меток.";
+СТРОГИЕ ПРАВИЛА ОТВЕТА:
+1. ИСТОРИЧНОСТЬ: Если вопрос касается истории или Витте — используй справку выше
+2. ЛОГИКА: Каждое предложение должно быть связано с вопросом студента
+3. АДЕКВАТНОСТЬ: НЕ придумывай абсурдные факты
+3. КУЛЬТУРНЫЙ КОНТЕКСТ: Если упоминаешь культурные явления, объясни их понятно
+4. ЗАВЕРШЁННОСТЬ: Каждая мысль должна быть ЗАКОНЧЕНА
+5. ГРАМОТНОСТЬ: Пиши на правильном русском языке
+6. ДЛИНА: 2-4 полных предложения
+7. БЕЗ МЕТОК: Не пиши 'NPC:', '*действия*' или подобное
+
+Твой ответ:";
     }
     
     #endregion
