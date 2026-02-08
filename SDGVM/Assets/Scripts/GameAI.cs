@@ -293,7 +293,9 @@ public class GameAI : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(reply))
         {
-             reply = "Извини, я задумался о вечном и забыл, что хотел сказать.";
+             // Если ответ пустой — пробуем сообщить об этом иначе, но не заглушкой
+             reply = "... (персонаж задумался)";
+             Debug.LogWarning("[GameAI] Empty response received from LLM");
         }
         else 
         {
@@ -316,22 +318,32 @@ public class GameAI : MonoBehaviour
         // Обновляем чат (заменяем "...")
         if (chatHistoryText != null)
         {
-             string currentText = chatHistoryText.text;
-             // Ищем наш маркер ожидания. В AddChatMessage мы добавляли "..."
-             // Но там был и цвет: <color=#FFAA00>NPC:</color> …
-             string ellipsisMarkup = "<color=#FFAA00>NPC:</color> …";
-             int index = currentText.LastIndexOf(ellipsisMarkup);
+             // Исправленная логика замены сообщения "..."
+             // Ищем последний вход "NPC:</color> …" или просто "…"
+             // Но проще и надежнее: удалить последние N символов, если они являются "…"
              
-             if (index >= 0)
+             // Вариант: Просто добавляем новое сообщение, а "..." пусть остаётся как история "думал"
+             // ИЛИ: пытаемся найти и заменить.
+             
+             string currentText = chatHistoryText.text;
+             string ellipsisTag = "…";
+             
+             if (currentText.EndsWith(ellipsisTag))
              {
-                 // Отрезаем всё после последнего NPC (то есть удаляем "…")
-                 // И добавляем нормальный ответ
-                 chatHistoryText.text = currentText.Substring(0, index);
-                 AddChatMessage("NPC", reply);
+                 // Удаляем "…"
+                 chatHistoryText.text = currentText.Substring(0, currentText.Length - ellipsisTag.Length);
+                 
+                 // Добавляем ответ (без переноса строки, так как "NPC:" уже есть)
+                 chatHistoryText.text += reply;
+             }
+             else if (currentText.Contains(ellipsisTag))
+             {
+                 // Если "…" где-то внутри (странно, но возможно)
+                 chatHistoryText.text = currentText.Replace(ellipsisTag, reply);
              }
              else
              {
-                 // Если маркера нет (странно), просто добавляем
+                 // Если не нашли маркер, просто добавляем как новое сообщение
                  AddChatMessage("NPC", reply);
              }
         }
@@ -545,8 +557,11 @@ public class GameAI : MonoBehaviour
 
     IEnumerator GenerateIconCoroutine()
     {
-        // Строгий промпт для единого стиля (реалистичный портрет, русская история)
-        string imagePrompt = $"Close-up portrait of {inputPrompt.text}, in the style of 19th century Russian realism, oil painting, Sergei Witte era, historical costume, intricate details, dignified expression, masterpiece, sharp focus, neutral background";
+        // Профессиональный промпт для высокой четкости и детализации (как во втором примере)
+        // Используем токены: detailed, sharp focus, cinematic lighting, 8k
+        string imagePrompt = $"Close-up portrait of {inputPrompt.text}, highly detailed face, sharp focus, professional digital painting, concept art, cinematic lighting, 8k, masterpiece, intricate details, realistic texture, neutral background";
+        
+        // Доп. негативный промпт (вшит в ComfyUI workflow обычно, но можно учесть в будущем)
         
         // Для отладки
         Debug.Log($"[IconGen] Prompt: {imagePrompt}");
@@ -573,7 +588,12 @@ public class GameAI : MonoBehaviour
             if (iconPreview.texture is Texture2D tex)
                 File.WriteAllBytes(Path.Combine(folder, "icon.png"), tex.EncodeToPNG());
 
-            Debug.Log($"Сохранено: {folder}");
+            // ДОПОЛНЕНИЕ: Сохраняем полный лог чата в корень сессии (чтобы точно ничего не потерять)
+            string masterChatPath = Path.Combine(currentSessionFolder, "full_chat_history.txt");
+            // Перезаписываем полный файл, так как chatHistoryText хранит всю историю
+            File.WriteAllText(masterChatPath, chatHistoryText.text);
+
+            Debug.Log($"Сохранено: {folder} и обновлен общий лог");
         }
         catch (System.Exception e) { Debug.LogError(e.Message); }
     }
@@ -657,7 +677,16 @@ public class GameAI : MonoBehaviour
 Твои ответы ДОЛЖНЫ отражать этот конфликт! Показывай желания и ограничения ЕСТЕСТВЕННО.";
         }
         
-        return $@"Ты — образованный персонаж университета, знающий историю. Отвечай ЛОГИЧНО и СВЯЗНО.
+        // Добавляем вариативности
+        string[] variations = new[] {
+            "Отвечай с юмором и иронией.",
+            "Отвечай серьезно и задумчиво.",
+            "Отвечай с энтузиазмом.",
+            "Отвечай, приводя пример из истории."
+        };
+        string variation = variations[UnityEngine.Random.Range(0, variations.Length)];
+
+        return $@"Ты — живой собеседник, {roleContext}. Твоя задача — поддерживать интересный диалог.
 
 {HistoricalContext.SergeiWitteBiography}
 
@@ -669,15 +698,12 @@ public class GameAI : MonoBehaviour
 {languageHint}
 {personalityDescription}
 
-СТРОГИЕ ПРАВИЛА ОТВЕТА:
-1. ИСТОРИЧНОСТЬ: Если вопрос касается истории или Витте — используй справку выше
-2. ЛОГИКА: Каждое предложение должно быть связано с вопросом студента
-3. АДЕКВАТНОСТЬ: НЕ придумывай абсурдные факты
-3. КУЛЬТУРНЫЙ КОНТЕКСТ: Если упоминаешь культурные явления, объясни их понятно
-4. ЗАВЕРШЁННОСТЬ: Каждая мысль должна быть ЗАКОНЧЕНА
-5. ГРАМОТНОСТЬ: Пиши на правильном русском языке
-6. ДЛИНА: 2-4 полных предложения
-7. БЕЗ МЕТОК: Не пиши 'NPC:', '*действия*' или подобное
+ИНСТРУКЦИЯ:
+1. Отвечай ЕСТЕСТВЕННО, как живой человек.
+2. {variation}
+3. Если спрашивают про Витте — используй факты из справки.
+4. Не используй списки и официоз, если это не роль куратора.
+5. Ответ должен быть 2-4 предложения.
 
 Твой ответ:";
     }
