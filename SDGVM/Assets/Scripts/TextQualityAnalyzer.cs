@@ -9,6 +9,11 @@ using System.Linq;
 /// </summary>
 public class TextQualityAnalyzer : MonoBehaviour
 {
+    [Header("UI для отображения результатов (ВКР)")]
+    public UnityEngine.UI.Slider grammarSlider;
+    public UnityEngine.UI.Slider coherenceSlider;
+    public TMPro.TMP_Text textQualityResultText;
+
     [Header("Пороги качества")]
     [Range(0, 1)] public float coherenceThreshold = 0.5f;
     [Range(0, 1)] public float adequacyThreshold = 0.6f;
@@ -83,9 +88,29 @@ public class TextQualityAnalyzer : MonoBehaviour
         // 7. Список найденных проблем
         metrics.Issues = DetectIssues(text, metrics);
 
+        UpdateUI(metrics);
         LogMetrics(text, metrics);
 
         return metrics;
+    }
+
+    private void UpdateUI(TextQualityMetrics metrics)
+    {
+        if (grammarSlider != null) grammarSlider.value = metrics.GrammarScore;
+        if (coherenceSlider != null) coherenceSlider.value = metrics.ThematicCoherence;
+
+        if (textQualityResultText != null)
+        {
+            string color = metrics.IsAdequate ? "green" : "red";
+            string status = metrics.IsAdequate ? "✓ ОТЛИЧНО" : "✗ ТРЕБУЕТ ВНИМАНИЯ";
+
+            textQualityResultText.text = $@"Оценка качества: <color={color}>{status}</color>
+
+Связность: {metrics.ThematicCoherence:P0}
+Грамотность: {metrics.GrammarScore:P0}
+
+Общий балл уверенности: {metrics.OverallQuality:P0}";
+        }
     }
 
     private float CalculateNonsenseScore(string text)
