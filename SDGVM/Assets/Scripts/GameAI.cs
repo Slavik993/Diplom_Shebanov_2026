@@ -30,6 +30,8 @@ public class GameAI : MonoBehaviour
     public TMP_Dropdown dropdownLanguageLevel;
     [Tooltip("Введите описание личности NPC, включая внутренний конфликт (хочется, но нельзя)")]
     public TMP_InputField npcPersonalityInput; // Для исследования личности
+    [Tooltip("Выберите проблемный кейс адаптации (0 = обычный режим)")]
+    public TMP_Dropdown dropdownAdaptationCase;
 
     [Header("==== PANEL 3: ICON (Настройки Визуала) ====")]
     public TMP_InputField inputIconStyle;
@@ -235,9 +237,37 @@ public class GameAI : MonoBehaviour
         string culturalContext = dropdownCulturalContext != null ? dropdownCulturalContext.captionText.text : "Россия";
         string languageLevel = dropdownLanguageLevel != null ? dropdownLanguageLevel.captionText.text : "B1";
         
-        if (string.IsNullOrEmpty(playerMessage))
+        // Проверяем, выбран ли адаптационный кейс
+        int selectedCaseId = 0;
+        if (dropdownAdaptationCase != null && dropdownAdaptationCase.value > 0)
+            selectedCaseId = dropdownAdaptationCase.value;
+        
+        if (selectedCaseId > 0)
         {
-            // Приветствие с учётом роли NPC
+            // РЕЖИМ АДАПТАЦИОННОГО СЦЕНАРИЯ
+            var adaptCase = AdaptationScenariosManager.GetCaseById(selectedCaseId);
+            if (adaptCase != null)
+            {
+                if (string.IsNullOrEmpty(playerMessage))
+                {
+                    // Первое приветствие — сценарий запускается
+                    systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(adaptCase, culturalContext)
+                        + "\n\nНачни сценарий. Опиши ситуацию от первого лица и задай студенту вопрос.";
+                }
+                else
+                {
+                    systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(adaptCase, culturalContext)
+                        + $"\n\nИСТОРИЯ ДИАЛОГА:\n{GetShortChatHistory()}\n\nСтудент ответил: \"{playerMessage}\"\n\nПродолжи диалог от своего лица. 2-4 предложения.";
+                }
+            }
+            else
+            {
+                systemPrompt = GetNPCGreetingPrompt(npcRole, culturalContext, languageLevel);
+            }
+        }
+        else if (string.IsNullOrEmpty(playerMessage))
+        {
+            // Приветствие с учётом роли NPC (обычный режим)
             systemPrompt = GetNPCGreetingPrompt(npcRole, culturalContext, languageLevel);
         }
         else
@@ -489,6 +519,10 @@ public class GameAI : MonoBehaviour
 
 НАПИШИ ТОЛЬКО ТЕКСТ ИСТОРИИ:";
 
+        // RAG: вставляем релевантные знания из датасета Витте
+        if (WitteKnowledgeBase.Instance != null)
+            prompt = WitteKnowledgeBase.Instance.EnrichPrompt(prompt);
+
         textStoryOutput.text = "Генерация текста квеста...";
         
         bool done = false;
@@ -635,11 +669,16 @@ public class GameAI : MonoBehaviour
             _ => ""
         };
         
+        // Контекст ближайших мероприятий МУИВ
+        string eventsContext = UniversityEventsManager.GetEventsContextForPrompt();
+        
         return $@"{roleDescription}
 {culturalHint}
 {languageHint}
+{eventsContext}
 
 Напиши короткое дружелюбное приветствие для студента. Представься и предложи помощь.
+Если сейчас есть ближайшее мероприятие — упомяни его кратко.
 2-3 предложения, говори от первого лица, без меток.";
     }
     
@@ -686,9 +725,19 @@ public class GameAI : MonoBehaviour
         };
         string variation = variations[UnityEngine.Random.Range(0, variations.Length)];
 
+        // RAG: подтягиваем релевантные знания из базы Витте
+        string witteRAG = "";
+        if (WitteKnowledgeBase.Instance != null)
+            witteRAG = WitteKnowledgeBase.Instance.FindRelevantKnowledge(playerMessage);
+
+        // Контекст мероприятий МУИВ
+        string eventsContext = UniversityEventsManager.GetEventsContextForPrompt();
+
         return $@"Ты — живой собеседник, {roleContext}. Твоя задача — поддерживать интересный диалог.
 
 {HistoricalContext.SergeiWitteBiography}
+{witteRAG}
+{eventsContext}
 
 КОНТЕКСТ ДИАЛОГА:
 Студент сказал: ""{playerMessage}""
@@ -701,7 +750,7 @@ public class GameAI : MonoBehaviour
 ИНСТРУКЦИЯ:
 1. Отвечай ЕСТЕСТВЕННО, как живой человек.
 2. {variation}
-3. Если спрашивают про Витте — используй факты из справки.
+3. Если спрашивают про Витте — используй факты из справки и дополнительные исторические факты.
 4. Не используй списки и официоз, если это не роль куратора.
 5. Ответ должен быть 2-4 предложения.
 
