@@ -17,9 +17,9 @@ public class WitteKnowledgeBase : MonoBehaviour
 
     [Header("Настройки RAG")]
     [Tooltip("Максимум фрагментов для вставки в промпт")]
-    public int maxFragments = 3;
+    public int maxFragments = 5;
     [Tooltip("Максимум символов на один фрагмент")]
-    public int maxCharsPerFragment = 500;
+    public int maxCharsPerFragment = 800;
 
     private List<WitteEntry> entries = new List<WitteEntry>();
     private bool isLoaded = false;
@@ -67,7 +67,7 @@ public class WitteKnowledgeBase : MonoBehaviour
                     }
 
                     // Ограничиваем загрузку для экономии RAM
-                    if (loaded >= 500) break;
+                    if (loaded >= 2000) break;
                 }
             }
 

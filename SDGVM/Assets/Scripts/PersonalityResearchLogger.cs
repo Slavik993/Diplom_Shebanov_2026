@@ -40,7 +40,7 @@ public class PersonalityResearchLogger : MonoBehaviour
         // Создаём заголовок CSV, если файл новый
         if (!File.Exists(logFilePath))
         {
-            File.WriteAllText(logFilePath, "Timestamp,SessionID,PersonalityDescription,PlayerMessage,NPCResponse\n", Encoding.UTF8);
+            File.WriteAllText(logFilePath, "Timestamp,SessionID,PersonalityDescription,PlayerMessage,NPCResponse,HumanityIndex\n", Encoding.UTF8);
         }
     }
 
@@ -58,7 +58,7 @@ public class PersonalityResearchLogger : MonoBehaviour
     /// <summary>
     /// Логирует диалог в CSV файл
     /// </summary>
-    public void LogDialogue(string personalityDescription, string playerMessage, string npcResponse)
+    public void LogDialogue(string personalityDescription, string playerMessage, string npcResponse, float humanityIndex)
     {
         if (!enableLogging) return;
         
@@ -71,7 +71,10 @@ public class PersonalityResearchLogger : MonoBehaviour
             string safePlayer = EscapeCSV(playerMessage);
             string safeNPC = EscapeCSV(npcResponse);
             
-            string line = $"{timestamp},{SessionId},{safePersonality},{safePlayer},{safeNPC}\n";
+            // humanityIndex как число с точкой
+            string safeHI = humanityIndex.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            
+            string line = $"{timestamp},{SessionId},{safePersonality},{safePlayer},{safeNPC},{safeHI}\n";
             
             File.AppendAllText(logFilePath, line, Encoding.UTF8);
             

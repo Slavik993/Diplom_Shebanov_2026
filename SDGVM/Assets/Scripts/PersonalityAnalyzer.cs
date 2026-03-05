@@ -88,6 +88,9 @@ public class PersonalityAnalyzer : MonoBehaviour
         // 5. Определение наличия личности
         metrics.HasPersonality = metrics.PersonalityScore >= personalityThreshold;
 
+        // 6. Расчет Индекса человечности (Humanity Index - HI)
+        metrics.HumanityIndex = CalculateHumanityIndex(npcResponse, metrics);
+
         // Обновляем UI
         UpdateUI(metrics);
         
@@ -140,6 +143,35 @@ public class PersonalityAnalyzer : MonoBehaviour
         return Mathf.Clamp01(conflictScore - avoidancePenalty);
     }
 
+    private float CalculateHumanityIndex(string text, PersonalityMetrics baseMetrics)
+    {
+        string lower = text.ToLower();
+        
+        // Штрафы за шаблонные ИИ-фразы
+        string[] aiBoilerplate = {
+            "я искусственный интеллект", "я языковая модель", "в заключение", 
+            "подводя итог", "важно помнить", "как ии", "как виртуальный",
+            "чем могу вам помочь", "согласно", "однако стоит отметить"
+        };
+        
+        int boilerplateCount = aiBoilerplate.Count(bp => lower.Contains(bp));
+        float penalty = boilerplateCount * 0.3f; // Жесткий штраф за каждый шаблон
+
+        // Бонусы за человечность (сомнения, сленг, эмоции)
+        string[] humanMarkers = {
+            "хм", "ну", "наверное", "возможно", "слушай", "кажется", "кстати",
+            "честно говоря", "вообще-то", "представь", "ахах", "шучу"
+        };
+        int humanMarkerCount = humanMarkers.Count(m => lower.Contains(m));
+        float bonus = humanMarkerCount * 0.1f;
+
+        // Базовый HI зависит от эмоций и конфликта, но штрафуется за ИИ-маркеры
+        float baseHI = (baseMetrics.Emotionality * 0.6f) + (baseMetrics.ConflictEngagement * 0.4f);
+        
+        float finalHI = Mathf.Clamp01(baseHI + bonus - penalty);
+        return finalHI;
+    }
+
     private List<string> ExtractKeywords(string text)
     {
         // Простое извлечение: слова длиннее 4 букв
@@ -181,6 +213,7 @@ public class PersonalityAnalyzer : MonoBehaviour
 Эмоциональность: {metrics.Emotionality:P0}
 Вовлечённость в конфликт: {metrics.ConflictEngagement:P0}
 
+Индекс Человечности (HI): {metrics.HumanityIndex:P0}
 Общий балл: {metrics.PersonalityScore:P0}";
         }
     }
@@ -192,6 +225,7 @@ public class PersonalityAnalyzer : MonoBehaviour
 Консистентность: {metrics.Consistency:F2}
 Эмоциональность: {metrics.Emotionality:F2}
 Конфликт: {metrics.ConflictEngagement:F2}
+HI (Индекс человечности): {metrics.HumanityIndex:P0}
 Личность: {(metrics.HasPersonality ? "ДА" : "НЕТ")}");
     }
 
@@ -205,10 +239,12 @@ public class PersonalityAnalyzer : MonoBehaviour
 
         float avgEmotionality = dialogueHistory.Average(d => CalculateEmotionality(d));
         float avgConsistency = dialogueHistory.Average(d => CalculateConsistency(d));
+        float avgHI = dialogueHistory.Average(d => CalculateHumanityIndex(d, new PersonalityMetrics())); // приблизительно
 
         return $@"Сессия: {dialogueHistory.Count} реплик
 Средняя эмоциональность: {avgEmotionality:P0}
-Средняя консистентность: {avgConsistency:P0}";
+Средняя консистентность: {avgConsistency:P0}
+Средний HI: {avgHI:P0}";
     }
 }
 
@@ -221,6 +257,7 @@ public struct PersonalityMetrics
     public float Consistency;        // 0-1: соответствие заданному конфликту
     public float Emotionality;       // 0-1: эмоциональная выраженность
     public float ConflictEngagement; // 0-1: вовлечённость в конфликт
+    public float HumanityIndex;      // 0-1: Humanity Index (оценка "человечности")
     public float PersonalityScore;   // 0-1: общий балл личности
     public bool HasPersonality;      // Пороговое определение
 }

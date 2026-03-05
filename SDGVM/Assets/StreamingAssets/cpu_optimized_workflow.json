@@ -17,7 +17,7 @@
   },
   "4": {
     "inputs": {
-      "text": "blurry, low quality, deformed, ugly, text, watermark, lowres, bad anatomy, extra limbs",
+      "text": "blurry, low quality, deformed, ugly, text, watermark, lowres, bad anatomy, extra limbs, cropped face, cut off face, partial face, face out of frame, half face",
       "clip": [
         "1",
         1
@@ -54,8 +54,8 @@
   },
   "6": {
     "inputs": {
-      "width": 256,
-      "height": 256,
+      "width": 384,
+      "height": 384,
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage"

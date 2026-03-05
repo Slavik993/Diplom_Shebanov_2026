@@ -63,6 +63,9 @@ public class GameAI : MonoBehaviour
 
     private string currentSessionFolder;
     private int generationCounter = 0;
+    
+    // Текущий случайный кейс для диалога
+    private AdaptationCase currentRandomCase;
 
     void Start()
     {
@@ -88,19 +91,57 @@ public class GameAI : MonoBehaviour
         if (textStoryOutput != null)
         {
             textStoryOutput.alignment = TextAlignmentOptions.Center;
+            textStoryOutput.fontSize = 18; // Основной текст квеста — крупный
         }
 
         StartCoroutine(GenerateNPCResponse(""));
         
-        // ПРИНУДИТЕЛЬНАЯ установка шрифта диалога (игнорирует Inspector)
+        // ПРИНУДИТЕЛЬНАЯ установка шрифта диалога (меньше чем текст квеста!)
         if (chatHistoryText != null)
         {
-            chatHistoryText.fontSize = 16; // Маленький шрифт
+            chatHistoryText.fontSize = 14; // Мелкий шрифт для чата NPC
             chatHistoryText.enableWordWrapping = true;
         }
+        // Принудительная стилизация UI под Steampunk
+        ApplySteampunkStyle();
         
         // Автоматическое исправление Scroll View
         FixScrollViews();
+    }
+
+    private void ApplySteampunkStyle()
+    {
+        // Цвета стимпанка (латунь, старая бумага, темный металл)
+        Color darkBrass = new Color(0.15f, 0.10f, 0.08f, 0.95f);
+        Color oldPaper = new Color(0.92f, 0.88f, 0.76f, 1f);
+        Color copperText = new Color(0.90f, 0.65f, 0.35f, 1f);
+
+        if (chatScrollRect != null)
+        {
+            var img = chatScrollRect.GetComponent<Image>();
+            if (img != null) img.color = darkBrass;
+            var viewport = chatScrollRect.viewport != null ? chatScrollRect.viewport.GetComponent<Image>() : null;
+            if (viewport != null) viewport.color = darkBrass;
+        }
+
+        if (storyScrollRect != null)
+        {
+            var img = storyScrollRect.GetComponent<Image>();
+            if (img != null) img.color = darkBrass;
+            var viewport = storyScrollRect.viewport != null ? storyScrollRect.viewport.GetComponent<Image>() : null;
+            if (viewport != null) viewport.color = darkBrass;
+        }
+
+        if (textStoryOutput != null)
+            textStoryOutput.color = oldPaper; // Цвет состаренной бумаги для квеста
+
+        if (playerInput != null)
+        {
+            var img = playerInput.GetComponent<Image>();
+            if (img != null) img.color = new Color(0.1f, 0.05f, 0.02f, 1f); // Очень темная медь 
+            if (playerInput.textComponent != null)
+                playerInput.textComponent.color = copperText;
+        }
     }
 
     void FixScrollViews()
@@ -183,7 +224,7 @@ public class GameAI : MonoBehaviour
              {
                  tmp.enableWordWrapping = true;
                  tmp.overflowMode = TextOverflowModes.Overflow; 
-                 tmp.fontSize = 18; // Уменьшенный шрифт для читаемости
+                 // НЕ перезаписываем fontSize — он задаётся в Start() отдельно для чата и квеста
                  tmp.alignment = TextAlignmentOptions.TopLeft;
              }
         }
@@ -237,33 +278,35 @@ public class GameAI : MonoBehaviour
         string culturalContext = dropdownCulturalContext != null ? dropdownCulturalContext.captionText.text : "Россия";
         string languageLevel = dropdownLanguageLevel != null ? dropdownLanguageLevel.captionText.text : "B1";
         
-        // Проверяем, выбран ли адаптационный кейс
+        // Выбираем адаптационный кейс (либо из UI, либо случайно для поддержания образовательной симуляции)
         int selectedCaseId = 0;
         if (dropdownAdaptationCase != null && dropdownAdaptationCase.value > 0)
             selectedCaseId = dropdownAdaptationCase.value;
         
+        AdaptationCase activeCase = null;
         if (selectedCaseId > 0)
         {
-            // РЕЖИМ АДАПТАЦИОННОГО СЦЕНАРИЯ
-            var adaptCase = AdaptationScenariosManager.GetCaseById(selectedCaseId);
-            if (adaptCase != null)
-            {
-                if (string.IsNullOrEmpty(playerMessage))
-                {
-                    // Первое приветствие — сценарий запускается
-                    systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(adaptCase, culturalContext)
-                        + "\n\nНачни сценарий. Опиши ситуацию от первого лица и задай студенту вопрос.";
-                }
-                else
-                {
-                    systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(adaptCase, culturalContext)
-                        + $"\n\nИСТОРИЯ ДИАЛОГА:\n{GetShortChatHistory()}\n\nСтудент ответил: \"{playerMessage}\"\n\nПродолжи диалог от своего лица. 2-4 предложения.";
-                }
-            }
-            else
-            {
-                systemPrompt = GetNPCGreetingPrompt(npcRole, culturalContext, languageLevel);
-            }
+            activeCase = AdaptationScenariosManager.GetCaseById(selectedCaseId);
+        }
+        else
+        {
+            // Берем случайный кейс один раз за сессию, если игрок его не выбрал
+            if (currentRandomCase == null && AdaptationScenariosManager.Instance != null)
+                currentRandomCase = AdaptationScenariosManager.GetRandomCase();
+            activeCase = currentRandomCase;
+        }
+
+        if (activeCase != null && string.IsNullOrEmpty(playerMessage) && selectedCaseId > 0)
+        {
+            // Строгий запуск конкретного сценария при старте диалога
+            systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(activeCase, culturalContext)
+                + "\n\nНачни сценарий. Опиши ситуацию от первого лица и задай студенту вопрос.";
+        }
+        else if (activeCase != null && selectedCaseId > 0)
+        {
+            // Строгое продолжение конкретного сценария
+            systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(activeCase, culturalContext)
+                + $"\n\nИСТОРИЯ ДИАЛОГА:\n{GetShortChatHistory()}\n\nСтудент ответил: \"{playerMessage}\"\n\nПродолжи диалог от своего лица. 2-4 предложения.";
         }
         else if (string.IsNullOrEmpty(playerMessage))
         {
@@ -272,8 +315,12 @@ public class GameAI : MonoBehaviour
         }
         else
         {
+            StudentBehaviorTracker.BehaviorState behavior = StudentBehaviorTracker.Instance != null 
+                ? StudentBehaviorTracker.Instance.AnalyzePlayerInput(playerMessage) 
+                : StudentBehaviorTracker.BehaviorState.Normal;
+
             string emotion = dropdownNPCEmotion.captionText.text;
-            systemPrompt = GetNPCResponsePrompt(playerMessage, npcRole, emotion, culturalContext, languageLevel);
+            systemPrompt = GetNPCResponsePrompt(playerMessage, npcRole, emotion, culturalContext, languageLevel, activeCase, behavior);
         }
 
         bool done = false;
@@ -321,11 +368,17 @@ public class GameAI : MonoBehaviour
         
         Debug.Log($"[DEBUG] Сырой ответ модели (длина {reply.Length}): '{reply}'");
 
-        if (string.IsNullOrWhiteSpace(reply))
+        if (string.IsNullOrWhiteSpace(reply) || reply.Trim() == "...")
         {
-             // Если ответ пустой — пробуем сообщить об этом иначе, но не заглушкой
-             reply = "... (персонаж задумался)";
-             Debug.LogWarning("[GameAI] Empty response received from LLM");
+             // Если LLM вернула пустоту (сбой генерации), выдаем "человечный" фоллбэк с раздражением/усталостью
+             string[] facts = {
+                "Кхм... Извините, я задумался о судьбе Золотого стандарта. Повторите ваш вопрос, пожалуйста, но более чётко.",
+                "Ох, эти государственные дела совсем вымотали меня... О чём мы сейчас говорили? Напомните.",
+                "Проклятые мигрени! Я прослушал вас, пока думал над Транссибирской магистралью. Говорите громче!",
+                "Я слишком устал от этих бюрократических бумаг, чтобы понимать намёки. Задайте вопрос прямо!"
+             };
+             reply = facts[UnityEngine.Random.Range(0, facts.Length)];
+             Debug.LogWarning("[GameAI] Empty response received from LLM. Used Witte human fallback.");
         }
         else 
         {
@@ -364,37 +417,45 @@ public class GameAI : MonoBehaviour
                  chatHistoryText.text = currentText.Substring(0, currentText.Length - ellipsisTag.Length);
                  
                  // Добавляем ответ (без переноса строки, так как "NPC:" уже есть)
-                 chatHistoryText.text += reply;
+                 chatHistoryText.text += $"<size=70%>{reply}</size>";
              }
              else if (currentText.Contains(ellipsisTag))
              {
                  // Если "…" где-то внутри (странно, но возможно)
-                 chatHistoryText.text = currentText.Replace(ellipsisTag, reply);
+                 chatHistoryText.text = currentText.Replace(ellipsisTag, $"<size=70%>{reply}</size>");
              }
              else
              {
                  // Если не нашли маркер, просто добавляем как новое сообщение
-                 AddChatMessage("NPC", reply);
+                 AddChatMessage("NPC", $"<size=70%>{reply}</size>");
              }
         }
 
         Debug.Log($"[DEBUG] Итоговый ответ NPC: '{reply}'");
         
-        // Логируем для исследования личности
-        if (PersonalityResearchLogger.Instance != null)
-        {
-            string personality = npcPersonalityInput != null ? npcPersonalityInput.text : "";
-            PersonalityResearchLogger.Instance.LogDialogue(personality, playerMessage, reply);
-        }
-        
-        // Автоматический анализ личности
+        float currentHI = 0f;
+
+        // Автоматический анализ личности (ВЫПОЛНЯЕМ ДО ЛОГИРОВАНИЯ)
         if (PersonalityAnalyzer.Instance != null)
         {
             if (npcPersonalityInput != null)
                 PersonalityAnalyzer.Instance.SetPersonalityDescription(npcPersonalityInput.text);
             
             var metrics = PersonalityAnalyzer.Instance.AnalyzeResponse(reply);
-            Debug.Log($"[Personality] Балл: {metrics.PersonalityScore:P0}, Личность: {(metrics.HasPersonality ? "ДА" : "НЕТ")}");
+            currentHI = metrics.HumanityIndex;
+            Debug.Log($"[Personality] Балл: {metrics.PersonalityScore:P0}, Личность: {(metrics.HasPersonality ? "ДА" : "НЕТ")}, HI: {currentHI:P0}");
+        }
+
+        // Логируем для исследования личности (ВКР Глава 2.4.8)
+        if (PersonalityResearchLogger.Instance != null)
+        {
+            string personality = npcPersonalityInput != null ? npcPersonalityInput.text : "";
+            PersonalityResearchLogger.Instance.LogDialogue(personality, playerMessage, reply, currentHI);
+        }
+
+        if (StudentBehaviorTracker.Instance != null)
+        {
+            StudentBehaviorTracker.Instance.RecordNPCResponseFinished();
         }
         
         StartCoroutine(ScrollDelayed());
@@ -404,7 +465,8 @@ public class GameAI : MonoBehaviour
     {
         if (chatHistoryText == null) return;
 
-        string color = sender == "Игрок" ? "#00FF00" : "#FFAA00";
+        // Стимпанк цвета: Медный для NPC, Светло-изумрудный для Игрока
+        string color = sender == "Игрок" ? "#77DD77" : "#E29C45";
         chatHistoryText.text += $"\n<color={color}>{sender}:</color> {message}";
 
         ScrollToBottom();
@@ -433,8 +495,13 @@ public class GameAI : MonoBehaviour
             return "Диалог только начинается.";
 
         string fullHistory = chatHistoryText.text
+        // Удаляем теги размера при передаче в историю для LLM
             .Replace("<color=#00FF00>Игрок:</color>", "Игрок:")
             .Replace("<color=#FFAA00>NPC:</color>", "NPC:")
+            .Replace("<size=100%>", "")
+            .Replace("<size=80%>", "")
+            .Replace("<size=70%>", "") // Added for NPC messages
+            .Replace("</size>", "")
             .Replace("\n", " | ");
 
         if (fullHistory.Length > 3000)
@@ -487,12 +554,15 @@ public class GameAI : MonoBehaviour
 КУЛЬТУРНЫЙ КОНТЕКСТ: {culture}
 СТИЛЬ: {dropdownStyle.captionText.text}
 
+ВАЖНО: ВКР = Выпускная Квалификационная Работа (дипломная работа студента). Если в теме упоминается ВКР — объясняй эту аббревиатуру ПРАВИЛЬНО.
+
 СТРОГИЕ ТРЕБОВАНИЯ К КАЧЕСТВУ:
 
 1. ИСТОРИЧЕСКАЯ ДОСТОВЕРНОСТЬ:
    - Учитывай биографию С.Ю. Витте и реалии той эпохи
    - НЕ допускай фактических ошибок и анахронизмов
    - Если тема связана с университетом Витте — подчеркни его наследие
+   - Приводи КОНКРЕТНЫЕ факты: даты, названия реформ, цитаты
 
 2. ЛОГИЧЕСКАЯ СВЯЗНОСТЬ:
    - Каждое предложение должно логически следовать из предыдущего
@@ -500,18 +570,18 @@ public class GameAI : MonoBehaviour
    - НЕ используй абсурдные сочетания (башня пиццы, марсианские чудища)
    - Исторические личности должны использоваться УМЕСТНО
 
-2. СТРУКТУРА:
+3. СТРУКТУРА:
    - Экспозиция: кто, где, когда (1-2 предложения)
    - Завязка: возникновение проблемы (2 предложения)
    - Развитие: действия героя (2-3 предложения)
    - Кульминация и развязка (2 предложения)
 
-3. КУЛЬТУРНАЯ АДАПТАЦИЯ:
+4. КУЛЬТУРНАЯ АДАПТАЦИЯ:
    - Если указан культурный контекст, уважительно интегрируй его
    - Объясняй культурные элементы понятно для иностранного студента
    - Избегай стереотипов и оскорблений
 
-4. ЯЗЫК:
+5. ЯЗЫК:
    - Пиши грамотным русским языком
    - Избегай сленга и просторечий
    - Каждое предложение должно быть ЗАВЕРШЁННЫМ
@@ -533,7 +603,7 @@ public class GameAI : MonoBehaviour
         // Используем 3-й аргумент (completionCallback) если он есть в этой версии LLMUnity
         llmCharacter.Chat(prompt, (r) => 
         { 
-            textStoryOutput.text = r;
+            textStoryOutput.text = $"<size=100%>{r}</size>"; // Размер 100% для текста квеста
         }, () => 
         {
             done = true;
@@ -591,11 +661,8 @@ public class GameAI : MonoBehaviour
 
     IEnumerator GenerateIconCoroutine()
     {
-        // Профессиональный промпт для высокой четкости и детализации (как во втором примере)
-        // Используем токены: detailed, sharp focus, cinematic lighting, 8k
-        string imagePrompt = $"Close-up portrait of {inputPrompt.text}, highly detailed face, sharp focus, professional digital painting, concept art, cinematic lighting, 8k, masterpiece, intricate details, realistic texture, neutral background";
-        
-        // Доп. негативный промпт (вшит в ComfyUI workflow обычно, но можно учесть в будущем)
+        // Портрет: голова и плечи, лицо полностью видно, историческая одежда конца 19 века
+        string imagePrompt = $"Portrait of {inputPrompt.text}, wearing late 19th-century historical Russian clothing, vintage Victorian era attire, formal suit, cravat, sepia tones, head and shoulders, full face visible, centered face, symmetrical composition, highly detailed, sharp focus, professional digital painting, concept art, cinematic lighting, 8k, masterpiece, intricate details";
         
         // Для отладки
         Debug.Log($"[IconGen] Prompt: {imagePrompt}");
@@ -644,12 +711,12 @@ public class GameAI : MonoBehaviour
     {
         string roleDescription = role switch
         {
-            "Наставник" => "Ты — студент-наставник университета Витте. Ты помогаешь новым студентам адаптироваться.",
-            "Психолог" => "Ты — студенческий психолог университета. Ты помогаешь справляться со стрессом и эмоциями.",
-            "Куратор" => "Ты — куратор группы в университете Витте. Ты знаешь всё о расписании и документах.",
-            "Друг" => "Ты — дружелюбный однокурсник. Ты общаешься неформально и поддерживаешь.",
-            "Преподаватель" => "Ты — преподаватель университета Витте. Ты уважительная и помогаешь с учёбой.",
-            _ => "Ты — дружелюбный представитель университета."
+            "Наставник" => "Ты — студент-наставник Московского университета имени С.Ю. Витте (МУИВ). Ты помогаешь новым студентам адаптироваться. Ты знаешь историю университета и его основателя.",
+            "Психолог" => "Ты — студенческий психолог университета Витте. Ты помогаешь справляться со стрессом и эмоциями.",
+            "Куратор" => "Ты — куратор группы в университете Витте (МУИВ). Ты знаешь всё о расписании, документах и ВКР (Выпускная Квалификационная Работа — дипломная работа).",
+            "Друг" => "Ты — дружелюбный однокурсник в университете Витте. Ты общаешься неформально и поддерживаешь.",
+            "Преподаватель" => "Ты — преподаватель университета Витте (МУИВ). Ты уважительная и помогаешь с учёбой. Ты хорошо знаешь историю С.Ю. Витте.",
+            _ => "Ты — дружелюбный представитель университета имени С.Ю. Витте."
         };
         
         string languageHint = langLevel switch
@@ -679,22 +746,23 @@ public class GameAI : MonoBehaviour
 
 Напиши короткое дружелюбное приветствие для студента. Представься и предложи помощь.
 Если сейчас есть ближайшее мероприятие — упомяни его кратко.
+ОБЯЗАТЕЛЬНО ответь содержательно, НЕ отвечай пустым сообщением.
 2-3 предложения, говори от первого лица, без меток.";
     }
     
     /// <summary>
     /// Генерирует ответ NPC на сообщение студента
     /// </summary>
-    private string GetNPCResponsePrompt(string playerMessage, string role, string emotion, string culture, string langLevel)
+    private string GetNPCResponsePrompt(string playerMessage, string role, string emotion, string culture, string langLevel, AdaptationCase activeCase = null, StudentBehaviorTracker.BehaviorState behavior = default)
     {
         string roleContext = role switch
         {
-            "Наставник" => "Ты — студент-наставник. Давай практические советы по учёбе и жизни в университете.",
-            "Психолог" => "Ты — психолог. Поддерживай эмоционально, помогай справляться со стрессом.",
-            "Куратор" => "Ты — куратор. Помогай с организационными вопросами, документами, расписанием.",
-            "Друг" => "Ты — друг-однокурсник. Общайся неформально, поддерживай и шути.",
-            "Преподаватель" => "Ты — преподаватель. Отвечай уважительно, помогай с учёбой.",
-            _ => "Ты — представитель университета."
+            "Наставник" => "Ты — студент-наставник университета Витте (МУИВ). Давай практические советы по учёбе и жизни в университете.",
+            "Психолог" => "Ты — психолог университета Витте. Поддерживай эмоционально, помогай справляться со стрессом.",
+            "Куратор" => "Ты — куратор группы в университете Витте. Помогай с организационными вопросами, документами, расписанием, ВКР.",
+            "Друг" => "Ты — друг-однокурсник в университете Витте. Общайся неформально, поддерживай и шути.",
+            "Преподаватель" => "Ты — преподаватель университета Витте. Отвечай уважительно, помогай с учёбой.",
+            _ => "Ты — представитель университета имени С.Ю. Витте."
         };
         
         string languageHint = langLevel switch
@@ -716,12 +784,13 @@ public class GameAI : MonoBehaviour
 Твои ответы ДОЛЖНЫ отражать этот конфликт! Показывай желания и ограничения ЕСТЕСТВЕННО.";
         }
         
-        // Добавляем вариативности
+        // МАКСИМАЛЬНАЯ эмоциональная дифференциация (для исследования HI)
         string[] variations = new[] {
-            "Отвечай с юмором и иронией.",
-            "Отвечай серьезно и задумчиво.",
-            "Отвечай с энтузиазмом.",
-            "Отвечай, приводя пример из истории."
+            "ТЫ ОЧЕНЬ УСТАЛ И РАЗДРАЖЕН. Пожалуйся на тяжелую жизнь, вздохни, отвечай нехотя и с сарказмом и агрессией к глупым вопросам.",
+            "ТЫ СТРОГИЙ И АГРЕССИВНЫЙ. Отвечай резко, требуй дисциплины, отчитывай студента за банальности.",
+            "ТЫ В ОТЧАЯНИИ. Пожалуйся на то, как сложно учиться и работать, прояви слабость, попроси сочувствия.",
+            "ТЫ ГРУСТНЫЙ И ПАССИВНЫЙ. Отвечай уныло, жалуйся на погоду и систему образования.",
+            "Отвечай с едким юмором и иронией. Подшучивай над студентом."
         };
         string variation = variations[UnityEngine.Random.Range(0, variations.Length)];
 
@@ -733,28 +802,41 @@ public class GameAI : MonoBehaviour
         // Контекст мероприятий МУИВ
         string eventsContext = UniversityEventsManager.GetEventsContextForPrompt();
 
+        // Добавляем случайную проблемную ситуацию для поддержания симуляции (если нет жесткого адаптационного кейса)
+        string problemContext = "";
+        if (activeCase != null && role != "Преподаватель")
+        {
+            problemContext = $"\nПРОБЛЕМНАЯ СИТУАЦИЯ, КОТОРУЮ МОЖНО ОБСУДИТЬ СО СТУДЕНТОМ: {activeCase.RealProblem}\n(попробуй затронуть эту тему в диалоге, спроси мнение или дай совет как {roleContext})";
+        }
+
+        // Контекст поведения студента (списывание или необдуманность)
+        string behaviorContext = StudentBehaviorTracker.Instance != null ? StudentBehaviorTracker.Instance.GetBehaviorPromptModifier(behavior) : "";
+
         return $@"Ты — живой собеседник, {roleContext}. Твоя задача — поддерживать интересный диалог.
 
 {HistoricalContext.SergeiWitteBiography}
 {witteRAG}
 {eventsContext}
+{problemContext}
+{behaviorContext}
+
+ВАЖНО:
+- ТЫ НЕ ИИ! Ты живой человек с недостатками.
+- НИКОГДА не используй списки, длинные абзацы или фразы вроде 'В заключение', 'Конечно', 'Здравствуйте'.
+- НИКОГДА не отвечай пустотой. Отвечай КРАТКО!
 
 КОНТЕКСТ ДИАЛОГА:
 Студент сказал: ""{playerMessage}""
 
-ТВОЯ РОЛЬ: {roleContext}
-НАСТРОЕНИЕ: {emotion}
+ТВОЯ РОЛЬ: {roleContext} (НАСТРОЕНИЕ: {emotion})
 {languageHint}
 {personalityDescription}
 
-ИНСТРУКЦИЯ:
-1. Отвечай ЕСТЕСТВЕННО, как живой человек.
-2. {variation}
-3. Если спрашивают про Витте — используй факты из справки и дополнительные исторические факты.
-4. Не используй списки и официоз, если это не роль куратора.
-5. Ответ должен быть 2-4 предложения.
-
-Твой ответ:";
+ИНСТРУКЦИЯ (ВЫПОЛНЯТЬ СТРОГО):
+1. ИГРАЙ РОЛЬ: {variation}
+2. Отвечай 1-3 предложения. Сразу переходи к сути с эмоцией!
+3. Забудь про вежливость, если ты зол или устал.
+4. Отвечай ИСКЛЮЧИТЕЛЬНО на русском языке.";
     }
     
     #endregion
