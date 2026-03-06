@@ -94,12 +94,19 @@ public class GameAI : MonoBehaviour
             textStoryOutput.fontSize = 18; // Основной текст квеста — крупный
         }
 
+        // Инициализация DialogueTreeManager (передаём ссылку на чат)
+        if (DialogueTreeManager.Instance != null)
+        {
+            DialogueTreeManager.Instance.chatHistoryText = chatHistoryText;
+        }
+
         StartCoroutine(GenerateNPCResponse(""));
         
         // ПРИНУДИТЕЛЬНАЯ установка шрифта диалога (меньше чем текст квеста!)
         if (chatHistoryText != null)
         {
-            chatHistoryText.fontSize = 14; // Мелкий шрифт для чата NPC
+            chatHistoryText.enableAutoSizing = false; // Отключаем AutoSize, из-за которого текст был огромным
+            chatHistoryText.fontSize = 24; // Базовый размер шрифта
             chatHistoryText.enableWordWrapping = true;
         }
         // Принудительная стилизация UI под Steampunk
@@ -251,6 +258,13 @@ public class GameAI : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(playerInput.text)) return;
 
+        // Если активно диалоговое дерево — не отправляем в LLM
+        if (DialogueTreeManager.Instance != null && DialogueTreeManager.Instance.IsActive)
+        {
+            Debug.Log("[GameAI] Диалоговое дерево активно, ввод игнорируется (используйте кнопки выбора).");
+            return;
+        }
+
         string playerMessage = playerInput.text.Trim();
         AddChatMessage("Игрок", playerMessage);
 
@@ -262,10 +276,44 @@ public class GameAI : MonoBehaviour
 
     IEnumerator GenerateNPCResponse(string playerMessage)
     {
+        // Получаем выбранный кейс
+        int selectedCaseId = 0;
+        if (dropdownAdaptationCase != null && dropdownAdaptationCase.value > 0)
+            selectedCaseId = dropdownAdaptationCase.value;
+
+        // ═══ РЕЖИМ ДИАЛОГОВОГО ДЕРЕВА ═══
+        // Если для кейса есть готовое дерево — используем его вместо LLM
+        if (selectedCaseId > 0 && DialogueTreeManager.Instance != null 
+            && DialogueTreeManager.Instance.HasTreeForCase(selectedCaseId))
+        {
+            if (string.IsNullOrEmpty(playerMessage)) // Первый запуск
+            {
+                // Скрываем поле ввода, показываем подсказку
+                if (playerInput != null)
+                {
+                    playerInput.interactable = false;
+                    playerInput.text = "Используйте кнопки выбора ниже ▼";
+                }
+
+                DialogueTreeManager.Instance.StartTree(selectedCaseId);
+                Debug.Log($"[GameAI] Запущено диалоговое дерево для кейса {selectedCaseId}");
+            }
+            yield break; // Выходим — дерево управляет диалогом
+        }
+
+        // ═══ РЕЖИМ LLM (fallback) ═══
         if (!llmCharacter)
         {
             AddChatMessage("NPC", "Ошибка: нет связи с ИИ");
             yield break;
+        }
+
+        // Восстанавливаем поле ввода (если было скрыто деревом)
+        if (playerInput != null)
+        {
+            playerInput.interactable = true;
+            if (playerInput.text == "Используйте кнопки выбора ниже ▼")
+                playerInput.text = "";
         }
 
         AddChatMessage("NPC", "…");
@@ -277,11 +325,6 @@ public class GameAI : MonoBehaviour
         string npcRole = dropdownNPCRole != null ? dropdownNPCRole.captionText.text : "Наставник";
         string culturalContext = dropdownCulturalContext != null ? dropdownCulturalContext.captionText.text : "Россия";
         string languageLevel = dropdownLanguageLevel != null ? dropdownLanguageLevel.captionText.text : "B1";
-        
-        // Выбираем адаптационный кейс (либо из UI, либо случайно для поддержания образовательной симуляции)
-        int selectedCaseId = 0;
-        if (dropdownAdaptationCase != null && dropdownAdaptationCase.value > 0)
-            selectedCaseId = dropdownAdaptationCase.value;
         
         AdaptationCase activeCase = null;
         if (selectedCaseId > 0)
@@ -296,22 +339,27 @@ public class GameAI : MonoBehaviour
             activeCase = currentRandomCase;
         }
 
+        string messageToLLM = "";
+
         if (activeCase != null && string.IsNullOrEmpty(playerMessage) && selectedCaseId > 0)
         {
             // Строгий запуск конкретного сценария при старте диалога
             systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(activeCase, culturalContext)
-                + "\n\nНачни сценарий. Опиши ситуацию от первого лица и задай студенту вопрос.";
+                + "\nОпиши ситуацию коротко от первого лица (2 предложения) и задай вопрос. Без воды.";
+            messageToLLM = "Начни сценарий.";
         }
         else if (activeCase != null && selectedCaseId > 0)
         {
             // Строгое продолжение конкретного сценария
             systemPrompt = AdaptationScenariosManager.BuildScenarioPrompt(activeCase, culturalContext)
-                + $"\n\nИСТОРИЯ ДИАЛОГА:\n{GetShortChatHistory()}\n\nСтудент ответил: \"{playerMessage}\"\n\nПродолжи диалог от своего лица. 2-4 предложения.";
+                + "\nОтвечай от своего лица. 2-3 предложения. Сразу к сути.";
+            messageToLLM = playerMessage;
         }
         else if (string.IsNullOrEmpty(playerMessage))
         {
             // Приветствие с учётом роли NPC (обычный режим)
             systemPrompt = GetNPCGreetingPrompt(npcRole, culturalContext, languageLevel);
+            messageToLLM = "Университет ждет. Поздоровайся со студентом (2 предложения).";
         }
         else
         {
@@ -321,13 +369,18 @@ public class GameAI : MonoBehaviour
 
             string emotion = dropdownNPCEmotion.captionText.text;
             systemPrompt = GetNPCResponsePrompt(playerMessage, npcRole, emotion, culturalContext, languageLevel, activeCase, behavior);
+            messageToLLM = playerMessage;
         }
+
+        // Обновляем системный промпт у персонажа ДО начала генерации, 
+        // чтобы LLMUnity не дублировал его в историю разговора!
+        llmCharacter.prompt = systemPrompt;
 
         bool done = false;
         string fullResponse = "";
         
-        // ИСПРАВЛЕНИЕ: Используем completion callback (как в истории)
-        llmCharacter.Chat(systemPrompt, (r) =>
+        // Отправляем ТОЛЬКО реплику игрока в чат, история ведется внутри LLMUnity
+        llmCharacter.Chat(messageToLLM, (r) =>
         {
             fullResponse = r;
         }, () => 
@@ -417,19 +470,19 @@ public class GameAI : MonoBehaviour
                  chatHistoryText.text = currentText.Substring(0, currentText.Length - ellipsisTag.Length);
                  
                  // Добавляем ответ (без переноса строки, так как "NPC:" уже есть)
-                 chatHistoryText.text += $"<size=70%>{reply}</size>";
+                 chatHistoryText.text += $"<size=20>{reply}</size>";
              }
              else if (currentText.Contains(ellipsisTag))
              {
                  // Если "…" где-то внутри (странно, но возможно)
-                 chatHistoryText.text = currentText.Replace(ellipsisTag, $"<size=70%>{reply}</size>");
+                 chatHistoryText.text = currentText.Replace(ellipsisTag, $"<size=20>{reply}</size>");
              }
              else
              {
                  // Если не нашли маркер, просто добавляем как новое сообщение
-                 AddChatMessage("NPC", $"<size=70%>{reply}</size>");
+                 AddChatMessage("NPC", $"<size=20>{reply}</size>");
              }
-        }
+         }
 
         Debug.Log($"[DEBUG] Итоговый ответ NPC: '{reply}'");
         
@@ -467,7 +520,13 @@ public class GameAI : MonoBehaviour
 
         // Стимпанк цвета: Медный для NPC, Светло-изумрудный для Игрока
         string color = sender == "Игрок" ? "#77DD77" : "#E29C45";
-        chatHistoryText.text += $"\n<color={color}>{sender}:</color> {message}";
+        string sizeStart = sender == "Игрок" ? "<size=28>" : "<size=20>"; // Абсолютные размеры вместо процентов
+        
+        // ВАЖНО: Мы не оборачиваем заглушку "…" в размер, чтобы замена по EndsWith работала
+        if (message == "…")
+            chatHistoryText.text += $"\n<color={color}>{sizeStart}{sender}:</size></color> {message}";
+        else
+            chatHistoryText.text += $"\n<color={color}>{sizeStart}{sender}:</size></color> {sizeStart}{message}</size>";
 
         ScrollToBottom();
     }
@@ -796,7 +855,7 @@ public class GameAI : MonoBehaviour
 
         // RAG: подтягиваем релевантные знания из базы Витте
         string witteRAG = "";
-        if (WitteKnowledgeBase.Instance != null)
+        if (WitteKnowledgeBase.Instance != null && !string.IsNullOrEmpty(playerMessage))
             witteRAG = WitteKnowledgeBase.Instance.FindRelevantKnowledge(playerMessage);
 
         // Контекст мероприятий МУИВ
@@ -812,9 +871,8 @@ public class GameAI : MonoBehaviour
         // Контекст поведения студента (списывание или необдуманность)
         string behaviorContext = StudentBehaviorTracker.Instance != null ? StudentBehaviorTracker.Instance.GetBehaviorPromptModifier(behavior) : "";
 
-        return $@"Ты — живой собеседник, {roleContext}. Твоя задача — поддерживать интересный диалог.
+        return $@"Ты — живой человек, {roleContext}. Твоя задача — поддерживать интересный диалог.
 
-{HistoricalContext.SergeiWitteBiography}
 {witteRAG}
 {eventsContext}
 {problemContext}
@@ -822,11 +880,8 @@ public class GameAI : MonoBehaviour
 
 ВАЖНО:
 - ТЫ НЕ ИИ! Ты живой человек с недостатками.
-- НИКОГДА не используй списки, длинные абзацы или фразы вроде 'В заключение', 'Конечно', 'Здравствуйте'.
+- НИКОГДА не используй списки, длинные абзацы.
 - НИКОГДА не отвечай пустотой. Отвечай КРАТКО!
-
-КОНТЕКСТ ДИАЛОГА:
-Студент сказал: ""{playerMessage}""
 
 ТВОЯ РОЛЬ: {roleContext} (НАСТРОЕНИЕ: {emotion})
 {languageHint}
@@ -835,7 +890,7 @@ public class GameAI : MonoBehaviour
 ИНСТРУКЦИЯ (ВЫПОЛНЯТЬ СТРОГО):
 1. ИГРАЙ РОЛЬ: {variation}
 2. Отвечай 1-3 предложения. Сразу переходи к сути с эмоцией!
-3. Забудь про вежливость, если ты зол или устал.
+3. Обязательно среагируй на вопрос студента в своем стиле!
 4. Отвечай ИСКЛЮЧИТЕЛЬНО на русском языке.";
     }
     
