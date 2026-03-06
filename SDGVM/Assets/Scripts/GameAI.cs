@@ -94,13 +94,24 @@ public class GameAI : MonoBehaviour
             textStoryOutput.fontSize = 18; // Основной текст квеста — крупный
         }
 
-        // Инициализация DialogueTreeManager (передаём ссылку на чат)
+        // Инициализация DialogueTreeManager (передаём ссылки)
         if (DialogueTreeManager.Instance != null)
         {
             DialogueTreeManager.Instance.chatHistoryText = chatHistoryText;
+            DialogueTreeManager.Instance.chatScrollRect = chatScrollRect;
         }
 
-        StartCoroutine(GenerateNPCResponse(""));
+        // Заполняем dropdown кейсов программно (короткие читаемые названия)
+        PopulateAdaptationCaseDropdown();
+
+        // Обработчик смены кейса в dropdown — авто-старт дерева
+        if (dropdownAdaptationCase != null)
+        {
+            dropdownAdaptationCase.onValueChanged.AddListener((idx) => OnAdaptationCaseChanged(idx));
+        }
+
+        // Детерминированное приветствие (НЕ через LLM, чтобы не было затычек!)
+        ShowDeterministicGreeting();
         
         // ПРИНУДИТЕЛЬНАЯ установка шрифта диалога (меньше чем текст квеста!)
         if (chatHistoryText != null)
@@ -258,10 +269,16 @@ public class GameAI : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(playerInput.text)) return;
 
-        // Если активно диалоговое дерево — не отправляем в LLM
+        // Если активно диалоговое дерево — пробуем текстовый ввод (номер выбора)
         if (DialogueTreeManager.Instance != null && DialogueTreeManager.Instance.IsActive)
         {
-            Debug.Log("[GameAI] Диалоговое дерево активно, ввод игнорируется (используйте кнопки выбора).");
+            string input = playerInput.text.Trim();
+            if (DialogueTreeManager.Instance.TryProcessTextInput(input))
+            {
+                playerInput.text = "";
+                return;
+            }
+            Debug.Log("[GameAI] Диалоговое дерево активно — используйте кнопки или введите номер варианта.");
             return;
         }
 
@@ -276,10 +293,8 @@ public class GameAI : MonoBehaviour
 
     IEnumerator GenerateNPCResponse(string playerMessage)
     {
-        // Получаем выбранный кейс
-        int selectedCaseId = 0;
-        if (dropdownAdaptationCase != null && dropdownAdaptationCase.value > 0)
-            selectedCaseId = dropdownAdaptationCase.value;
+        // Получаем выбранный кейс (правильно мапим dropdown index → CaseId)
+        int selectedCaseId = GetSelectedCaseId();
 
         // ═══ РЕЖИМ ДИАЛОГОВОГО ДЕРЕВА ═══
         // Если для кейса есть готовое дерево — используем его вместо LLM
@@ -546,6 +561,129 @@ public class GameAI : MonoBehaviour
         yield return null;
         yield return null;
         ScrollToBottom();
+    }
+
+    /// <summary>
+    /// Детерминированное приветствие при запуске (НЕ через LLM!)
+    /// </summary>
+    private void ShowDeterministicGreeting()
+    {
+        AddChatMessage("NPC", "Добро пожаловать в МУИВ! Выберите кейс адаптации в выпадающем списке «Кейс адаптации», чтобы начать сценарий.");
+        Debug.Log("[GameAI] Показано детерминированное приветствие (без LLM).");
+    }
+
+    /// <summary>
+    /// Заполняет dropdown адаптационных кейсов короткими читаемыми названиями.
+    /// Кейсы с готовыми деревьями помечены ★
+    /// </summary>
+    private void PopulateAdaptationCaseDropdown()
+    {
+        if (dropdownAdaptationCase == null) return;
+
+        dropdownAdaptationCase.ClearOptions();
+
+        var options = new System.Collections.Generic.List<string>();
+        options.Add("— Без кейса —");
+
+        var allCases = AdaptationScenariosManager.GetAllCases();
+        var treeCaseIds = DialogueTrees.GetAvailableCaseIds();
+
+        foreach (var c in allCases)
+        {
+            string prefix = treeCaseIds.Contains(c.Id) ? "★ " : "";
+            options.Add($"{prefix}{c.Id}. {c.ShortTitle}");
+        }
+
+        dropdownAdaptationCase.AddOptions(options);
+        
+        // Настройки отображения
+        dropdownAdaptationCase.RefreshShownValue();
+        Debug.Log($"[GameAI] Dropdown заполнен: {options.Count} опций ({treeCaseIds.Count} с деревьями)");
+    }
+
+    /// <summary>
+    /// Обработчик смены кейса в dropdown — авто-запуск дерева
+    /// </summary>
+    private void OnAdaptationCaseChanged(int dropdownIndex)
+    {
+        int caseId = GetSelectedCaseId();
+        Debug.Log($"[GameAI] Сменен кейс: dropdown index={dropdownIndex}, caseId={caseId}");
+
+        // Сброс предыдущего дерева
+        if (DialogueTreeManager.Instance != null)
+        {
+            DialogueTreeManager.Instance.Reset();
+        }
+
+        // Очищаем чат
+        if (chatHistoryText != null)
+            chatHistoryText.text = "";
+
+        // Если есть дерево — запускаем
+        if (caseId > 0 && DialogueTreeManager.Instance != null 
+            && DialogueTreeManager.Instance.HasTreeForCase(caseId))
+        {
+            if (playerInput != null)
+            {
+                playerInput.interactable = false;
+                playerInput.text = "Используйте кнопки выбора ниже ▼";
+            }
+
+            // Показываем описание кейса
+            var caseData = AdaptationScenariosManager.GetCaseById(caseId);
+            if (caseData != null)
+            {
+                string sysColor = "#AAAAAA";
+                chatHistoryText.text += $"\n<color={sysColor}><size=16>═══ Кейс {caseId}: {caseData.ShortTitle} ═══</size></color>";
+                chatHistoryText.text += $"\n<color={sysColor}><size=14>{caseData.GameScenario}</size></color>\n";
+            }
+
+            DialogueTreeManager.Instance.StartTree(caseId);
+        }
+        else
+        {
+            // Нет дерева — восстанавливаем поле ввода
+            if (playerInput != null)
+            {
+                playerInput.interactable = true;
+                playerInput.text = "";
+            }
+
+            if (caseId > 0)
+            {
+                AddChatMessage("NPC", $"Кейс {caseId} работает через ИИ. Напишите сообщение в поле ввода.");
+            }
+            else
+            {
+                ShowDeterministicGreeting();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Правильная конвертация dropdown index → реальный CaseId
+    /// dropdown.value = 0 → "Нет кейса" (return 0)
+    /// dropdown.value = 1 → Кейс 1
+    /// dropdown.value = N → Кейс N
+    /// Если dropdown заполнен кастомно — берём ID из текста
+    /// </summary>
+    private int GetSelectedCaseId()
+    {
+        if (dropdownAdaptationCase == null || dropdownAdaptationCase.value <= 0) 
+            return 0;
+
+        // Попробуем извлечь ID из текста опции (формат: "1. Культурные привычки...")
+        string optionText = dropdownAdaptationCase.captionText.text;
+        if (!string.IsNullOrEmpty(optionText))
+        {
+            // Ищем число в начале строки
+            var match = Regex.Match(optionText, @"^(\d+)");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int parsedId))
+                return parsedId;
+        }
+
+        // Fallback: используем value как CaseId напрямую
+        return dropdownAdaptationCase.value;
     }
 
     private string GetShortChatHistory()

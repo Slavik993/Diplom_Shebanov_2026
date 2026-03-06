@@ -5,21 +5,15 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Управляет текущим диалоговым деревом: загрузка, переходы, UI кнопок выбора.
-/// Интегрируется с PersonalityAnalyzer для HI и PersonalityResearchLogger для логирования.
+/// Кнопки создаются ВНУТРИ чата (как обычные строки + кликабельные элементы).
 /// </summary>
 public class DialogueTreeManager : MonoBehaviour
 {
     public static DialogueTreeManager Instance { get; private set; }
 
-    [Header("UI: Панель выбора")]
-    [Tooltip("Родительский объект для кнопок выбора (VerticalLayoutGroup)")]
-    public Transform choicesPanel;
-
-    [Tooltip("Префаб кнопки выбора (Button с TMP_Text)")]
-    public GameObject choiceButtonPrefab;
-
     [Header("UI: Чат")]
     public TMP_Text chatHistoryText;
+    public ScrollRect chatScrollRect;
 
     // Текущее состояние
     private DialogueTree currentTree;
@@ -27,6 +21,9 @@ public class DialogueTreeManager : MonoBehaviour
     private bool isActive = false;
     private float accumulatedHI = 0f;
     private int choiceCount = 0;
+
+    // Динамически созданные кнопки
+    private List<GameObject> activeButtons = new List<GameObject>();
 
     void Awake()
     {
@@ -79,7 +76,7 @@ public class DialogueTreeManager : MonoBehaviour
         if (node == null) return;
 
         // Добавляем реплику NPC в чат
-        string npcColor = "#E29C45"; // Медный (Steampunk)
+        string npcColor = "#E29C45";
         if (chatHistoryText != null)
         {
             chatHistoryText.text += $"\n<color={npcColor}><size=20>NPC:</size></color> <size=20>{node.Text}</size>";
@@ -106,7 +103,6 @@ public class DialogueTreeManager : MonoBehaviour
 
         if (node.IsEnding)
         {
-            // Финальный узел — показываем итог
             ShowEnding();
             return;
         }
@@ -114,110 +110,139 @@ public class DialogueTreeManager : MonoBehaviour
         // Создаём кнопки выбора
         if (node.Choices != null && node.Choices.Count > 0)
         {
-            ShowChoices(node.Choices);
+            CreateChoiceButtons(node.Choices);
         }
     }
 
     /// <summary>
-    /// Показывает кнопки выбора для игрока
+    /// Создаёт кнопки выбора как дочерние элементы Content в ScrollRect чата
     /// </summary>
-    private void ShowChoices(List<PlayerChoice> choices)
+    private void CreateChoiceButtons(List<PlayerChoice> choices)
     {
-        if (choicesPanel == null || choiceButtonPrefab == null)
+        // Ищем Content в ScrollRect (родитель chatHistoryText)
+        Transform contentParent = null;
+        
+        if (chatHistoryText != null)
         {
-            // Если нет префаба/панели — создаём кнопки программно
-            CreateChoicesFromCode(choices);
+            contentParent = chatHistoryText.transform.parent;
+        }
+        
+        if (contentParent == null)
+        {
+            Debug.LogError("[DialogueTree] Не найден Content для создания кнопок!");
+            // Fallback: показываем выборы как текст в чате
+            ShowChoicesAsText(choices);
             return;
         }
 
-        foreach (var choice in choices)
+        // Добавляем разделитель в чат
+        if (chatHistoryText != null)
         {
-            var btnObj = Instantiate(choiceButtonPrefab, choicesPanel);
-            var tmpText = btnObj.GetComponentInChildren<TMP_Text>();
-            if (tmpText != null) tmpText.text = choice.Text;
-
-            var btn = btnObj.GetComponent<Button>();
-            if (btn != null)
-            {
-                string nextId = choice.NextNodeId;
-                float bonus = choice.HumanityBonus;
-                btn.onClick.AddListener(() => OnChoiceSelected(nextId, bonus, choice.Text));
-            }
+            chatHistoryText.text += "\n<color=#AAAAAA><size=14>── Выберите ответ ──</size></color>";
         }
 
-        if (choicesPanel != null)
-            choicesPanel.gameObject.SetActive(true);
-    }
-
-    /// <summary>
-    /// Создаёт кнопки прямо в коде (если нет префаба)
-    /// </summary>
-    private void CreateChoicesFromCode(List<PlayerChoice> choices)
-    {
-        // Используем chatHistoryText для подсказки, а реальные кнопки создаём рядом
-        if (chatHistoryText == null) return;
-
-        // Находим или создаём панель
-        Canvas canvas = chatHistoryText.GetComponentInParent<Canvas>();
-        if (canvas == null) return;
-
-        GameObject panel = new GameObject("ChoicesPanel_Auto");
-        panel.transform.SetParent(chatHistoryText.transform.parent, false);
-
-        var vlg = panel.AddComponent<VerticalLayoutGroup>();
-        vlg.spacing = 8f;
-        vlg.padding = new RectOffset(10, 10, 5, 5);
-        vlg.childForceExpandWidth = true;
-        vlg.childForceExpandHeight = false;
-
-        var csf = panel.AddComponent<ContentSizeFitter>();
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        choicesPanel = panel.transform;
-
+        // Создаём кнопки ПОСЛЕ текста чата (как siblings)
         foreach (var choice in choices)
         {
-            // Создаём кнопку
-            GameObject btnObj = new GameObject($"Choice_{choice.NextNodeId}");
-            btnObj.transform.SetParent(panel.transform, false);
+            GameObject btnObj = new GameObject($"ChoiceBtn_{choice.NextNodeId}");
+            btnObj.transform.SetParent(contentParent, false);
 
+            // RectTransform
+            var rect = btnObj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(0, 55); // Высота кнопки
+            
+            // LayoutElement чтобы VLG корректно расположил
+            var le = btnObj.AddComponent<LayoutElement>();
+            le.minHeight = 50f;
+            le.preferredHeight = 55f;
+            le.flexibleWidth = 1f;
+
+            // Фон кнопки
             var img = btnObj.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.15f, 0.08f, 0.95f); // Тёмная латунь
+            img.color = new Color(0.22f, 0.14f, 0.06f, 0.95f); // Тёмная латунь
+            img.raycastTarget = true;
 
+            // Button component
             var btn = btnObj.AddComponent<Button>();
             var colors = btn.colors;
-            colors.highlightedColor = new Color(0.45f, 0.30f, 0.15f, 1f); // Подсветка при наведении
+            colors.normalColor = new Color(0.22f, 0.14f, 0.06f, 0.95f);
+            colors.highlightedColor = new Color(0.45f, 0.30f, 0.15f, 1f);
             colors.pressedColor = new Color(0.60f, 0.40f, 0.20f, 1f);
+            colors.selectedColor = new Color(0.35f, 0.22f, 0.10f, 1f);
             btn.colors = colors;
+            btn.targetGraphic = img;
 
-            // LayoutElement для высоты
-            var le = btnObj.AddComponent<LayoutElement>();
-            le.minHeight = 45f;
-            le.preferredHeight = 50f;
-
-            // Текст
-            GameObject textObj = new GameObject("Text");
+            // Текст кнопки
+            GameObject textObj = new GameObject("Label");
             textObj.transform.SetParent(btnObj.transform, false);
 
             var tmpText = textObj.AddComponent<TextMeshProUGUI>();
-            tmpText.text = choice.Text;
-            tmpText.fontSize = 18;
-            tmpText.color = new Color(0.92f, 0.80f, 0.55f, 1f); // Золотистый текст
+            tmpText.text = $"► {choice.Text}";
+            tmpText.fontSize = 16;
+            tmpText.color = new Color(0.92f, 0.80f, 0.55f, 1f); // Золотистый
             tmpText.alignment = TextAlignmentOptions.MidlineLeft;
             tmpText.enableWordWrapping = true;
-            tmpText.margin = new Vector4(10, 5, 10, 5);
+            tmpText.overflowMode = TextOverflowModes.Overflow;
+            tmpText.raycastTarget = false;
 
             var textRect = textObj.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.sizeDelta = Vector2.zero;
+            textRect.anchorMin = new Vector2(0, 0);
+            textRect.anchorMax = new Vector2(1, 1);
+            textRect.offsetMin = new Vector2(15, 5);
+            textRect.offsetMax = new Vector2(-10, -5);
 
-            // Обработчик
+            // Обработчик клика
             string nextId = choice.NextNodeId;
             float bonus = choice.HumanityBonus;
             string choiceText = choice.Text;
             btn.onClick.AddListener(() => OnChoiceSelected(nextId, bonus, choiceText));
+
+            activeButtons.Add(btnObj);
         }
+
+        // Прокрутка вниз
+        ScrollToBottom();
+    }
+
+    /// <summary>
+    /// Fallback: показать выборы как кликабельный текст (если кнопки не создаются)
+    /// </summary>
+    private void ShowChoicesAsText(List<PlayerChoice> choices)
+    {
+        if (chatHistoryText == null) return;
+
+        chatHistoryText.text += "\n<color=#AAAAAA><size=14>── Варианты ответа: ──</size></color>";
+        
+        for (int i = 0; i < choices.Count; i++)
+        {
+            string hiLabel = choices[i].HumanityBonus > 0 ? "+" : "";
+            chatHistoryText.text += $"\n<color=#EBCC7A><size=18>  [{i + 1}] {choices[i].Text}</size></color>";
+        }
+
+        chatHistoryText.text += "\n<color=#AAAAAA><size=14>(Введите номер 1-" + choices.Count + " в поле ввода)</size></color>";
+        
+        // Сохраняем выборы для обработки текстового ввода
+        _pendingChoices = choices;
+    }
+
+    private List<PlayerChoice> _pendingChoices;
+
+    /// <summary>
+    /// Обработка текстового ввода (когда кнопки не работают)
+    /// </summary>
+    public bool TryProcessTextInput(string input)
+    {
+        if (_pendingChoices == null || _pendingChoices.Count == 0) return false;
+
+        input = input.Trim();
+        if (int.TryParse(input, out int idx) && idx >= 1 && idx <= _pendingChoices.Count)
+        {
+            var choice = _pendingChoices[idx - 1];
+            _pendingChoices = null;
+            OnChoiceSelected(choice.NextNodeId, choice.HumanityBonus, choice.Text);
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -226,10 +251,10 @@ public class DialogueTreeManager : MonoBehaviour
     private void OnChoiceSelected(string nextNodeId, float humanityBonus, string choiceText)
     {
         // Добавляем выбор игрока в чат
-        string playerColor = "#77DD77"; // Изумрудный
+        string playerColor = "#77DD77";
         if (chatHistoryText != null)
         {
-            chatHistoryText.text += $"\n<color={playerColor}><size=28>Игрок:</size></color> <size=28>{choiceText}</size>";
+            chatHistoryText.text += $"\n<color={playerColor}><size=20>Игрок:</size></color> <size=20>{choiceText}</size>";
         }
 
         // Накапливаем HI
@@ -280,15 +305,25 @@ public class DialogueTreeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Очищает панель кнопок
+    /// Очищает динамические кнопки
     /// </summary>
     private void ClearChoices()
     {
-        if (choicesPanel == null) return;
-
-        for (int i = choicesPanel.childCount - 1; i >= 0; i--)
+        foreach (var btn in activeButtons)
         {
-            Destroy(choicesPanel.GetChild(i).gameObject);
+            if (btn != null) Destroy(btn);
+        }
+        activeButtons.Clear();
+        _pendingChoices = null;
+    }
+
+    private void ScrollToBottom()
+    {
+        if (chatScrollRect != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            chatScrollRect.verticalNormalizedPosition = 0f;
+            Canvas.ForceUpdateCanvases();
         }
     }
 
