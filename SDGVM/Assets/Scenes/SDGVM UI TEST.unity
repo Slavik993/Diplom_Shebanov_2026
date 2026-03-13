@@ -3509,7 +3509,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0.0005493164, y: 0}
+  m_AnchoredPosition: {x: 0.000579834, y: 0}
   m_SizeDelta: {x: 548, y: 1000}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &355667538
@@ -5831,7 +5831,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 299382412}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.9998462
+  m_Size: 0.99998677
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -10558,7 +10558,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00067827175}
+  m_AnchoredPosition: {x: 0, y: 0.00065419247}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1066953948
@@ -12813,6 +12813,10 @@ MonoBehaviour:
         \u041A\u041E\u041D\u0413\u0420\u0415\u0421\u0421 (\u0430\u043F\u0440\u0435\u043B\u044C)"
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: "\u041A\u0415\u0419\u0421 31: \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435
+        \u0445\u0430\u043A\u0430\u0442\u043E\u043D"
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -15024,7 +15028,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1436065116}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99982035
+  m_Size: 0.99998456
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
