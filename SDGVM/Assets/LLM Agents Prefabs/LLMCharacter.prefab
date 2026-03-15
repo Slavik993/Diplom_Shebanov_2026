@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4538929284105251586
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 737900654148970496}
+  - component: {fileID: 1161270047389609934}
+  m_Layer: 0
+  m_Name: LLMCharacter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &737900654148970496
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4538929284105251586}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 958.1321, y: 0, z: 705.9785}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1161270047389609934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4538929284105251586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6c87a428fd5d0be9bbc686bdc8c3c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: undream.llmunity.Runtime::LLMUnity.LLMCharacter
+  advancedOptions: 0
+  remote: 0
+  _llm: {fileID: 0}
+  APIKey: 
+  host: localhost
+  port: 13333
+  numRetries: 10
+  save: 
+  saveCache: 0
+  debugPrompt: 0
+  numPredict: 1024
+  slot: -1
+  grammar: 
+  grammarJSON: 
+  cachePrompt: 1
+  seed: 0
+  temperature: 0.2
+  topK: 40
+  topP: 0.9
+  minP: 0.05
+  repeatPenalty: 1.1
+  presencePenalty: 0
+  frequencyPenalty: 0
+  typicalP: 1
+  repeatLastN: 64
+  penalizeNl: 1
+  penaltyPrompt: 
+  mirostat: 0
+  mirostatTau: 5
+  mirostatEta: 0.1
+  nProbs: 0
+  ignoreEos: 0
+  nKeep: -1
+  stop: []
+  stream: 1
+  playerName: Student
+  AIName: "\u0421\u0414\u0413\u0412\u041C"
+  prompt: "\u0422\u044B - \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u0436 \u0438\u0437
+    \u0440\u0443\u0441\u0441\u043A\u043E\u0439 \u043D\u0430\u0440\u043E\u0434\u043D\u043E\u0439
+    \u0441\u043A\u0430\u0437\u043A\u0438, \u043A\u043E\u0442\u043E\u0440\u044B\u0439
+    \u043F\u043E\u043C\u043E\u0433\u0430\u0435\u0442 \u0438\u043D\u043E\u0441\u0442\u0440\u0430\u043D\u043D\u044B\u043C
+    \u0441\u0442\u0443\u0434\u0435\u043D\u0442\u0430\u043C \u0443\u0437\u043D\u0430\u0442\u044C
+    \u043A\u0443\u043B\u044C\u0442\u0443\u0440\u0443 \u0420\u043E\u0441\u0441\u0438\u0438
+    \u0447\u0435\u0440\u0435\u0437 \u043A\u0432\u0435\u0441\u0442\u044B \u0438 \u0431\u0435\u0441\u0435\u0434\u044B.
+    \r\n\r\n\u0413\u043E\u0432\u043E\u0440\u0438 \u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043D\u043D\u043E,
+    \u043E\u0442 \u043F\u0435\u0440\u0432\u043E\u0433\u043E \u043B\u0438\u0446\u0430,
+    \u043F\u0440\u043E\u0441\u0442\u044B\u043C \u0440\u0430\u0437\u0433\u043E\u0432\u043E\u0440\u043D\u044B\u043C
+    \u044F\u0437\u044B\u043A\u043E\u043C. \r\n\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439
+    \u043E\u0431\u0440\u0430\u0437\u043D\u044B\u0435 \u0432\u044B\u0440\u0430\u0436\u0435\u043D\u0438\u044F
+    \u0438 \u0444\u043E\u043B\u044C\u043A\u043B\u043E\u0440\u043D\u044B\u0435 \u043E\u0431\u043E\u0440\u043E\u0442\u044B,
+    \u043D\u043E \u043D\u0435 \u043F\u0435\u0440\u0435\u0443\u0441\u0435\u0440\u0434\u0441\u0442\u0432\u0443\u0439.\r\n\u041E\u0442\u0432\u0435\u0447\u0430\u0439
+    \u043A\u043E\u0440\u043E\u0442\u043A\u043E: 2-3 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F
+    \u043C\u0430\u043A\u0441\u0438\u043C\u0443\u043C.\r\n\r\n\u041D\u0438\u043A\u043E\u0433\u0434\u0430
+    \u043D\u0435 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439 \u043C\u0435\u0442\u043A\u0438
+    \u0432\u0440\u043E\u0434\u0435 \"NPC:\", \"\u041E\u0442\u0432\u0435\u0442:\"
+    - \u0433\u043E\u0432\u043E\u0440\u0438 \u0441\u0440\u0430\u0437\u0443 \u043F\u043E
+    \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443."
+  setNKeepToPrompt: 1
+  chat: []
+  grammarString: 
+  grammarJSONString: 

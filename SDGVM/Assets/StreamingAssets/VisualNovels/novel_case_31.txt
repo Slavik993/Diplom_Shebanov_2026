@@ -1,0 +1,179 @@
+{
+    "CaseId": 31,
+    "Title": "Правовой хакатон МУИВ: Решение проблем дистанционного обучения",
+    "Description": "",
+    "Characters": [
+        {
+            "Id": "npc_lena",
+            "DisplayName": "Лена",
+            "SpriteKey": "char_case31_npc_lena.png",
+            "Description": "young female student, glasses, long blonde hair, wearing a red sweater and jeans"
+        },
+        {
+            "Id": "npc_maxim",
+            "DisplayName": "Максим",
+            "SpriteKey": "char_case31_npc_maxim.png",
+            "Description": "male student, short dark hair, wearing a blue shirt and khaki pants"
+        },
+        {
+            "Id": "temir",
+            "DisplayName": "Темир",
+            "SpriteKey": "char_case31_temir.png",
+            "Description": "young male student, wearing a gray hoodie and jeans"
+        }
+    ],
+    "Pages": [
+        {
+            "PageIndex": 0,
+            "SpeakerName": "Лена",
+            "DialogueText": "Мы получили кейс о проблемах дистанционного обучения. Темир, твои мысли?",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "lena",
+                    "Position": 0,
+                    "IsHighlighted": false
+                },
+                {
+                    "CharacterId": "temir",
+                    "Position": 2,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [],
+            "IsEnding": false,
+            "DefaultNextPage": 1
+        },
+        {
+            "PageIndex": 1,
+            "SpeakerName": "Максим",
+            "DialogueText": "Я думаю, что нарушены статьи 43 и 45 Закона об образовании.",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "maxim",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Максим говорит правда.",
+                    "NextPageIndex": 3,
+                    "IsCorrect": true,
+                    "Feedback": "Правильно!"
+                },
+                {
+                    "Text": "Максим ошибается.",
+                    "NextPageIndex": 4,
+                    "IsCorrect": false,
+                    "Feedback": "Неправильно."
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 2,
+            "SpeakerName": "Темир",
+            "DialogueText": "Да, я согласен. Но мы должны также понимать механизмы апелляции и коллективной защиты прав.",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "temir",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [],
+            "IsEnding": false,
+            "DefaultNextPage": 3
+        },
+        {
+            "PageIndex": 3,
+            "SpeakerName": "Лена",
+            "DialogueText": "Точно. Мы должны подготовиться к выступлению на сцене.",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "lena",
+                    "Position": 0,
+                    "IsHighlighted": false
+                },
+                {
+                    "CharacterId": "temir",
+                    "Position": 2,
+                    "IsHighlighted": false
+                }
+            ],
+            "Choices": [],
+            "IsEnding": false,
+            "DefaultNextPage": 4
+        },
+        {
+            "PageIndex": 4,
+            "SpeakerName": "Максим",
+            "DialogueText": "Я буду готов.",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "maxim",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [],
+            "IsEnding": false,
+            "DefaultNextPage": 5
+        },
+        {
+            "PageIndex": 5,
+            "SpeakerName": "Темир",
+            "DialogueText": "А я.",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "temir",
+                    "Position": 1,
+                    "IsHighlighted": false
+                }
+            ],
+            "Choices": [],
+            "IsEnding": false,
+            "DefaultNextPage": 6
+        },
+        {
+            "PageIndex": 6,
+            "SpeakerName": "Лена",
+            "DialogueText": "Мы все готовы.",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "lena",
+                    "Position": 0,
+                    "IsHighlighted": false
+                },
+                {
+                    "CharacterId": "temir",
+                    "Position": 2,
+                    "IsHighlighted": false
+                }
+            ],
+            "Choices": [],
+            "IsEnding": false,
+            "DefaultNextPage": 7
+        },
+        {
+            "PageIndex": 7,
+            "SpeakerName": "",
+            "DialogueText": "Сценарий завершен.",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [],
+            "Choices": [],
+            "IsEnding": true,
+            "DefaultNextPage": -1
+        }
+    ],
+    "DefaultBackgroundKey": "bg_case31_classroom.png",
+    "TotalCorrectChoices": 1
+}
