@@ -417,7 +417,11 @@ public class VisualNovelGenerator : MonoBehaviour
                 continue;
             }
 
-            string prompt = $"A cinematic anime style background, visual novel without text boxes, {bgKey}, empty room, highly detailed, beautiful lighting, 16:9 4k resolution";
+            string contextDesc = "university " + bgKey.Replace("_", " ");
+            if (bgKey == "stage") contextDesc = "university auditorium stage";
+            else if (bgKey == "outdoor") contextDesc = "university campus exterior exterior";
+            
+            string prompt = $"Masterpiece, high quality, anime style background, {contextDesc}, visual novel scenery, empty room, no people, no text, highly detailed architecture, beautiful lighting, beautiful scenery, 16:9 4k resolution";
             Texture2D loadedTex = null;
             
             // Ждём пока ComfyUIManager сгенерирует картинку
@@ -588,11 +592,6 @@ public class VisualNovelGenerator : MonoBehaviour
         scene.Description = adaptCase?.GameScenario ?? "";
         scene.DefaultBackgroundKey = GuessBackground(adaptCase);
 
-        // Определяем персонажей из кейса
-        string npcName = ExtractNpcName(adaptCase?.NPCRole ?? "NPC");
-        scene.Characters.Add(new VNCharacter("npc", npcName, "npc", adaptCase?.NPCRole ?? ""));
-
-        // Обходим дерево (BFS) — превращаем каждый DialogueNode в VNPage
         var visited = new HashSet<string>();
         var queue = new Queue<string>();
         var nodeToPageIndex = new Dictionary<string, int>();
@@ -624,19 +623,74 @@ public class VisualNovelGenerator : MonoBehaviour
             }
         }
 
+        // Собираем уникальных персонажей
+        var uniqueChars = new Dictionary<string, VNCharacter>();
+
         // Создаём страницы
         for (int i = 0; i < orderedNodes.Count; i++)
         {
             var node = orderedNodes[i];
             var page = new VNPage();
             page.PageIndex = i;
-            page.SpeakerName = node.Emotion; // Используем Emotion как описание говорящего
-            page.DialogueText = node.Text;
-            page.BackgroundKey = scene.DefaultBackgroundKey;
-            page.IsEnding = node.IsEnding;
+            
+            // Определяем фон на основе ID узла
+            string bg = scene.DefaultBackgroundKey;
+            string nodeLower = node.NodeId.ToLower();
 
-            // Добавляем NPC на экран
-            page.Characters.Add(new VNCharacterSlot("npc", VNCharacterPosition.Center, true));
+            // Жестко форсируем фон для начала 31 кейса, так как он определяется как stage,
+            // но на самом деле они готовятся в классе, а на сцену выходят только в узле stage_
+            if (caseId == 31)
+            {
+                if (nodeLower.StartsWith("stage")) bg = "stage";
+                else bg = "classroom";
+            }
+            else
+            {
+                // Для остальных кейсов пытаемся угадать по имени узла
+                if (nodeLower.Contains("stage") || nodeLower.Contains("presentation")) bg = "stage";
+                else if (nodeLower.Contains("hallway") || nodeLower.Contains("corridor")) bg = "hallway";
+                else if (nodeLower.Contains("office") || nodeLower.Contains("curator")) bg = "office";
+                else if (nodeLower.Contains("dorm") || nodeLower.Contains("room")) bg = "dormitory";
+                else if (nodeLower.Contains("cafe") || nodeLower.Contains("food")) bg = "cafeteria";
+            }
+            
+            page.BackgroundKey = bg;
+            page.IsEnding = node.IsEnding;
+            page.DialogueText = node.Text;
+
+            // Обрабатываем говорящего из поля Emotion
+            string emotionRaw = node.Emotion ?? "";
+            if (string.IsNullOrWhiteSpace(emotionRaw)) emotionRaw = "Нарратор";
+            
+            string charId = "";
+            string dispName = "";
+            string desc = "";
+            
+            if (emotionRaw.Contains(","))
+            {
+                var parts = emotionRaw.Split(new[] { ',' }, 2);
+                dispName = parts[0].Trim();
+                desc = parts[1].Trim();
+                charId = dispName.ToLower().Replace(" ", "_");
+            }
+            else
+            {
+                dispName = emotionRaw.Trim();
+                charId = dispName.ToLower().Replace(" ", "_");
+                desc = "anime character";
+            }
+            
+            page.SpeakerName = dispName;
+            
+            // Если это не нарратор, добавляем персонажа
+            if (charId != "нарратор" && charId != "narrator")
+            {
+                if (!uniqueChars.ContainsKey(charId))
+                {
+                    uniqueChars[charId] = new VNCharacter(charId, dispName, charId, desc);
+                }
+                page.Characters.Add(new VNCharacterSlot(charId, VNCharacterPosition.Center, true));
+            }
 
             if (node.Choices != null && node.Choices.Count > 0)
             {
@@ -662,6 +716,7 @@ public class VisualNovelGenerator : MonoBehaviour
             scene.Pages.Add(page);
         }
 
+        scene.Characters.AddRange(uniqueChars.Values);
         scene.CountCorrectChoices();
         return scene;
     }

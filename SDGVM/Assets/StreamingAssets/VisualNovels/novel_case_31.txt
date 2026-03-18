@@ -1,73 +1,87 @@
 {
     "CaseId": 31,
-    "Title": "Правовой хакатон МУИВ: Решение проблем дистанционного обучения",
-    "Description": "",
+    "Title": "Правовой хакатон МУИВ",
+    "Description": "Ты — Темир, участник команды на правовом хакатоне. Вам достался кейс о проблемах дистанционного обучения. Обсуди решение с Леной и Максимом, выдели нарушенные права и подготовься к выступлению на сцене. В финале тебе нужно будет самому презентовать и обосновать решение перед судьями.",
     "Characters": [
         {
-            "Id": "npc_lena",
+            "Id": "наталья_ивановна",
+            "DisplayName": "Наталья Ивановна",
+            "SpriteKey": "char_case31_наталья_ивановна.png",
+            "Description": "куратор"
+        },
+        {
+            "Id": "лена",
             "DisplayName": "Лена",
-            "SpriteKey": "char_case31_npc_lena.png",
-            "Description": "young female student, glasses, long blonde hair, wearing a red sweater and jeans"
+            "SpriteKey": "char_case31_лена.png",
+            "Description": "сосредоточенная"
         },
         {
-            "Id": "npc_maxim",
+            "Id": "максим",
             "DisplayName": "Максим",
-            "SpriteKey": "char_case31_npc_maxim.png",
-            "Description": "male student, short dark hair, wearing a blue shirt and khaki pants"
+            "SpriteKey": "char_case31_максим.png",
+            "Description": "подбадривающий"
         },
         {
-            "Id": "temir",
-            "DisplayName": "Темир",
-            "SpriteKey": "char_case31_temir.png",
-            "Description": "young male student, wearing a gray hoodie and jeans"
+            "Id": "судья",
+            "DisplayName": "Судья",
+            "SpriteKey": "char_case31_судья.png",
+            "Description": "внимательный"
+        },
+        {
+            "Id": "ведущая",
+            "DisplayName": "Ведущая",
+            "SpriteKey": "char_case31_ведущая.png",
+            "Description": "торжественно"
         }
     ],
     "Pages": [
         {
             "PageIndex": 0,
-            "SpeakerName": "Лена",
-            "DialogueText": "Мы получили кейс о проблемах дистанционного обучения. Темир, твои мысли?",
-            "BackgroundKey": "bg_case31_classroom.png",
+            "SpeakerName": "Наталья Ивановна",
+            "DialogueText": "Темир, это твои напарники — Лена и Максим. Нам достался кейс про дистанционку: студентам не дают материалы вовремя, нет консультаций. Нужно решить это по закону.",
+            "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "lena",
-                    "Position": 0,
-                    "IsHighlighted": false
-                },
-                {
-                    "CharacterId": "temir",
-                    "Position": 2,
-                    "IsHighlighted": true
-                }
-            ],
-            "Choices": [],
-            "IsEnding": false,
-            "DefaultNextPage": 1
-        },
-        {
-            "PageIndex": 1,
-            "SpeakerName": "Максим",
-            "DialogueText": "Я думаю, что нарушены статьи 43 и 45 Закона об образовании.",
-            "BackgroundKey": "bg_case31_classroom.png",
-            "Characters": [
-                {
-                    "CharacterId": "maxim",
+                    "CharacterId": "наталья_ивановна",
                     "Position": 1,
                     "IsHighlighted": true
                 }
             ],
             "Choices": [
                 {
-                    "Text": "Максим говорит правда.",
-                    "NextPageIndex": 3,
+                    "Text": "Приятно познакомиться. Давайте разберем, какие права тут нарушены?",
+                    "NextPageIndex": 1,
                     "IsCorrect": true,
-                    "Feedback": "Правильно!"
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 1,
+            "SpeakerName": "Лена",
+            "DialogueText": "Максим: 'Двадцать минут?! Я даже прочитать не успею!'\nЛена: 'Детский сад... Темир, что думаешь по поводу нарушенных прав?'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "лена",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Студенты имеют право на качественное образование и доступ к материалам (ст. 43-45).",
+                    "NextPageIndex": 2,
+                    "IsCorrect": true,
+                    "Feedback": ""
                 },
                 {
-                    "Text": "Максим ошибается.",
-                    "NextPageIndex": 4,
+                    "Text": "Скорее всего студенты сами виноваты и просто жалуются.",
+                    "NextPageIndex": 3,
                     "IsCorrect": false,
-                    "Feedback": "Неправильно."
+                    "Feedback": ""
                 }
             ],
             "IsEnding": false,
@@ -75,105 +89,268 @@
         },
         {
             "PageIndex": 2,
-            "SpeakerName": "Темир",
-            "DialogueText": "Да, я согласен. Но мы должны также понимать механизмы апелляции и коллективной защиты прав.",
-            "BackgroundKey": "bg_case31_classroom.png",
+            "SpeakerName": "Лена",
+            "DialogueText": "Лена: 'Верно. Статьи 43-45 Закона об образовании и приказ Минобрнауки. А какие будут последствия для вуза?'",
+            "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "temir",
+                    "CharacterId": "лена",
                     "Position": 1,
                     "IsHighlighted": true
                 }
             ],
-            "Choices": [],
+            "Choices": [
+                {
+                    "Text": "Жалобы, проверки Рособрнадзора и административная ответственность.",
+                    "NextPageIndex": 4,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                }
+            ],
             "IsEnding": false,
-            "DefaultNextPage": 3
+            "DefaultNextPage": -1
         },
         {
             "PageIndex": 3,
             "SpeakerName": "Лена",
-            "DialogueText": "Точно. Мы должны подготовиться к выступлению на сцене.",
-            "BackgroundKey": "bg_case31_classroom.png",
+            "DialogueText": "Максим: 'Да ты что! Там же по описанию завалили по полной!'\nЛена: 'Нет, университет обязан давать качество (ст. 43-45). Запомни это для выступления.'",
+            "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "lena",
-                    "Position": 0,
-                    "IsHighlighted": false
-                },
-                {
-                    "CharacterId": "temir",
-                    "Position": 2,
-                    "IsHighlighted": false
+                    "CharacterId": "лена",
+                    "Position": 1,
+                    "IsHighlighted": true
                 }
             ],
-            "Choices": [],
+            "Choices": [
+                {
+                    "Text": "Понял. А что с последствиями для вуза?",
+                    "NextPageIndex": 4,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
             "IsEnding": false,
-            "DefaultNextPage": 4
+            "DefaultNextPage": -1
         },
         {
             "PageIndex": 4,
-            "SpeakerName": "Максим",
-            "DialogueText": "Я буду готов.",
-            "BackgroundKey": "bg_case31_classroom.png",
+            "SpeakerName": "Лена",
+            "DialogueText": "Лена: 'Точно. Теперь план: жалоба в течение 10 дней, аудит курсов. А что делать с теми, кого уже завалили?'",
+            "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "maxim",
+                    "CharacterId": "лена",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "По закону (ст. 45) они имеют право на пересдачу и апелляцию.",
+                    "NextPageIndex": 5,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Уже ничего, оценка поставлена. Максимум — смягчить пересдачу.",
+                    "NextPageIndex": 6,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 5,
+            "SpeakerName": "Лена",
+            "DialogueText": "Лена: 'Именно. Статья 45. Ну и профилактика: нормативные акты и четкие дедлайны на сайте МУИВ.'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "лена",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Отлично. Кажется, мы готовы.",
+                    "NextPageIndex": 7,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 6,
+            "SpeakerName": "Лена",
+            "DialogueText": "Лена: 'Не совсем. Статья 45 защищает их — вуз обязан созвать комиссию для пересмотра результатов.'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "лена",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Запишу это. Мы готовы к выступлению?",
+                    "NextPageIndex": 7,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 7,
+            "SpeakerName": "Максим",
+            "DialogueText": "Ведущая: 'Время вышло! Спикер группы ЮД 22.1 — Темир, на сцену!'\nМаксим шепчет: 'Давай, Темир! Главное, скажи судьям, чтобы не судили строго, мы же старались!'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "максим",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "*Выйти на сцену и начать презентацию*",
+                    "NextPageIndex": 8,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 8,
+            "SpeakerName": "Судья",
+            "DialogueText": "Вы стоите перед микрофоном. Судья: 'Здравствуйте. Какие именно права студентов были нарушены в вашем кейсе?'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "судья",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Согласно ст. 43-45 ФЗ об образовании — право на качественное обучение и доступ к материалам.",
+                    "NextPageIndex": 9,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Право на свободное посещение и выбор преподавателя.",
+                    "NextPageIndex": 10,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 9,
+            "SpeakerName": "Судья",
+            "DialogueText": "Судья: 'Верно. А какие последствия ждут университет, если жалобы дойдут до Рособрнадзора?'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "судья",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Проверки, административные штрафы и удар по репутации вуза.",
+                    "NextPageIndex": 11,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Никаких, университет сам решает внутренние вопросы.",
+                    "NextPageIndex": 10,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 10,
+            "SpeakerName": "Судья",
+            "DialogueText": "Судья: 'Ваши ответы неубедительны и противоречат закону. К сожалению, вы не заняли призовых мест.'\nМаксим: 'Эх, Темир... Но ничего, в следующий раз порвем всех!'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "судья",
                     "Position": 1,
                     "IsHighlighted": true
                 }
             ],
             "Choices": [],
-            "IsEnding": false,
-            "DefaultNextPage": 5
+            "IsEnding": true,
+            "DefaultNextPage": -1
         },
         {
-            "PageIndex": 5,
-            "SpeakerName": "Темир",
-            "DialogueText": "А я.",
-            "BackgroundKey": "bg_case31_classroom.png",
+            "PageIndex": 11,
+            "SpeakerName": "Судья",
+            "DialogueText": "Судья: 'И каков ваш пошаговый план решения?'",
+            "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "temir",
+                    "CharacterId": "судья",
                     "Position": 1,
-                    "IsHighlighted": false
+                    "IsHighlighted": true
                 }
             ],
-            "Choices": [],
-            "IsEnding": false,
-            "DefaultNextPage": 6
-        },
-        {
-            "PageIndex": 6,
-            "SpeakerName": "Лена",
-            "DialogueText": "Мы все готовы.",
-            "BackgroundKey": "bg_case31_classroom.png",
-            "Characters": [
+            "Choices": [
                 {
-                    "CharacterId": "lena",
-                    "Position": 0,
-                    "IsHighlighted": false
+                    "Text": "Коллективная жалоба, аудит курсов, пересмотр оценок по ст. 45 и закрепление дедлайнов в актах.",
+                    "NextPageIndex": 12,
+                    "IsCorrect": true,
+                    "Feedback": ""
                 },
                 {
-                    "CharacterId": "temir",
-                    "Position": 2,
-                    "IsHighlighted": false
+                    "Text": "Просто подождать, пока администрация сама заметит сбои в системе дистанционки.",
+                    "NextPageIndex": 10,
+                    "IsCorrect": false,
+                    "Feedback": ""
                 }
             ],
-            "Choices": [],
             "IsEnding": false,
-            "DefaultNextPage": 7
+            "DefaultNextPage": -1
         },
         {
-            "PageIndex": 7,
-            "SpeakerName": "",
-            "DialogueText": "Сценарий завершен.",
+            "PageIndex": 12,
+            "SpeakerName": "Ведущая",
+            "DialogueText": "Ведущая: 'Первое место — группа ЮД 22.1! Образцовый план и отличная презентация!'\nЛена и Максим в восторге. Ты чувствуешь, что нашел свое место в МУИВ.",
             "BackgroundKey": "bg_case31_stage.png",
-            "Characters": [],
+            "Characters": [
+                {
+                    "CharacterId": "ведущая",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
             "Choices": [],
             "IsEnding": true,
             "DefaultNextPage": -1
         }
     ],
-    "DefaultBackgroundKey": "bg_case31_classroom.png",
-    "TotalCorrectChoices": 1
+    "DefaultBackgroundKey": "bg_case31_stage.png",
+    "TotalCorrectChoices": 7
 }

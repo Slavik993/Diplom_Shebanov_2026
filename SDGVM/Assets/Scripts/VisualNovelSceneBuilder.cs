@@ -315,6 +315,13 @@ public class VisualNovelSceneBuilder : MonoBehaviour
 
         resultsText = CreateText("", container.transform, 26, TEXT_WHITE, TextAlignmentOptions.Center);
         resultsText.enableWordWrapping = true;
+        // Убираем фиксированную высоту, чтобы многострочный текст (результаты) не слипался
+        var resLE = resultsText.GetComponent<LayoutElement>();
+        if (resLE != null) {
+            resLE.preferredHeight = -1;
+            resLE.minHeight = 120f;
+            resLE.flexibleHeight = 1f;
+        }
 
         btnRestart = CreateButton("Начать заново", container.transform, CHOICE_TEAL, TEXT_WHITE);
         var restartLE = btnRestart.gameObject.AddComponent<LayoutElement>();

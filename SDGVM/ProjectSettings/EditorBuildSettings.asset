@@ -5,12 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SDGVM UI TEST.unity
     guid: 39fc81c7dc44bbe40a309f89fcca5b79
-  - enabled: 1
+  - enabled: 0
     path: Assets/LLMUnity/Samples/ChatBot/Scene.unity
     guid: 040c4d89ae7e163b1acb6566718fe5c6
+  - enabled: 1
+    path: Assets/Scenes/Visuall_Novell.unity
+    guid: a3a8431ba9bc95949b5d71c3dcc6b777
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

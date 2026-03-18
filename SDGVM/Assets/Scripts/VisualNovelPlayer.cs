@@ -336,14 +336,36 @@ public class VisualNovelPlayer : MonoBehaviour
             sceneBuilder.backgroundImage.texture = backgroundCache[bgKey];
             sceneBuilder.backgroundImage.color = Color.white;
         }
+        else if (!string.IsNullOrEmpty(bgKey))
+        {
+            // Пытаемся загрузить с диска на лету, если не нашли в кэше
+            string saveDir = VisualNovelScene.GetSaveDirectory();
+            string absPath = Path.Combine(saveDir, bgKey);
+            
+            if (File.Exists(absPath))
+            {
+                Texture2D tex = LoadTextureFromFile(absPath);
+                if (tex != null)
+                {
+                    backgroundCache[bgKey] = tex;
+                    sceneBuilder.backgroundImage.texture = tex;
+                    sceneBuilder.backgroundImage.color = Color.white;
+                    return; // Успешно загрузили и поставили
+                }
+            }
+
+            // Fallback цвета
+            sceneBuilder.backgroundImage.texture = null;
+            if (BG_COLORS.ContainsKey(bgKey))
+                sceneBuilder.backgroundImage.color = BG_COLORS[bgKey];
+            else
+                sceneBuilder.backgroundImage.color = new Color(0.25f, 0.22f, 0.20f, 1f);
+        }
         else
         {
             // Используем цветовую заливку
             sceneBuilder.backgroundImage.texture = null;
-            if (BG_COLORS.ContainsKey(bgKey ?? ""))
-                sceneBuilder.backgroundImage.color = BG_COLORS[bgKey];
-            else
-                sceneBuilder.backgroundImage.color = new Color(0.25f, 0.22f, 0.20f, 1f);
+            sceneBuilder.backgroundImage.color = new Color(0.25f, 0.22f, 0.20f, 1f);
         }
     }
 
