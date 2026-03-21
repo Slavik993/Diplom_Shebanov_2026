@@ -141,6 +141,17 @@ public class VisualNovelPlayer : MonoBehaviour
             }
         }
 
+        // Если генератор отсутствует (standalone билд) — показываем ошибку
+        if (generator == null)
+        {
+            Debug.LogError($"[VNPlayer] Нет сохранённого сценария для кейса {caseId} и генератор недоступен.");
+            sceneBuilder.ShowPanel(sceneBuilder.vnPanel);
+            sceneBuilder.dialogueText.text = $"Сценарий для кейса {caseId} не найден.\n\nДобавьте файл novel_case_{caseId}.txt\nв папку StreamingAssets/VisualNovels/";
+            sceneBuilder.speakerNameText.text = "Ошибка";
+            sceneBuilder.btnNext.gameObject.SetActive(false);
+            return;
+        }
+
         // В противном случае — запускаем процесс генерации
         sceneBuilder.ShowPanel(sceneBuilder.loadingPanel);
 
