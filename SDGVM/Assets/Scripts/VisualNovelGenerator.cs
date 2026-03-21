@@ -417,11 +417,22 @@ public class VisualNovelGenerator : MonoBehaviour
                 continue;
             }
 
-            string contextDesc = "university " + bgKey.Replace("_", " ");
-            if (bgKey == "stage") contextDesc = "university auditorium stage";
-            else if (bgKey == "outdoor") contextDesc = "university campus exterior exterior";
+            // Расширенные реалистичные контексты для МУИВ
+            string contextDesc;
+            switch (bgKey)
+            {
+                case "classroom": contextDesc = "university lecture hall with desks chairs and projector screen"; break;
+                case "stage": contextDesc = "university assembly hall stage with podium and audience seats"; break;
+                case "hallway": contextDesc = "modern university corridor with doors and notice boards"; break;
+                case "office": contextDesc = "university dean office with desk bookshelves and diplomas"; break;
+                case "cafeteria": contextDesc = "university cafeteria dining hall with tables and food counter"; break;
+                case "dormitory": contextDesc = "student dormitory room with beds and desks"; break;
+                case "outdoor": contextDesc = "university campus exterior with modern building facade"; break;
+                case "library": contextDesc = "university library reading room with bookshelves"; break;
+                default: contextDesc = "modern university interior " + bgKey.Replace("_", " "); break;
+            }
             
-            string prompt = $"Masterpiece, high quality, anime style background, {contextDesc}, visual novel scenery, empty room, no people, no text, highly detailed architecture, beautiful lighting, beautiful scenery, 16:9 4k resolution";
+            string prompt = $"Masterpiece, best quality, realistic photo, {contextDesc}, Moscow Witte University MUIV, modern Russian university, no people, no text, detailed architecture, natural lighting, photorealistic, 16:9 wide angle";
             Texture2D loadedTex = null;
             
             // Ждём пока ComfyUIManager сгенерирует картинку
@@ -458,8 +469,8 @@ public class VisualNovelGenerator : MonoBehaviour
             }
 
             // Промт для персонажа (прозрачный, портрет)
-            string cleanDesc = string.IsNullOrWhiteSpace(character.Description) ? "anime character" : character.Description.Replace("\n", " ").Replace("\r", "");
-            string prompt = $"Masterpiece, high quality, anime style portrait of {character.DisplayName}, {cleanDesc}, standing, looking at viewer, solid white background, character design";
+            string cleanDesc = string.IsNullOrWhiteSpace(character.Description) ? "young person" : character.Description.Replace("\n", " ").Replace("\r", "");
+            string prompt = $"Masterpiece, best quality, semi-realistic digital art portrait of {character.DisplayName}, {cleanDesc}, standing, looking at viewer, solid white background, visual novel character, clean lines, professional illustration";
             Texture2D loadedTex = null;
             
             yield return StartCoroutine(comfyUI.GenerateTexture(prompt, (tex) => { loadedTex = tex; }));

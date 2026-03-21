@@ -304,26 +304,56 @@ public class VisualNovelSceneBuilder : MonoBehaviour
         var resultsBg = resultsPanel.GetComponent<Image>();
         resultsBg.color = BG_DARK;
 
-        var container = CreateVerticalGroup("ResultsContainer", resultsPanel.transform, 25f);
-        var containerRect = container.GetComponent<RectTransform>();
-        containerRect.anchorMin = new Vector2(0.15f, 0.15f);
-        containerRect.anchorMax = new Vector2(0.85f, 0.85f);
+        // Контейнер с childControlHeight = true, чтобы текст не слипался
+        var containerObj = new GameObject("ResultsContainer");
+        containerObj.transform.SetParent(resultsPanel.transform, false);
+        var containerRect = containerObj.AddComponent<RectTransform>();
+        containerRect.anchorMin = new Vector2(0.1f, 0.05f);
+        containerRect.anchorMax = new Vector2(0.9f, 0.95f);
         containerRect.offsetMin = Vector2.zero;
         containerRect.offsetMax = Vector2.zero;
 
-        CreateText("Результаты", container.transform, 42, TEXT_YELLOW, TextAlignmentOptions.Center);
+        var vlg = containerObj.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing = 18f;
+        vlg.padding = new RectOffset(20, 20, 20, 20);
+        vlg.childControlWidth = true;
+        vlg.childControlHeight = true;   // ← Ключевое отличие от обычного CreateVerticalGroup
+        vlg.childForceExpandWidth = true;
+        vlg.childForceExpandHeight = false;
+        vlg.childAlignment = TextAnchor.UpperCenter;
 
-        resultsText = CreateText("", container.transform, 26, TEXT_WHITE, TextAlignmentOptions.Center);
+        // Заголовок
+        var titleObj = new GameObject("Title");
+        titleObj.transform.SetParent(containerObj.transform, false);
+        var titleTmp = titleObj.AddComponent<TextMeshProUGUI>();
+        titleTmp.text = "Результаты";
+        titleTmp.fontSize = 42;
+        titleTmp.color = TEXT_YELLOW;
+        titleTmp.alignment = TextAlignmentOptions.Center;
+        titleTmp.enableWordWrapping = false;
+        titleTmp.raycastTarget = false;
+        var titleLE = titleObj.AddComponent<LayoutElement>();
+        titleLE.preferredHeight = 60f;
+        titleLE.flexibleWidth = 1f;
+
+        // Текст результатов — с ContentSizeFitter для авто-высоты
+        var resObj = new GameObject("ResultsText");
+        resObj.transform.SetParent(containerObj.transform, false);
+        resultsText = resObj.AddComponent<TextMeshProUGUI>();
+        resultsText.fontSize = 24;
+        resultsText.color = TEXT_WHITE;
+        resultsText.alignment = TextAlignmentOptions.Center;
         resultsText.enableWordWrapping = true;
-        // Убираем фиксированную высоту, чтобы многострочный текст (результаты) не слипался
-        var resLE = resultsText.GetComponent<LayoutElement>();
-        if (resLE != null) {
-            resLE.preferredHeight = -1;
-            resLE.minHeight = 120f;
-            resLE.flexibleHeight = 1f;
-        }
+        resultsText.raycastTarget = false;
+        var resLE = resObj.AddComponent<LayoutElement>();
+        resLE.flexibleWidth = 1f;
+        resLE.flexibleHeight = 1f;
+        resLE.minHeight = 200f;
+        var resFitter = resObj.AddComponent<ContentSizeFitter>();
+        resFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        resFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-        btnRestart = CreateButton("Начать заново", container.transform, CHOICE_TEAL, TEXT_WHITE);
+        btnRestart = CreateButton("Начать заново", containerObj.transform, CHOICE_TEAL, TEXT_WHITE);
         var restartLE = btnRestart.gameObject.AddComponent<LayoutElement>();
         restartLE.preferredHeight = 55f;
         restartLE.preferredWidth = 300f;

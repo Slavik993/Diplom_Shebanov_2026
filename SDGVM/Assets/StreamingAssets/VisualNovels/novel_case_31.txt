@@ -7,7 +7,7 @@
             "Id": "наталья_ивановна",
             "DisplayName": "Наталья Ивановна",
             "SpriteKey": "char_case31_наталья_ивановна.png",
-            "Description": "куратор"
+            "Description": "куратор, деловая"
         },
         {
             "Id": "лена",
@@ -16,9 +16,15 @@
             "Description": "сосредоточенная"
         },
         {
-            "Id": "максим",
-            "DisplayName": "Максим",
-            "SpriteKey": "char_case31_максим.png",
+            "Id": "максим_и_лена",
+            "DisplayName": "Максим и Лена",
+            "SpriteKey": "char_case31_максим_и_лена.png",
+            "Description": "организованные"
+        },
+        {
+            "Id": "ведущая_и_максим",
+            "DisplayName": "Ведущая и Максим",
+            "SpriteKey": "char_case31_ведущая_и_максим.png",
             "Description": "подбадривающий"
         },
         {
@@ -28,18 +34,42 @@
             "Description": "внимательный"
         },
         {
+            "Id": "судья_2",
+            "DisplayName": "Судья 2",
+            "SpriteKey": "char_case31_судья_2.png",
+            "Description": "серьёзный"
+        },
+        {
+            "Id": "судья_и_лена",
+            "DisplayName": "Судья и Лена",
+            "SpriteKey": "char_case31_судья_и_лена.png",
+            "Description": "разочарованно-поддерживающе"
+        },
+        {
+            "Id": "судья_1",
+            "DisplayName": "Судья 1",
+            "SpriteKey": "char_case31_судья_1.png",
+            "Description": "ожидающий"
+        },
+        {
             "Id": "ведущая",
             "DisplayName": "Ведущая",
             "SpriteKey": "char_case31_ведущая.png",
             "Description": "торжественно"
+        },
+        {
+            "Id": "судья_и_максим",
+            "DisplayName": "Судья и Максим",
+            "SpriteKey": "char_case31_судья_и_максим.png",
+            "Description": "anime character"
         }
     ],
     "Pages": [
         {
             "PageIndex": 0,
             "SpeakerName": "Наталья Ивановна",
-            "DialogueText": "Темир, это твои напарники — Лена и Максим. Нам достался кейс про дистанционку: студентам не дают материалы вовремя, нет консультаций. Нужно решить это по закону.",
-            "BackgroundKey": "bg_case31_stage.png",
+            "DialogueText": "Темир, привет! Это твоя команда на правовом хакатоне МУИВ. Я — Наталья Ивановна, куратор. Вот твои напарники: Лена (3 курс, уже была на Виттевских чтениях) и Максим (2 курс, спец по процессуальным вопросам). Кейс: студенты жалуются на дистанционку — материалы выкладывают с опозданием на 7–10 дней, консультаций по Zoom почти нет, записи лекций недоступны после дедлайна. Нужно найти нарушенные права, последствия для вуза и реальный план исправления. Время — 40 минут на подготовку + 5 минут на сцене. Готовы?",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
                     "CharacterId": "наталья_ивановна",
@@ -49,36 +79,19 @@
             ],
             "Choices": [
                 {
-                    "Text": "Приятно познакомиться. Давайте разберем, какие права тут нарушены?",
+                    "Text": "Приятно познакомиться. Давайте сразу разберём, какие статьи Закона об образовании тут применимы?",
                     "NextPageIndex": 1,
-                    "IsCorrect": true,
-                    "Feedback": ""
-                }
-            ],
-            "IsEnding": false,
-            "DefaultNextPage": -1
-        },
-        {
-            "PageIndex": 1,
-            "SpeakerName": "Лена",
-            "DialogueText": "Максим: 'Двадцать минут?! Я даже прочитать не успею!'\nЛена: 'Детский сад... Темир, что думаешь по поводу нарушенных прав?'",
-            "BackgroundKey": "bg_case31_stage.png",
-            "Characters": [
-                {
-                    "CharacterId": "лена",
-                    "Position": 1,
-                    "IsHighlighted": true
-                }
-            ],
-            "Choices": [
-                {
-                    "Text": "Студенты имеют право на качественное образование и доступ к материалам (ст. 43-45).",
-                    "NextPageIndex": 2,
                     "IsCorrect": true,
                     "Feedback": ""
                 },
                 {
-                    "Text": "Скорее всего студенты сами виноваты и просто жалуются.",
+                    "Text": "Сначала план: кто за что отвечает? Я могу взять речь.",
+                    "NextPageIndex": 2,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Кейс сложный… Может, студенты сами виноваты — не заходили вовремя?",
                     "NextPageIndex": 3,
                     "IsCorrect": false,
                     "Feedback": ""
@@ -88,10 +101,10 @@
             "DefaultNextPage": -1
         },
         {
-            "PageIndex": 2,
+            "PageIndex": 1,
             "SpeakerName": "Лена",
-            "DialogueText": "Лена: 'Верно. Статьи 43-45 Закона об образовании и приказ Минобрнауки. А какие будут последствия для вуза?'",
-            "BackgroundKey": "bg_case31_stage.png",
+            "DialogueText": "Лена: 'Главное — ст. 16 Закона 273-ФЗ: при электронном обучении и ДОТ организация обязана обеспечить доступ к учебным материалам, консультациям и контроль знаний. Плюс ст. 43–45: вуз должен создавать условия для качественного образования, а студенты имеют право на защиту своих прав (жалобы, апелляции). Темир, что добавишь?'",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
                     "CharacterId": "лена",
@@ -101,8 +114,43 @@
             ],
             "Choices": [
                 {
-                    "Text": "Жалобы, проверки Рособрнадзора и административная ответственность.",
+                    "Text": "Да, плюс ст. 28 — вуз несёт ответственность за качество образования. Нарушение сроков — прямое нарушение.",
                     "NextPageIndex": 4,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "А ещё Приказ Минобрнауки № 397 — регламент ДОТ, там про сроки публикации материалов.",
+                    "NextPageIndex": -1,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "По-моему, это не так страшно — многие вузы так делают.",
+                    "NextPageIndex": -1,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 2,
+            "SpeakerName": "Максим и Лена",
+            "DialogueText": "Максим: 'Круто, давай. Я беру последствия и Рособрнадзор. Лена — нормы закона. Темир — план решения и профилактика. ' Лена: 'Согласна. Тогда начинаем с главного — какие права нарушены?'",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "максим_и_лена",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Переходим к нормам. Ст. 43–45 и ст. 16 Закона 273-ФЗ?",
+                    "NextPageIndex": 1,
                     "IsCorrect": true,
                     "Feedback": ""
                 }
@@ -113,8 +161,8 @@
         {
             "PageIndex": 3,
             "SpeakerName": "Лена",
-            "DialogueText": "Максим: 'Да ты что! Там же по описанию завалили по полной!'\nЛена: 'Нет, университет обязан давать качество (ст. 43-45). Запомни это для выступления.'",
-            "BackgroundKey": "bg_case31_stage.png",
+            "DialogueText": "Лена: 'Нет, подожди. По ст. 16 вуз обязан обеспечить доступ к материалам и консультациям при использовании ДОТ. Если материалы не выложены вовремя — это нарушение обязанности вуза, а не студентов. Ст. 43 — это обязанности студентов, а не вуза.' Максим: 'Точно. Давай лучше по закону.'",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
                     "CharacterId": "лена",
@@ -124,9 +172,9 @@
             ],
             "Choices": [
                 {
-                    "Text": "Понял. А что с последствиями для вуза?",
-                    "NextPageIndex": 4,
-                    "IsCorrect": false,
+                    "Text": "Понял, извини. Тогда какие права нарушены?",
+                    "NextPageIndex": 1,
+                    "IsCorrect": true,
                     "Feedback": ""
                 }
             ],
@@ -135,27 +183,21 @@
         },
         {
             "PageIndex": 4,
-            "SpeakerName": "Лена",
-            "DialogueText": "Лена: 'Точно. Теперь план: жалоба в течение 10 дней, аудит курсов. А что делать с теми, кого уже завалили?'",
-            "BackgroundKey": "bg_case31_stage.png",
+            "SpeakerName": "Максим и Лена",
+            "DialogueText": "Максим: 'Точно! Ещё ст. 45 — право на апелляцию результатов, если из-за отсутствия материалов студент не смог подготовиться.' Лена: 'Отлично. Теперь последствия для вуза, если дойдёт до жалоб?'",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
-                    "CharacterId": "лена",
+                    "CharacterId": "максим_и_лена",
                     "Position": 1,
                     "IsHighlighted": true
                 }
             ],
             "Choices": [
                 {
-                    "Text": "По закону (ст. 45) они имеют право на пересдачу и апелляцию.",
+                    "Text": "Рособрнадзор: внеплановая проверка, предписание, штрафы по КоАП (ст. 19.30), репутационные потери.",
                     "NextPageIndex": 5,
                     "IsCorrect": true,
-                    "Feedback": ""
-                },
-                {
-                    "Text": "Уже ничего, оценка поставлена. Максимум — смягчить пересдачу.",
-                    "NextPageIndex": 6,
-                    "IsCorrect": false,
                     "Feedback": ""
                 }
             ],
@@ -165,8 +207,8 @@
         {
             "PageIndex": 5,
             "SpeakerName": "Лена",
-            "DialogueText": "Лена: 'Именно. Статья 45. Ну и профилактика: нормативные акты и четкие дедлайны на сайте МУИВ.'",
-            "BackgroundKey": "bg_case31_stage.png",
+            "DialogueText": "Лена: 'Верно. Штрафы до 50–100 тыс. для должностных, до 200 тыс. для юрлица. Плюс предписание устранить нарушения в срок. Теперь план: что предлагать вузу и пострадавшим студентам?'",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
                     "CharacterId": "лена",
@@ -176,8 +218,14 @@
             ],
             "Choices": [
                 {
-                    "Text": "Отлично. Кажется, мы готовы.",
-                    "NextPageIndex": 7,
+                    "Text": "1. Коллективная жалоба в вуз (10 дней). 2. Апелляционная комиссия по ст. 45. 3. Аудит платформы ДОТ. 4. Регламент сроков на сайте.",
+                    "NextPageIndex": 6,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Просто извиниться и дать бонусные баллы — хватит.",
+                    "NextPageIndex": -1,
                     "IsCorrect": false,
                     "Feedback": ""
                 }
@@ -187,9 +235,32 @@
         },
         {
             "PageIndex": 6,
+            "SpeakerName": "Максим и Лена",
+            "DialogueText": "Максим: 'Класс! Ещё добавить: обязательные еженедельные консультации по Zoom и архив записей минимум на семестр.' Лена: 'Идеально. Кажется, у нас сильный кейс. Готов репетировать речь, Темир?'",
+            "BackgroundKey": "bg_case31_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "максим_и_лена",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Да, давай проговорим ключевые тезисы.",
+                    "NextPageIndex": 7,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 7,
             "SpeakerName": "Лена",
-            "DialogueText": "Лена: 'Не совсем. Статья 45 защищает их — вуз обязан созвать комиссию для пересмотра результатов.'",
-            "BackgroundKey": "bg_case31_stage.png",
+            "DialogueText": "Лена: 'Ты начинаешь: нарушение ст. 16 и 43–45… Потом я — последствия… Максим — план. Попробуем тайминг 4 минуты?'",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
                     "CharacterId": "лена",
@@ -199,23 +270,23 @@
             ],
             "Choices": [
                 {
-                    "Text": "Запишу это. Мы готовы к выступлению?",
-                    "NextPageIndex": 7,
-                    "IsCorrect": false,
+                    "Text": "*Репетировать речь*",
+                    "NextPageIndex": 8,
+                    "IsCorrect": true,
                     "Feedback": ""
                 }
             ],
-            "IsEnding": false,
+            "IsEnding": true,
             "DefaultNextPage": -1
         },
         {
-            "PageIndex": 7,
-            "SpeakerName": "Максим",
-            "DialogueText": "Ведущая: 'Время вышло! Спикер группы ЮД 22.1 — Темир, на сцену!'\nМаксим шепчет: 'Давай, Темир! Главное, скажи судьям, чтобы не судили строго, мы же старались!'",
-            "BackgroundKey": "bg_case31_stage.png",
+            "PageIndex": 8,
+            "SpeakerName": "Ведущая и Максим",
+            "DialogueText": "Ведущая: 'Время подготовки вышло! Группа ЮД-31-1, спикер Темир — на сцену! Удачи!' Максим шепчет: 'Держись уверенно, мы с тобой. Главное — по закону и спокойно.'",
+            "BackgroundKey": "bg_case31_classroom.png",
             "Characters": [
                 {
-                    "CharacterId": "максим",
+                    "CharacterId": "ведущая_и_максим",
                     "Position": 1,
                     "IsHighlighted": true
                 }
@@ -223,36 +294,7 @@
             "Choices": [
                 {
                     "Text": "*Выйти на сцену и начать презентацию*",
-                    "NextPageIndex": 8,
-                    "IsCorrect": false,
-                    "Feedback": ""
-                }
-            ],
-            "IsEnding": false,
-            "DefaultNextPage": -1
-        },
-        {
-            "PageIndex": 8,
-            "SpeakerName": "Судья",
-            "DialogueText": "Вы стоите перед микрофоном. Судья: 'Здравствуйте. Какие именно права студентов были нарушены в вашем кейсе?'",
-            "BackgroundKey": "bg_case31_stage.png",
-            "Characters": [
-                {
-                    "CharacterId": "судья",
-                    "Position": 1,
-                    "IsHighlighted": true
-                }
-            ],
-            "Choices": [
-                {
-                    "Text": "Согласно ст. 43-45 ФЗ об образовании — право на качественное обучение и доступ к материалам.",
                     "NextPageIndex": 9,
-                    "IsCorrect": true,
-                    "Feedback": ""
-                },
-                {
-                    "Text": "Право на свободное посещение и выбор преподавателя.",
-                    "NextPageIndex": 10,
                     "IsCorrect": false,
                     "Feedback": ""
                 }
@@ -263,7 +305,7 @@
         {
             "PageIndex": 9,
             "SpeakerName": "Судья",
-            "DialogueText": "Судья: 'Верно. А какие последствия ждут университет, если жалобы дойдут до Рособрнадзора?'",
+            "DialogueText": "Судья 1: 'Здравствуйте. Назовите конкретные нарушенные права студентов в кейсе.'",
             "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
@@ -274,14 +316,14 @@
             ],
             "Choices": [
                 {
-                    "Text": "Проверки, административные штрафы и удар по репутации вуза.",
-                    "NextPageIndex": 11,
+                    "Text": "Право на доступ к учебным материалам и консультациям при ДОТ (ст. 16 273-ФЗ), а также на качественное образование (ст. 43, 28).",
+                    "NextPageIndex": 10,
                     "IsCorrect": true,
                     "Feedback": ""
                 },
                 {
-                    "Text": "Никаких, университет сам решает внутренние вопросы.",
-                    "NextPageIndex": 10,
+                    "Text": "Право на бесплатное образование и стипендию.",
+                    "NextPageIndex": 11,
                     "IsCorrect": false,
                     "Feedback": ""
                 }
@@ -291,12 +333,35 @@
         },
         {
             "PageIndex": 10,
-            "SpeakerName": "Судья",
-            "DialogueText": "Судья: 'Ваши ответы неубедительны и противоречат закону. К сожалению, вы не заняли призовых мест.'\nМаксим: 'Эх, Темир... Но ничего, в следующий раз порвем всех!'",
+            "SpeakerName": "Судья 2",
+            "DialogueText": "Судья 2: 'Хорошо. Какие последствия для вуза при систематических жалобах?'",
             "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "судья",
+                    "CharacterId": "судья_2",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Внеплановая проверка Рособрнадзора, предписание, административные штрафы по ст. 19.30 КоАП, возможное приостановление лицензии в крайних случаях.",
+                    "NextPageIndex": 12,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 11,
+            "SpeakerName": "Судья и Лена",
+            "DialogueText": "Судья: 'Это не относится к кейсу. Ответы неточные. К сожалению, без призовых мест.' Лена: 'Ничего, Темир, главное — опыт. Разберём ошибки и в следующий раз возьмём.'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "судья_и_лена",
                     "Position": 1,
                     "IsHighlighted": true
                 }
@@ -306,27 +371,50 @@
             "DefaultNextPage": -1
         },
         {
-            "PageIndex": 11,
-            "SpeakerName": "Судья",
-            "DialogueText": "Судья: 'И каков ваш пошаговый план решения?'",
+            "PageIndex": 12,
+            "SpeakerName": "Судья 1",
+            "DialogueText": "Судья 1: 'А ваш план решения проблемы? Конкретно и пошагово.'",
             "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
-                    "CharacterId": "судья",
+                    "CharacterId": "судья_1",
                     "Position": 1,
                     "IsHighlighted": true
                 }
             ],
             "Choices": [
                 {
-                    "Text": "Коллективная жалоба, аудит курсов, пересмотр оценок по ст. 45 и закрепление дедлайнов в актах.",
-                    "NextPageIndex": 12,
+                    "Text": "1. Приём жалоб в 10-дневный срок. 2. Созыв апелляционной комиссии (ст. 45). 3. Аудит и обновление регламента ДОТ. 4. Обязательные сроки публикации материалов и консультаций в локальных актах вуза.",
+                    "NextPageIndex": 13,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 13,
+            "SpeakerName": "Судья 2",
+            "DialogueText": "Судья 2: 'Последний вопрос: как защитить права студентов, уже получивших низкие баллы из-за задержек?'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "судья_2",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "По ст. 45 — право на пересмотр результатов через апелляционную комиссию вуза, с учётом отсутствия материалов как уважительной причины.",
+                    "NextPageIndex": 14,
                     "IsCorrect": true,
                     "Feedback": ""
                 },
                 {
-                    "Text": "Просто подождать, пока администрация сама заметит сбои в системе дистанционки.",
-                    "NextPageIndex": 10,
+                    "Text": "Никак — оценки окончательные.",
+                    "NextPageIndex": 15,
                     "IsCorrect": false,
                     "Feedback": ""
                 }
@@ -335,9 +423,9 @@
             "DefaultNextPage": -1
         },
         {
-            "PageIndex": 12,
+            "PageIndex": 14,
             "SpeakerName": "Ведущая",
-            "DialogueText": "Ведущая: 'Первое место — группа ЮД 22.1! Образцовый план и отличная презентация!'\nЛена и Максим в восторге. Ты чувствуешь, что нашел свое место в МУИВ.",
+            "DialogueText": "Ведущая: 'Первое место — команда ЮД-31-1! Очень чёткий анализ, ссылки на закон и реальный план. Поздравляем!' Лена обнимает: 'Темир, ты был огонь!' Максим: 'Теперь в Студсовет и на следующие хакатоны!' Ты чувствуешь гордость и уверенность — МУИВ реально даёт возможности расти.",
             "BackgroundKey": "bg_case31_stage.png",
             "Characters": [
                 {
@@ -349,8 +437,24 @@
             "Choices": [],
             "IsEnding": true,
             "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 15,
+            "SpeakerName": "Судья и Максим",
+            "DialogueText": "Судья: 'Нет, это неверно. Ст. 45 прямо предусматривает защиту. Группа не проходит в призёры.' Максим: 'Эх… Но мы старались. В следующий хакатон порвём!'",
+            "BackgroundKey": "bg_case31_stage.png",
+            "Characters": [
+                {
+                    "CharacterId": "судья_и_максим",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [],
+            "IsEnding": true,
+            "DefaultNextPage": -1
         }
     ],
     "DefaultBackgroundKey": "bg_case31_stage.png",
-    "TotalCorrectChoices": 7
+    "TotalCorrectChoices": 13
 }

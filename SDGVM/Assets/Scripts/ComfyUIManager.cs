@@ -43,34 +43,39 @@ public class ComfyUIManager : MonoBehaviour
                 return customComfyUIPath;
             }
 
+            // Сначала проверяем корень проекта (рекомендуемое расположение — не засоряет Assets плагинами)
+            string projectPath = Path.Combine(Application.dataPath, "..", "ComfyUI");
+            if (Directory.Exists(projectPath))
+            {
+                return Path.GetFullPath(projectPath);
+            }
+            
             #if UNITY_EDITOR
+            // Fallback в Assets (legacy)
             string editorPath = Path.Combine(Application.dataPath, "ComfyUI");
             if (Directory.Exists(editorPath))
             {
                 return editorPath;
             }
             
-            string projectPath = Path.Combine(Application.dataPath, "..", "ComfyUI");
-            if (Directory.Exists(projectPath))
-            {
-                return projectPath;
-            }
-            
             string portablePath = Path.Combine(Application.dataPath, "..", "..", "ComfyUI_windows_portable");
             if (Directory.Exists(portablePath))
             {
-                return portablePath;
+                return Path.GetFullPath(portablePath);
             }
             
-            return editorPath;
+            return Path.GetFullPath(projectPath); // default
             #else
-            // В билде ищем ComfyUI в Assets папке рядом с exe
-            string buildPath = Path.Combine(Application.dataPath, "..", "Assets", "ComfyUI");
+            // В билде ищем ComfyUI рядом с exe
+            string buildPath = Path.Combine(Application.dataPath, "..", "ComfyUI");
             if (Directory.Exists(buildPath))
-                return buildPath;
+                return Path.GetFullPath(buildPath);
             
-            // Альтернативный путь для портативной версии
-            return Path.Combine(Application.dataPath, "..", "ComfyUI_Portable");
+            string buildPath2 = Path.Combine(Application.dataPath, "..", "ComfyUI_Portable");
+            if (Directory.Exists(buildPath2))
+                return Path.GetFullPath(buildPath2);
+            
+            return Path.GetFullPath(buildPath);
             #endif
         }
     }

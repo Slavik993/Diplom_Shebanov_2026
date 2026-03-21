@@ -21,26 +21,23 @@ public class ComfyServerLauncher : MonoBehaviour
     [ContextMenu("Start ComfyUI Server")]
     public void StartServer()
     {
-        string comfyPath = Path.Combine(Application.dataPath, "ComfyUI");
+        // Сначала проверяем корень проекта (рекомендуемое расположение)
+        string rootPath = Directory.GetParent(Application.dataPath).FullName;
+        string comfyPath = Path.Combine(rootPath, "ComfyUI");
         string batPath = Path.Combine(comfyPath, batchFileName);
 
         if (!File.Exists(batPath))
         {
-            // Попробуем найти в соседней папке, если ComfyUI лежит рядом с Assets, а не внутри
-            // Часто проекты структурированы: Root/Assets и Root/ComfyUI
-            string rootPath = Directory.GetParent(Application.dataPath).FullName;
-            string altPath = Path.Combine(rootPath, "ComfyUI", batchFileName);
-            
-            if (File.Exists(altPath))
-            {
-                batPath = altPath;
-                comfyPath = Path.GetDirectoryName(batPath);
-            }
-            else
-            {
-                UnityEngine.Debug.LogError($"❌ Не найден файл запуска ComfyUI: {batPath}");
-                return;
-            }
+            // Fallback: внутри Assets (legacy)
+            comfyPath = Path.Combine(Application.dataPath, "ComfyUI");
+            batPath = Path.Combine(comfyPath, batchFileName);
+        }
+
+        if (!File.Exists(batPath))
+        {
+            UnityEngine.Debug.LogError($"❌ Не найден файл запуска ComfyUI: {batPath}");
+            UnityEngine.Debug.LogError($"💡 Убедитесь, что папка ComfyUI находится в корне проекта: {rootPath}");
+            return;
         }
 
         ProcessStartInfo psi = new ProcessStartInfo();
