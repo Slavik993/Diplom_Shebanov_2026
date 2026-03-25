@@ -155,6 +155,9 @@ public class VisualNovelPlayer : MonoBehaviour
         // В противном случае — запускаем процесс генерации
         sceneBuilder.ShowPanel(sceneBuilder.loadingPanel);
 
+        // Передаем флаг принудительной генерации в генератор
+        generator.forceRegenerate = forceRegenerate;
+
         // Генерируем новеллу
         generator.Generate(caseId, OnNovelGenerated);
     }

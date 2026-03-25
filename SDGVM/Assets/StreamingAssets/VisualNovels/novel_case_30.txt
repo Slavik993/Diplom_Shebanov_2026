@@ -1,0 +1,154 @@
+{
+    "CaseId": 30,
+    "Title": "Виттевские чтения: спор с оппонентами",
+    "Description": "Ты на трибуне XXVI конгресса «Виттевские чтения — 2026». Зал на 100 человек. Ты закончил доклад. Профессор из МГИМО поднял руку: 'Ваш тезис №3 противоречит данным Всемирного банка за 2023 год. Как вы это объясните?' Ты не ожидал такого вопроса. Возьми паузу, подумай и ответь.",
+    "Characters": [
+        {
+            "Id": "строгий",
+            "DisplayName": "Строгий",
+            "SpriteKey": "char_case30_строгий.png",
+            "Description": "академичный"
+        },
+        {
+            "Id": "заинтересованный",
+            "DisplayName": "Заинтересованный",
+            "SpriteKey": "char_case30_заинтересованный.png",
+            "Description": "anime character"
+        },
+        {
+            "Id": "разочарованный",
+            "DisplayName": "Разочарованный",
+            "SpriteKey": "char_case30_разочарованный.png",
+            "Description": "anime character"
+        },
+        {
+            "Id": "критичный",
+            "DisplayName": "Критичный",
+            "SpriteKey": "char_case30_критичный.png",
+            "Description": "anime character"
+        },
+        {
+            "Id": "уважительный",
+            "DisplayName": "Уважительный",
+            "SpriteKey": "char_case30_уважительный.png",
+            "Description": "anime character"
+        }
+    ],
+    "Pages": [
+        {
+            "PageIndex": 0,
+            "SpeakerName": "Строгий",
+            "DialogueText": "Ваш доклад о цифровой экономике был любопытным. Однако ваш тезис №3 прямо противоречит данным Всемирного банка за 2023 год. Как вы объясните такую... научную неосведомлённость?",
+            "BackgroundKey": "bg_case30_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "строгий",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Возможно, данные Всемирного банка устарели или не учитывали специфику российского рынка, на которой я строил модель.",
+                    "NextPageIndex": 1,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Ой, я не видел этого отчёта... Видимо, я ошибся. Извините.",
+                    "NextPageIndex": 2,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                },
+                {
+                    "Text": "Я опирался на другие источники, которые мне кажутся более надёжными.",
+                    "NextPageIndex": 3,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 1,
+            "SpeakerName": "Заинтересованный",
+            "DialogueText": "Смелое заявление! Опровергать Всемирный банк — это серьёзная заявка. Какие именно показатели вы считаете некорректными? Если сможете аргументировать — я заберу свои слова обратно.",
+            "BackgroundKey": "bg_case30_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "заинтересованный",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Я использовал данные РТС и внутренние отчёты компаний, они показывают рост там, где международные агентства видят стагнацию.",
+                    "NextPageIndex": 4,
+                    "IsCorrect": true,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 2,
+            "SpeakerName": "Разочарованный",
+            "DialogueText": "Наука не терпит извинений, она требует аргументов. Ошибка — это этап исследования, но её нужно уметь защищать или признавать с достоинством исследователя. Почитайте отчёт до вечера, завтра обсудим.",
+            "BackgroundKey": "bg_case30_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "разочарованный",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [],
+            "IsEnding": true,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 3,
+            "SpeakerName": "Критичный",
+            "DialogueText": "Надежность источника должна подтверждаться методологией. 'Мне кажется' — это не научный подход. Вы в МУИВ или на рынке? Вспомните, кто был автором вашего основного источника?",
+            "BackgroundKey": "bg_case30_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "критичный",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [
+                {
+                    "Text": "Это был профессор Иванов, ведущий эксперт по нашей теме.",
+                    "NextPageIndex": 1,
+                    "IsCorrect": false,
+                    "Feedback": ""
+                }
+            ],
+            "IsEnding": false,
+            "DefaultNextPage": -1
+        },
+        {
+            "PageIndex": 4,
+            "SpeakerName": "Уважительный",
+            "DialogueText": "Что ж... Достаточно убедительно. Признаю, ваш подход имеет право на жизнь. Именно за такую живую дискуссию мы и любим Виттевские чтения. После секции подойдите ко мне — обсудим публикацию вашего тезиса в нашем сборнике.",
+            "BackgroundKey": "bg_case30_classroom.png",
+            "Characters": [
+                {
+                    "CharacterId": "уважительный",
+                    "Position": 1,
+                    "IsHighlighted": true
+                }
+            ],
+            "Choices": [],
+            "IsEnding": true,
+            "DefaultNextPage": -1
+        }
+    ],
+    "DefaultBackgroundKey": "bg_case30_classroom.png",
+    "TotalCorrectChoices": 2
+}

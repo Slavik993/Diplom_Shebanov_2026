@@ -23,6 +23,8 @@ public class VisualNovelGenerator : MonoBehaviour
     public ComfyUIManager comfyUI;
 
     [Header("Settings")]
+    [Tooltip("Использовать LLM для генерации текста? Иначе берется заранее написанный DialogueTree")]
+    public bool useAITextGeneration = true;
     [Tooltip("Таймаут генерации текста в секундах")]
     public float generationTimeout = 120f;
     [Tooltip("Генерировать картинки после создания текста?")]
@@ -39,6 +41,12 @@ public class VisualNovelGenerator : MonoBehaviour
     {
         if (Instance == null) Instance = this;
     }
+
+    /// <summary>
+    /// Если true — удалить старые картинки перед генерацией
+    /// </summary>
+    [HideInInspector]
+    public bool forceRegenerate = false;
 
     /// <summary>
     /// Генерирует визуальную новеллу для указанного кейса.
@@ -60,10 +68,14 @@ public class VisualNovelGenerator : MonoBehaviour
         VisualNovelScene result = null;
 
         // Попробовать AI генерацию
-        if (llmCharacter != null)
+        if (useAITextGeneration && llmCharacter != null)
         {
             Debug.Log($"[VNGenerator] Начинаю AI-генерацию для кейса {caseId}...");
             yield return StartCoroutine(GenerateWithAI(caseId, (scene) => { result = scene; }));
+        }
+        else if (!useAITextGeneration)
+        {
+            Debug.Log($"[VNGenerator] AI-генерация текста отключена галочкой. Используем DialogueTree.");
         }
 
         // Fallback: конвертация существующего DialogueTree
@@ -129,8 +141,39 @@ public class VisualNovelGenerator : MonoBehaviour
 
         string prompt = BuildGenerationPrompt(adaptCase);
 
+        if (llmCharacter.llm != null)
+        {
+            if (!llmCharacter.llm.started && !llmCharacter.llm.failed)
+            {
+                Debug.Log("[VNGenerator] LLM сервер ещё загружается. Ожидание...");
+                while (!llmCharacter.llm.started && !llmCharacter.llm.failed)
+                {
+                    yield return new WaitForSeconds(0.5f);
+                }
+                // Даем серверу пару секунд на биндинг порта
+                yield return new WaitForSeconds(2.0f); 
+            }
+            else if (llmCharacter.llm.failed)
+            {
+                Debug.LogError("[VNGenerator] LLM сервер завершился с ошибкой (failed=true). Невозможно сгенерировать текст.");
+                callback?.Invoke(null);
+                yield break;
+            }
+        }
+
         bool done = false;
         string fullResponse = "";
+
+        // Предотвращаем ошибку, когда NumPredict >= ContextSize (не остаётся места для промта)
+        if (llmCharacter.llm != null)
+        {
+            int maxAllowedPredict = Mathf.Max(512, llmCharacter.llm.contextSize - 1024);
+            if (llmCharacter.numPredict <= 0 || llmCharacter.numPredict > maxAllowedPredict)
+            {
+                Debug.Log($"[VNGenerator] Корректируем NumPredict с {llmCharacter.numPredict} на {maxAllowedPredict}, чтобы оставить место для промта.");
+                llmCharacter.numPredict = maxAllowedPredict;
+            }
+        }
 
         llmCharacter.prompt = "Ты — генератор визуальных новелл для образовательной игры. Твоя задача — создать интерактивный сценарий в формате JSON.";
 
@@ -379,6 +422,25 @@ public class VisualNovelGenerator : MonoBehaviour
         }
 
         string saveDir = VisualNovelScene.GetSaveDirectory();
+
+        // Если принудительная перегенерация — удаляем старые картинки
+        if (forceRegenerate)
+        {
+            Debug.Log($"[VNGenerator] Force regenerate: удаляю старые картинки для кейса {caseId}...");
+            try
+            {
+                string[] oldFiles = Directory.GetFiles(saveDir, $"*case{caseId}*.png");
+                foreach (string f in oldFiles)
+                {
+                    File.Delete(f);
+                    Debug.Log($"[VNGenerator] Удалён: {Path.GetFileName(f)}");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[VNGenerator] Ошибка при удалении старых файлов: {e.Message}");
+            }
+        }
         
         // 1. СОБИРАЕМ УНИКАЛЬНЫЕ ФОНЫ
         HashSet<string> uniqueBgs = new HashSet<string>();
@@ -392,15 +454,22 @@ public class VisualNovelGenerator : MonoBehaviour
         int totalTasks = uniqueBgs.Count + scene.Characters.Count;
         int completedTasks = 0;
 
-        // 2. ГЕНЕРИРУЕМ ФОНЫ
+        // 2. КОПИРОВАНИЕ ГОТОВЫХ ФОНОВ ИЗ MUIV_places
+        string muivPlacesDir = Path.Combine(Application.dataPath, "MUIV_places");
+        string[] muivFiles = null;
+        if (Directory.Exists(muivPlacesDir))
+        {
+            muivFiles = Directory.GetFiles(muivPlacesDir, "*.jpg");
+        }
+
         foreach (string bgKey in uniqueBgs)
         {
-            UpdateLoadingUI(builder, $"Генерация фона: {bgKey}...", (float)completedTasks / totalTasks);
+            UpdateLoadingUI(builder, $"Установка фона: {bgKey}...", (float)completedTasks / totalTasks);
             
             // Если фон — это уже имя файла (мало ли), пропускаем
-            if (bgKey.EndsWith(".png")) continue;
+            if (bgKey.EndsWith(".png") || bgKey.EndsWith(".jpg")) continue;
 
-            string fileName = $"bg_case{caseId}_{bgKey}.png";
+            string fileName = $"bg_case{caseId}_{bgKey}.jpg";
             string filePath = Path.Combine(saveDir, fileName);
             if (File.Exists(filePath))
             {
@@ -417,31 +486,34 @@ public class VisualNovelGenerator : MonoBehaviour
                 continue;
             }
 
-            // Расширенные реалистичные контексты для МУИВ
-            string contextDesc;
-            switch (bgKey)
+            // Пытаемся найти подходящее фото из MUIV_places
+            if (muivFiles != null && muivFiles.Length > 0)
             {
-                case "classroom": contextDesc = "university lecture hall with desks chairs and projector screen"; break;
-                case "stage": contextDesc = "university assembly hall stage with podium and audience seats"; break;
-                case "hallway": contextDesc = "modern university corridor with doors and notice boards"; break;
-                case "office": contextDesc = "university dean office with desk bookshelves and diplomas"; break;
-                case "cafeteria": contextDesc = "university cafeteria dining hall with tables and food counter"; break;
-                case "dormitory": contextDesc = "student dormitory room with beds and desks"; break;
-                case "outdoor": contextDesc = "university campus exterior with modern building facade"; break;
-                case "library": contextDesc = "university library reading room with bookshelves"; break;
-                default: contextDesc = "modern university interior " + bgKey.Replace("_", " "); break;
-            }
-            
-            string prompt = $"Masterpiece, best quality, realistic photo, {contextDesc}, Moscow Witte University MUIV, modern Russian university, no people, no text, detailed architecture, natural lighting, photorealistic, 16:9 wide angle";
-            Texture2D loadedTex = null;
-            
-            // Ждём пока ComfyUIManager сгенерирует картинку
-            yield return StartCoroutine(comfyUI.GenerateTexture(prompt, (tex) => { loadedTex = tex; }));
+                string matchedFile = muivFiles[UnityEngine.Random.Range(0, muivFiles.Length)];
+                foreach (string mf in muivFiles)
+                {
+                    string l = mf.ToLower();
+                    // Прямое совпадение по имени (если метка была [Кабинет] или [Коридор])
+                    if (l.Contains(bgKey.ToLower())) { matchedFile = mf; break; }
+                    
+                    if (bgKey == "classroom" && l.Contains("кабинет")) { matchedFile = mf; break; }
+                    if (bgKey == "office" && l.Contains("кабинет")) { matchedFile = mf; break; }
+                    if (bgKey == "hallway" && l.Contains("коридор")) { matchedFile = mf; break; }
+                    if (bgKey == "library" && l.Contains("шкафчик")) { matchedFile = mf; break; }
+                    if (bgKey == "stage" && l.Contains("холл")) { matchedFile = mf; break; }
+                }
 
-            if (loadedTex != null)
-            {
-                SaveTextureToDisk(loadedTex, filePath);
-                // Обновляем ключ в сценах, чтобы использовать имя файла (а не переносить абсолютный путь между компьютерами)
+                try
+                {
+                    File.Copy(matchedFile, filePath, true);
+                    Debug.Log($"[VNGenerator] Использован готовый фон из MUIV: {Path.GetFileName(matchedFile)} -> {fileName}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[VNGenerator] Ошибка копирования фона: {e.Message}");
+                }
+
+                // Обновляем ключ в сценах
                 foreach (var page in scene.Pages)
                 {
                     if (page.BackgroundKey == bgKey) page.BackgroundKey = fileName;
@@ -468,9 +540,9 @@ public class VisualNovelGenerator : MonoBehaviour
                 continue;
             }
 
-            // Промт для персонажа (прозрачный, портрет)
+            // Промт для персонажа в стиле 19 века (как в GameAI)
             string cleanDesc = string.IsNullOrWhiteSpace(character.Description) ? "young person" : character.Description.Replace("\n", " ").Replace("\r", "");
-            string prompt = $"Masterpiece, best quality, semi-realistic digital art portrait of {character.DisplayName}, {cleanDesc}, standing, looking at viewer, solid white background, visual novel character, clean lines, professional illustration";
+            string prompt = $"Portrait of {character.DisplayName}, {cleanDesc}, wearing late 19th-century historical Russian clothing, vintage Victorian era attire, formal suit or elegant dress, sepia tones, head and shoulders, full face visible, centered face, solid white background, highly detailed, sharp focus, professional digital painting, cinematic lighting, 8k, masterpiece, intricate details";
             Texture2D loadedTex = null;
             
             yield return StartCoroutine(comfyUI.GenerateTexture(prompt, (tex) => { loadedTex = tex; }));
@@ -669,33 +741,73 @@ public class VisualNovelGenerator : MonoBehaviour
             page.IsEnding = node.IsEnding;
             page.DialogueText = node.Text;
 
-            // Обрабатываем говорящего из поля Emotion
+            // Обрабатываем говорящего
+            // В старых деревьях Emotion часто используется для описания эмоции (например, "Испуганный, раздражённый")
             string emotionRaw = node.Emotion ?? "";
-            if (string.IsNullOrWhiteSpace(emotionRaw)) emotionRaw = "Нарратор";
             
-            string charId = "";
-            string dispName = "";
-            string desc = "";
-            
-            if (emotionRaw.Contains(","))
+            // Парсинг кастомного фона из Text (например: "[library] Анна читает книгу")
+            var bgMatchText = Regex.Match(page.DialogueText, @"^\s*\[([a-zA-Zа-яА-ЯёЁ0-9_]+)\]\s*");
+            if (bgMatchText.Success)
             {
-                var parts = emotionRaw.Split(new[] { ',' }, 2);
+                bg = bgMatchText.Groups[1].Value.ToLower();
+                page.DialogueText = page.DialogueText.Substring(bgMatchText.Length).Trim();
+            }
+
+            // Парсинг кастомного фона из Emotion (например: "[холл] Анна - радостная")
+            var bgMatchEmotion = Regex.Match(emotionRaw, @"^\s*\[([a-zA-Zа-яА-ЯёЁ0-9_]+)\]\s*");
+            if (bgMatchEmotion.Success)
+            {
+                bg = bgMatchEmotion.Groups[1].Value.ToLower();
+                emotionRaw = emotionRaw.Substring(bgMatchEmotion.Length).Trim();
+            }
+
+            page.BackgroundKey = bg;
+
+            string charId;
+            string dispName;
+            string desc;
+            
+            // В AdaptationScenariosManager всегда задан один главный NPC для кейса (NPCRole)
+            string npcRole = adaptCase != null && !string.IsNullOrEmpty(adaptCase.NPCRole) ? adaptCase.NPCRole : "Студент";
+
+            // Парсинг кастомного имени (разделитель " - " или ": ")
+            if (emotionRaw.Contains(" - "))
+            {
+                var parts = emotionRaw.Split(new[] { " - " }, 2, StringSplitOptions.None);
                 dispName = parts[0].Trim();
                 desc = parts[1].Trim();
-                charId = dispName.ToLower().Replace(" ", "_");
+            }
+            else if (emotionRaw.Contains(": "))
+            {
+                var parts = emotionRaw.Split(new[] { ": " }, 2, StringSplitOptions.None);
+                dispName = parts[0].Trim();
+                desc = parts[1].Trim();
             }
             else
             {
-                dispName = emotionRaw.Trim();
-                charId = dispName.ToLower().Replace(" ", "_");
-                desc = "anime character";
+                dispName = npcRole;
+                desc = emotionRaw.Trim();
             }
             
-            page.SpeakerName = dispName;
-            
-            // Если это не нарратор, добавляем персонажа
-            if (charId != "нарратор" && charId != "narrator")
+            // Если вдруг это системное сообщение (без эмоции)
+            if (string.IsNullOrWhiteSpace(emotionRaw) || emotionRaw.ToLower().Contains("нарратор"))
             {
+                charId = "narrator";
+            }
+            else
+            {
+                charId = npcRole.ToLower().Replace(" ", "_").Replace("-", "_");
+            }
+            
+            // Костыль для случая, когда парсинг распознал "Нарратор"
+            if (charId == "нарратор" || charId == "narrator" || string.IsNullOrWhiteSpace(emotionRaw))
+            {
+                page.SpeakerName = "Нарратор";
+            }
+            else
+            {
+                page.SpeakerName = dispName;
+                
                 if (!uniqueChars.ContainsKey(charId))
                 {
                     uniqueChars[charId] = new VNCharacter(charId, dispName, charId, desc);

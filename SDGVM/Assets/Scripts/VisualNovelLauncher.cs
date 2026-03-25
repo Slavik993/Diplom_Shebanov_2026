@@ -21,6 +21,11 @@ public class VisualNovelLauncher : MonoBehaviour
 
 #if UNITY_EDITOR
     [Header("LLM (опционально — только в Editor)")]
+    [Tooltip("Использовать нейросети (LLM) для генерации текста? Иначе - запускаются готовые сценарии (DialogueTree).")]
+    public bool useAITextGeneration = true;
+    [Tooltip("Генерировать картинки через ComfyUI? Иначе будут дефолтные силуэты.")]
+    public bool generateVisuals = true;
+
     [Tooltip("Перетащите LLMCharacter для AI-генерации. Без него — fallback из DialogueTree.")]
     public LLMCharacter llmCharacter;
 #endif
@@ -49,12 +54,15 @@ public class VisualNovelLauncher : MonoBehaviour
         var generator = gameObject.AddComponent<VisualNovelGenerator>();
         if (llmCharacter != null)
             generator.llmCharacter = llmCharacter;
+        
+        generator.useAITextGeneration = useAITextGeneration;
+        generator.generateVisuals = generateVisuals;
 
         player.generator = generator;
         player.forceRegenerate = forceRegenerate;
 
         var comfyManager = FindObjectOfType<ComfyUIManager>();
-        if (comfyManager == null)
+        if (comfyManager == null && generateVisuals)
         {
             var comfyObj = new GameObject("ComfyUIManager");
             comfyManager = comfyObj.AddComponent<ComfyUIManager>();
@@ -62,7 +70,7 @@ public class VisualNovelLauncher : MonoBehaviour
         }
         generator.comfyUI = comfyManager;
 
-        Debug.Log("[VNLauncher] Editor-режим: все компоненты AI созданы. Ожидание ввода студента.");
+        Debug.Log($"[VNLauncher] Editor-режим. Генерация текста: {useAITextGeneration}, Картинок: {generateVisuals}. Ожидание ввода.");
 #else
         // ═══════════════════════════════════════════════════
         // STANDALONE BUILD: без генератора, загружаем готовые файлы
